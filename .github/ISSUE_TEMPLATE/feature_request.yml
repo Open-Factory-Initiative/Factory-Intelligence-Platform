@@ -1,0 +1,37 @@
+name: Feature request
+description: Suggest a useful capability
+title: "[Feature]: "
+labels: ["type: feature", "needs triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Simulator
+        - Ingestion
+        - Event contracts
+        - Process Sentinel
+        - Governed actions
+        - Web UI
+        - Testing
+        - Documentation
+        - Other
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety/governance considerations
+      description: Could this affect production, quality, maintenance, materials, compliance, or safety?

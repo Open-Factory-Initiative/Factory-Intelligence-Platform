@@ -1,0 +1,158 @@
+# Factory Intelligence Platform
+
+**Open-source infrastructure for intelligent, connected, and AI-ready factories.**
+
+Factory Intelligence Platform is the first major platform project from the **Open Factory Initiative**. It is designed to become a modular Factory Intelligence Layer that connects industrial data sources, normalizes factory events, detects quality/process drift, supports evidence-based investigations, and enables governed AI-assisted workflows across manufacturing operations.
+
+> Status: early-stage open-source project. The first vertical slice is **Process Sentinel**, a quality drift and deviation intelligence workflow.
+
+## What This Platform Does
+
+The platform helps manufacturing teams answer questions such as:
+
+- What is happening in the factory right now?
+- Which process signals changed before quality drift appeared?
+- Which work orders, assets, lines, materials, and batches are affected?
+- What evidence supports a recommended containment action?
+- What should a quality engineer review before approving action?
+- What did the plant learn from similar prior incidents?
+
+## MVP Vertical Slice
+
+The first end-to-end MVP should be intentionally narrow:
+
+```text
+Synthetic Factory Simulator
+→ Ingestion Worker
+→ Factory Event Store / Unified Namespace
+→ Process Sentinel Drift Detection
+→ Evidence Timeline
+→ Governed Recommendation Queue
+→ Web UI Workbench
+→ RCA / CAPA Draft Export
+→ Factory Memory
+```
+
+## Target Architecture
+
+```mermaid
+flowchart LR
+    subgraph Sources["Factory Data Sources"]
+        Simulator["Synthetic Factory Simulator"]
+        MQTT["MQTT / OPC UA / CSV / API"]
+        MES["MES / QMS / CMMS / ERP"]
+    end
+
+    subgraph Platform["Factory Intelligence Platform"]
+        Ingestion["Ingestion Services"]
+        UNS["Unified Factory Event Model"]
+        Store["Operational + Time-Series Store"]
+        Sentinel["Process Sentinel"]
+        Evidence["Evidence Timeline Service"]
+        Governance["Governed Action Service"]
+        API["API Gateway"]
+    end
+
+    subgraph Apps["User Applications"]
+        UI["Operations Workbench"]
+        Reports["RCA / CAPA Drafts"]
+        Memory["Factory Memory"]
+    end
+
+    Sources --> Ingestion
+    Ingestion --> UNS
+    UNS --> Store
+    Store --> Sentinel
+    Sentinel --> Evidence
+    Evidence --> Governance
+    Governance --> API
+    API --> UI
+    API --> Reports
+    API --> Memory
+```
+
+## Suggested Initial Stack
+
+This starter documentation assumes the initial implementation will use:
+
+- **Backend:** Python + FastAPI
+- **Frontend:** TypeScript + React / Next.js
+- **Database:** PostgreSQL
+- **Time-series patterns:** TimescaleDB-compatible schema design
+- **Eventing:** MQTT-first local dev path; Kafka/Redpanda-compatible later
+- **Testing:** Pytest, Playwright, contract tests, integration tests, and end-to-end tests
+- **Documentation:** Markdown, Mermaid diagrams, ADRs, and contributor guides
+- **AI workflows:** Human-approved recommendations with evidence and audit logs
+
+These choices are intentionally open-source-friendly and practical for a Codex-assisted MVP.
+
+## Repository Structure
+
+Recommended structure:
+
+```text
+.
+├── AGENTS.md
+├── PLANS.md
+├── CODE_REVIEW.md
+├── README.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── SUPPORT.md
+├── GOVERNANCE.md
+├── ROADMAP.md
+├── docs/
+│   ├── START_HERE_FOR_CODEX.md
+│   ├── ARCHITECTURE.md
+│   ├── PRODUCT_REQUIREMENTS.md
+│   ├── MVP_SCOPE.md
+│   ├── DOMAIN_MODEL.md
+│   ├── DATA_CONTRACTS.md
+│   ├── DEVELOPMENT.md
+│   ├── TESTING.md
+│   ├── DOCUMENTATION.md
+│   ├── LEARNING_MODE.md
+│   ├── GOVERNED_ACTIONS.md
+│   ├── UNIFIED_NAMESPACE.md
+│   ├── OBSERVABILITY.md
+│   ├── SECURITY_MODEL.md
+│   └── decisions/
+├── prompts/
+│   ├── README.md
+│   └── *.md
+├── apps/
+│   └── web/
+├── services/
+│   ├── api/
+│   ├── ingestion/
+│   ├── simulator/
+│   └── process-sentinel/
+├── packages/
+│   ├── factory-events/
+│   └── test-fixtures/
+└── infra/
+    └── docker/
+```
+
+## Working With Codex
+
+Start here:
+
+1. Read `docs/START_HERE_FOR_CODEX.md`.
+2. Copy this documentation pack into the repository root.
+3. Run Codex from the repository root.
+4. Ask Codex to inspect the repo and produce a plan before creating code.
+5. Run prompts in `prompts/` sequentially.
+6. Require tests and docs for every meaningful change.
+
+A good first Codex prompt is:
+
+```text
+Read AGENTS.md, PLANS.md, CODE_REVIEW.md, docs/START_HERE_FOR_CODEX.md, docs/ARCHITECTURE.md, docs/MVP_SCOPE.md, and docs/TESTING.md.
+
+Do not write code yet. Inspect the repository and propose an execution plan for creating the initial Factory Intelligence Platform MVP skeleton. Include repo structure, first services, test strategy, and documentation updates. Ask me only for blockers that cannot be resolved from the docs.
+```
+
+## License
+
+This project uses the repository license in `LICENSE`.

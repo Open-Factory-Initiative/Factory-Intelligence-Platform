@@ -1,0 +1,20 @@
+name: Documentation issue
+description: Report missing, confusing, or incorrect docs
+title: "[Docs]: "
+labels: ["type: docs", "needs triage"]
+body:
+  - type: textarea
+    id: issue
+    attributes:
+      label: Documentation issue
+      description: What is missing, confusing, or incorrect?
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Relevant file or page
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement

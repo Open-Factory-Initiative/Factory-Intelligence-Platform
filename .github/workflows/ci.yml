@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  repository-hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show repository tree
+        run: find . -maxdepth 3 -type f | sort
+
+  backend-tests:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('services/**/pyproject.toml', 'services/**/requirements.txt') != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run backend tests if configured
+        run: |
+          if [ -f "Makefile" ]; then
+            make test-backend || make test || true
+          else
+            echo "No Makefile yet. Add test command when backend exists."
+          fi
+
+  frontend-tests:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('apps/**/package.json') != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run frontend tests if configured
+        run: |
+          if [ -f "apps/web/package.json" ]; then
+            cd apps/web
+            npm ci
+            npm run lint --if-present
+            npm run typecheck --if-present
+            npm test --if-present
+          else
+            echo "No frontend app yet."
+          fi
