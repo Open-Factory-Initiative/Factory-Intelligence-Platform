@@ -55,20 +55,36 @@ git checkout -b feat/simulator-vertical-slice
 
 ## Local Development Target
 
-The eventual local stack should support:
+The current MVP skeleton supports a backend-first local loop:
 
 ```bash
-make dev
+make setup
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+make api
 ```
 
-Expected services:
+This generates simulator events, validates and stores them in `.local/`, runs
+Process Sentinel, and starts the FastAPI API.
 
-- Web UI
-- API
-- Simulator
-- Ingestion worker
-- PostgreSQL
-- MQTT broker
+To start the local PostgreSQL service for durable storage work:
+
+```bash
+make dev-db
+```
+
+The web app is intentionally a placeholder until the backend workflow has stable
+state to display.
+
+Current skeleton components:
+
+- `packages/factory-events` — shared event contracts
+- `services/simulator` — deterministic scenario generator
+- `services/ingestion` — validation and dead-letter handling
+- `services/process-sentinel` — drift rules, evidence, recommendations
+- `services/api` — FastAPI endpoints for the MVP state
+- `infra/docker` — PostgreSQL compose config
 
 ## Environment Variables
 
@@ -82,6 +98,8 @@ MQTT_BROKER_URL=mqtt://localhost:1883
 APP_ENV=development
 LOG_LEVEL=info
 SIMULATOR_SEED=42
+FACTORY_EVENTS_STORE=.local/storage/events.jsonl
+SENTINEL_STATE_DIR=.local/storage/sentinel
 ```
 
 Do not commit real secrets.

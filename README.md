@@ -134,6 +134,41 @@ Recommended structure:
     └── docker/
 ```
 
+## Current MVP Skeleton
+
+The first executable skeleton now focuses on the simulator-backed Process
+Sentinel workflow:
+
+```text
+services/simulator          Deterministic normal/drift/excursion events
+packages/factory-events     Shared Pydantic event contracts
+services/ingestion          Event validation, dead-letter handling, local storage
+services/process-sentinel   Explainable drift rules, evidence, recommendations
+services/api                FastAPI endpoints over stored MVP state
+apps/web                    Placeholder for the future workbench
+infra/docker                Local PostgreSQL configuration
+```
+
+The default developer loop uses JSONL files under `.local/` so contributors can
+run tests without a database. PostgreSQL is included for the durable storage path
+and initialized with the MVP schema.
+
+Quick path:
+
+```bash
+make setup
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+make api
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
 ## Working With Codex
 
 Start here:

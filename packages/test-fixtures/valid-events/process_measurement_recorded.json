@@ -1,0 +1,30 @@
+{
+  "event_id": "evt_process_000001",
+  "event_type": "process.measurement.recorded",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-01-01T12:00:00Z",
+  "source": {
+    "system": "factory-simulator",
+    "adapter": "simulator",
+    "source_event_id": "sim-process-000001"
+  },
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "asset_id": "asset_filler_1",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "signal_id": "fill_weight",
+    "signal_name": "Fill Weight",
+    "value": 501.2,
+    "unit": "g",
+    "quality": "good"
+  },
+  "metadata": {
+    "simulated": true,
+    "trace_id": "trace_000001"
+  }
+}
+
