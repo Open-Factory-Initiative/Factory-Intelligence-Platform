@@ -1,0 +1,171 @@
+name: Feature
+description: Usable capability within an epic
+title: "Feature: "
+labels:
+  - type: feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for a specific capability that delivers user, developer, or platform value.
+
+        A feature should be small enough to complete in one focused PR when possible.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: What capability should be built?
+      placeholder: >
+        Define the base FactoryEvent schema used by simulator, ingestion,
+        Process Sentinel, evidence, and API workflows.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Need
+      description: What problem does this feature solve?
+      placeholder: >
+        Without a shared event model, each service may define factory events differently,
+        making ingestion, validation, and drift detection unreliable.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module / Area
+      description: Which part of the repo is most affected?
+      options:
+        - simulator
+        - ingestion
+        - factory-events
+        - process-sentinel
+        - api
+        - web
+        - infra
+        - docs
+        - validation
+        - unknown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 Critical
+        - P1 High
+        - P2 Medium
+        - P3 Low
+    validations:
+      required: true
+
+  - type: input
+    id: parent_epic
+    attributes:
+      label: Parent Epic
+      description: Link the parent epic issue.
+      placeholder: "#8"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the expected implementation approach.
+      placeholder: >
+        Add Pydantic models for base event metadata, event type, timestamp,
+        source, asset, line, batch, and payload fields.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included?
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of Scope
+      description: What should not be included?
+      value: |
+        - 
+        - 
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: What must be true before this feature is complete?
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_plan
+    attributes:
+      label: Test Plan
+      description: What tests should be added or updated?
+      value: |
+        - [ ] Unit tests
+        - [ ] Contract tests
+        - [ ] Integration tests, if needed
+        - [ ] Manual verification steps documented
+    validations:
+      required: true
+
+  - type: textarea
+    id: docs
+    attributes:
+      label: Documentation Updates
+      description: What docs need to change?
+      value: |
+        - [ ] README update not needed
+        - [ ] Architecture docs update not needed
+        - [ ] Developer docs update not needed
+        - [ ] Example usage update not needed
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation_notes
+    attributes:
+      label: Implementation Notes
+      description: Mention likely files, commands, constraints, or architecture notes.
+      placeholder: >
+        Likely files: packages/factory-events, docs/DATA_CONTRACTS.md,
+        tests/contract.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: readiness
+    attributes:
+      label: Readiness Checklist
+      options:
+        - label: Scope is clear
+          required: true
+        - label: Acceptance criteria are testable
+          required: true
+        - label: Parent epic is linked
+          required: true
+        - label: Testing expectations are defined
+          required: true
