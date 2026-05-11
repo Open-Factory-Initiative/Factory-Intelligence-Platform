@@ -60,9 +60,7 @@ Use Playwright for user workflows:
 
 ## MVP Test Commands
 
-Codex should create and maintain real commands as the repo evolves.
-
-Suggested future commands:
+Current commands:
 
 ```bash
 make test
@@ -74,24 +72,24 @@ make lint
 make typecheck
 ```
 
-If Make is not used, equivalent package-level commands are acceptable.
+`make test-e2e` is currently a documented placeholder because the web workbench
+has not been implemented yet.
 
 ## Backend Testing
 
-Recommended tools:
+Current tools:
 
 - `pytest`
-- `pytest-asyncio`
 - `httpx`
 - `ruff`
-- `mypy` or `pyright`
+- `compileall` for the initial syntax/type-import gate
 
-Example expectations:
+Current expectations:
 
 ```bash
-cd services/api
-pytest
-ruff check .
+make test
+make lint
+make typecheck
 ```
 
 ## Frontend Testing
@@ -113,6 +111,9 @@ npm run lint
 npm run typecheck
 npx playwright test
 ```
+
+Frontend tests are deferred until `apps/web` contains the first Next.js
+workbench implementation.
 
 ## Simulator Testing
 

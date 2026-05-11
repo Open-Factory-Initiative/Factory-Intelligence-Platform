@@ -6,6 +6,32 @@ Data contracts define how services exchange factory information.
 
 All service boundaries should use explicit schemas. Do not pass unstructured dictionaries across service boundaries without validation.
 
+## Current Implementation
+
+The MVP skeleton implements the first contracts in:
+
+```text
+packages/factory-events/factory_events/models.py
+```
+
+Contract fixtures live in:
+
+```text
+packages/test-fixtures/valid-events/
+packages/test-fixtures/invalid-events/
+packages/test-fixtures/drift-scenarios/
+```
+
+Run contract tests with:
+
+```bash
+make test-contract
+```
+
+The implementation currently validates the common envelope, UTC timestamps,
+schema version `1.0.0`, simulator metadata, supported event types, and payload
+shape. Unknown event types are rejected by ingestion.
+
 ## Event Envelope
 
 Every platform event should use a common envelope.

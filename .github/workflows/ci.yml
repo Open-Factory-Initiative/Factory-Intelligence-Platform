@@ -18,19 +18,20 @@ jobs:
   backend-tests:
     name: Backend tests
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('services/**/pyproject.toml', 'services/**/requirements.txt') != '' }}
+    if: ${{ hashFiles('pyproject.toml', 'requirements-dev.txt', 'services/**/pyproject.toml', 'services/**/requirements.txt') != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Run backend tests if configured
-        run: |
-          if [ -f "Makefile" ]; then
-            make test-backend || make test || true
-          else
-            echo "No Makefile yet. Add test command when backend exists."
-          fi
+      - name: Install backend dependencies
+        run: make setup
+      - name: Run backend tests
+        run: make test
+      - name: Run lint
+        run: make lint
+      - name: Run type/syntax checks
+        run: make typecheck
 
   frontend-tests:
     name: Frontend tests

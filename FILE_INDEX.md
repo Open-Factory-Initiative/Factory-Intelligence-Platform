@@ -9,6 +9,7 @@ https://github.com/Open-Factory-Initiative/Factory-Intelligence-Platform
 ## Root Files
 
 - `README.md` — project overview and architecture summary
+- `requirements-dev.txt` — Python development dependency list for the MVP skeleton
 - `AGENTS.md` — Codex repository instructions
 - `PLANS.md` — execution plan template for Codex
 - `CODE_REVIEW.md` — review rubric
@@ -72,3 +73,14 @@ https://github.com/Open-Factory-Initiative/Factory-Intelligence-Platform
 - `.github/workflows/ci.yml`
 - `.github/CODEOWNERS`
 - `.github/dependabot.yml`
+
+## MVP Skeleton Code
+
+- `packages/factory-events/` — shared factory event schemas and contract tests
+- `packages/test-fixtures/` — valid, invalid, and drift scenario fixtures
+- `services/simulator/` — deterministic simulator scenario generator
+- `services/ingestion/` — event validation, dead-letter handling, and storage schema
+- `services/process-sentinel/` — drift rules, evidence, recommendations, and state store
+- `services/api/` — FastAPI API over MVP state
+- `apps/web/` — placeholder for the future web workbench
+- `infra/docker/` — local PostgreSQL Docker Compose config
