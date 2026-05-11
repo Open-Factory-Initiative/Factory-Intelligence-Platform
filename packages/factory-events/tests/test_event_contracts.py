@@ -61,4 +61,3 @@ def test_timestamp_must_be_utc() -> None:
 
     with pytest.raises(ValidationError, match="UTC"):
         validate_event(event)
-

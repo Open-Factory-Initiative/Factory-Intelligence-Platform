@@ -33,4 +33,3 @@ def test_sudden_excursion_contains_known_out_of_spec_quality_result() -> None:
     ]
 
     assert "fail" in quality_results
-

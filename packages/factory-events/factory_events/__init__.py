@@ -29,4 +29,3 @@ __all__ = [
     "payload_model_for_event_type",
     "validate_event",
 ]
-

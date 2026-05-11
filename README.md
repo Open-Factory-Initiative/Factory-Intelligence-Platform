@@ -169,6 +169,9 @@ Then open:
 http://127.0.0.1:8000/docs
 ```
 
+Use `make api-reload` instead of `make api` when you want Uvicorn to watch files
+and restart automatically during local development.
+
 ## Working With Codex
 
 Start here:

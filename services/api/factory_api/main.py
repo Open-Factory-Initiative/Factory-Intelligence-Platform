@@ -4,13 +4,16 @@ import os
 from pathlib import Path
 
 from factory_ingestion.storage import JsonlEventStore
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from process_sentinel.storage import SentinelStateStore
 from pydantic import BaseModel, Field
 
 
-class ErrorResponse(BaseModel):
-    error: dict
+class ApiNotFoundError(Exception):
+    def __init__(self, code: str, message: str) -> None:
+        self.code = code
+        self.message = message
 
 
 class RecommendationDecisionRequest(BaseModel):
@@ -35,6 +38,13 @@ def create_app(
         version="0.1.0",
         description="Simulator-backed Process Sentinel MVP API.",
     )
+
+    @app.exception_handler(ApiNotFoundError)
+    def not_found_handler(_request: object, exc: ApiNotFoundError) -> JSONResponse:
+        return JSONResponse(
+            status_code=404,
+            content={"error": {"code": exc.code, "message": exc.message}},
+        )
 
     def event_store() -> JsonlEventStore:
         return JsonlEventStore(resolved_events_store)
@@ -81,8 +91,7 @@ def create_app(
         if sentinel_store().get_detection(detection_id) is None:
             raise_not_found("detection_not_found", f"Detection not found: {detection_id}")
         return [
-            item.model_dump(mode="json")
-            for item in sentinel_store().list_evidence(detection_id)
+            item.model_dump(mode="json") for item in sentinel_store().list_evidence(detection_id)
         ]
 
     @app.get("/recommendations")
@@ -143,7 +152,7 @@ def create_app(
 
 
 def raise_not_found(code: str, message: str) -> None:
-    raise HTTPException(status_code=404, detail={"error": {"code": code, "message": message}})
+    raise ApiNotFoundError(code, message)
 
 
 app = create_app()

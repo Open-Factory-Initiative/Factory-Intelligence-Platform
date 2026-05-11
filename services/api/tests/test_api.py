@@ -47,6 +47,23 @@ def test_event_and_detection_query_endpoints(tmp_path: Path) -> None:
     assert detections_response.json()[0]["status"] == "recommendation_created"
 
 
+def test_missing_event_uses_documented_error_shape(tmp_path: Path) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    response = client.get("/events/does-not-exist")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {
+            "code": "event_not_found",
+            "message": "Event not found: does-not-exist",
+        }
+    }
+
+
 def test_recommendation_approval_creates_decision_and_updates_status(tmp_path: Path) -> None:
     events_store_path, state_dir = seed_state(tmp_path)
     client = TestClient(
@@ -77,4 +94,3 @@ def test_rca_capa_draft_uses_detection_evidence_and_recommendation(tmp_path: Pat
     assert response.status_code == 200
     assert response.json()["detection_id"] == detection["detection_id"]
     assert response.json()["evidence_summary"]
-

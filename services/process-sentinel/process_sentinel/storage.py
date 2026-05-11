@@ -157,6 +157,5 @@ class SentinelStateStore:
         if not path.exists():
             return []
         return [
-            model_type.model_validate(item)
-            for item in json.loads(path.read_text(encoding="utf-8"))
+            model_type.model_validate(item) for item in json.loads(path.read_text(encoding="utf-8"))
         ]

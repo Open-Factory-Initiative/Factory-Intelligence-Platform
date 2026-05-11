@@ -68,6 +68,10 @@ make api
 This generates simulator events, validates and stores them in `.local/`, runs
 Process Sentinel, and starts the FastAPI API.
 
+Use `make api-reload` when you want the FastAPI process to restart after file
+changes. The default `make api` command avoids file watching so it is more
+reliable in constrained agent and CI environments.
+
 To start the local PostgreSQL service for durable storage work:
 
 ```bash
