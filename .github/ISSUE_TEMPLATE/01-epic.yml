@@ -1,0 +1,164 @@
+name: Epic
+description: Large outcome or major platform capability
+title: "Epic: "
+labels:
+  - type: epic
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for large bodies of work that will be broken into feature and task issues.
+
+        Epics should describe an outcome, not a vague idea.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Epic Summary
+      description: What major outcome should this epic deliver?
+      placeholder: >
+        Build the synthetic factory simulator so contributors can generate
+        realistic process and quality event streams for MVP development.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why This Matters
+      description: Why is this important for the Factory Intelligence Platform?
+      placeholder: >
+        This enables Process Sentinel, ingestion, evidence timelines, and
+        governed workflows to be tested without access to a real plant system.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: workstream
+    attributes:
+      label: Workstream
+      description: Which area of the platform does this epic belong to?
+      options:
+        - Platform Foundation
+        - Synthetic Factory Simulator
+        - Factory Event Model / UNS
+        - Ingestion & Connectors
+        - Operational Store
+        - Process Sentinel
+        - Evidence Timeline
+        - Governed Actions
+        - Operations Workbench
+        - RCA/CAPA & Factory Memory
+        - Validation & Compliance
+        - Docs & Community
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mvp_phase
+    attributes:
+      label: MVP Phase
+      description: Which roadmap phase does this epic support?
+      options:
+        - MVP-0 Foundation
+        - MVP-1 Simulator Flow
+        - MVP-2 Process Sentinel
+        - MVP-3 Workbench
+        - MVP-4 Governance
+        - Post-MVP
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 Critical
+        - P1 High
+        - P2 Medium
+        - P3 Low
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included in this epic?
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of Scope
+      description: What should not be included in this epic?
+      value: |
+        - 
+        - 
+    validations:
+      required: false
+
+  - type: textarea
+    id: child_issues
+    attributes:
+      label: Proposed Child Issues
+      description: List the feature/task issues that should exist under this epic.
+      value: |
+        - [ ] Feature: 
+        - [ ] Feature: 
+        - [ ] Task: 
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know this epic is complete?
+      value: |
+        - [ ] The core workflow works locally
+        - [ ] Tests are included
+        - [ ] Documentation is updated
+        - [ ] Any architectural decision is documented
+        - [ ] Follow-up issues are created for deferred work
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical_notes
+    attributes:
+      label: Technical Notes
+      description: Mention likely modules, services, architecture constraints, or dependencies.
+      placeholder: >
+        Example: This likely touches packages/factory-events, services/simulator,
+        services/ingestion, and docs/DATA_CONTRACTS.md.
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / Blockers
+      description: List any issues, decisions, or external work this epic depends on.
+      value: |
+        - 
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: definition_of_done
+    attributes:
+      label: Definition of Done
+      options:
+        - label: Child issues have been created or linked
+        - label: Code changes are merged, if applicable
+        - label: Tests are passing
+        - label: Documentation is updated
+        - label: Linked PRs are closed
+        - label: Deferred work is captured in follow-up issues

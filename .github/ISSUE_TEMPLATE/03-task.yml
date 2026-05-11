@@ -1,0 +1,149 @@
+name: Task
+description: Small implementation, documentation, testing, or maintenance item
+title: "Task: "
+labels:
+  - type: task
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for small, concrete work items.
+
+        A good task should be specific enough for a contributor or Codex to complete in one focused PR.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Task Summary
+      description: What needs to be done?
+      placeholder: >
+        Add contract tests that verify valid FactoryEvent payloads are accepted
+        and invalid payloads are rejected with useful errors.
+    validations:
+      required: true
+
+  - type: input
+    id: parent
+    attributes:
+      label: Parent Epic or Feature
+      description: Link the parent issue.
+      placeholder: "#8 or #23"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: Task Type
+      options:
+        - Code
+        - Test
+        - Documentation
+        - Refactor
+        - DevOps / CI
+        - Design
+        - Research
+        - Validation
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module / Area
+      options:
+        - simulator
+        - ingestion
+        - factory-events
+        - process-sentinel
+        - api
+        - web
+        - infra
+        - docs
+        - validation
+        - unknown
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0 Critical
+        - P1 High
+        - P2 Medium
+        - P3 Low
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Add implementation details, context, or constraints.
+      placeholder: >
+        Tests should cover valid process signal events, missing required fields,
+        invalid timestamps, and unknown event types.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Suggested Steps
+      description: Optional step-by-step implementation outline.
+      value: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_plan
+    attributes:
+      label: Test Plan
+      value: |
+        - [ ] Tests added or updated
+        - [ ] Existing tests still pass
+        - [ ] Manual verification completed, if applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: docs
+    attributes:
+      label: Documentation Impact
+      description: Note whether docs need to change.
+      value: |
+        - [ ] No documentation change needed
+        - [ ] Documentation update included
+        - [ ] Follow-up documentation issue created
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: definition_of_done
+    attributes:
+      label: Definition of Done
+      options:
+        - label: Work is implemented
+          required: true
+        - label: Tests are passing or intentionally not required
+          required: true
+        - label: Acceptance criteria are met
+          required: true
+        - label: PR links back to this issue
+          required: true
