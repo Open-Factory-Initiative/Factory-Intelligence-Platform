@@ -200,3 +200,62 @@ docker compose -f infra/docker/docker-compose.yml ps
 
 Use the development status file as the handoff point for the next milestone:
 shared event contract hardening before building more UI or storage behavior.
+
+## 2026-05-11 - First MVP domain model
+
+### What changed
+
+Added the first API-facing domain model for sites, areas, equipment, process
+signals, batches, quality results, deviations, alerts, and investigations. The
+API now exposes read-only demo records for those objects, including an
+investigation detail response that links process signals to a failed quality
+result and deviation.
+
+### Why it matters
+
+Process Sentinel needs manufacturing context before it can explain quality
+drift. This model gives future detection and UI work stable identifiers for the
+site, equipment, batch, process signals, quality outcome, deviation, alert, and
+investigation.
+
+### How it works
+
+`services/api/factory_api/domain.py` defines strict Pydantic models and
+deterministic demo data. `services/api/factory_api/main.py` serves that data
+through read-only endpoints. The investigation detail endpoint joins the demo
+investigation to its deviation, alert, quality result, and process signals so
+contributors can see the expected relationship shape without adding database
+storage yet.
+
+### How to run it
+
+```bash
+make api
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/investigations/inv_fill_weight_drift_1001
+```
+
+### How to test it
+
+```bash
+make test
+make lint
+make typecheck
+```
+
+### Key files
+
+- `services/api/factory_api/domain.py`
+- `services/api/factory_api/main.py`
+- `services/api/tests/test_domain.py`
+- `docs/DOMAIN_MODEL.md`
+
+### What to learn next
+
+Connect Process Sentinel detections to these domain identifiers so drift
+evidence can be shown beside the related batch, quality result, deviation, and
+investigation context.
