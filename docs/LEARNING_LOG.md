@@ -145,3 +145,58 @@ implemented.
 The next narrow implementation step should be the shared event contract
 milestone: tighten schema fixtures and contract documentation before adding more
 simulator or UI behavior.
+
+## 2026-05-11 - Local contributor readiness pass
+
+### What changed
+
+Updated the README with a clearer local setup path and added
+`DEVELOPMENT_STATUS.md` to show what works, what is incomplete, and which
+commands new contributors should run.
+
+### Why it matters
+
+New contributors need an honest path through the current skeleton. The project
+has runnable backend pieces, but the web workbench and e2e flow are not ready
+yet, so the docs should make that boundary explicit.
+
+### How it works
+
+The default development flow remains JSONL-backed: simulator output is written
+to `.local/`, ingestion validates it, Process Sentinel produces state files, and
+FastAPI reads those files for local API responses. Docker Compose is available
+for the PostgreSQL service, but it is not required for the default skeleton run.
+
+### How to run it
+
+```bash
+make setup
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+make api
+```
+
+### How to test it
+
+```bash
+make lint
+make typecheck
+make test
+make test-e2e
+make dev-db
+docker compose -f infra/docker/docker-compose.yml config
+docker compose -f infra/docker/docker-compose.yml ps
+```
+
+### Key files
+
+- `README.md`
+- `DEVELOPMENT_STATUS.md`
+- `.env.example`
+- `infra/docker/docker-compose.yml`
+
+### What to learn next
+
+Use the development status file as the handoff point for the next milestone:
+shared event contract hardening before building more UI or storage behavior.
