@@ -182,4 +182,3 @@ def _quality_event(
         ),
         metadata=EventMetadata(simulated=True, trace_id=trace_id),
     )
-

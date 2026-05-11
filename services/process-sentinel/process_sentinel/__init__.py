@@ -10,4 +10,3 @@ __all__ = [
     "SentinelStateStore",
     "run_sentinel",
 ]
-

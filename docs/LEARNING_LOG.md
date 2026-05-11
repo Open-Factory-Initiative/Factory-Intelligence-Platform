@@ -77,3 +77,126 @@ make typecheck
 
 Build the first web workbench screen over the real API state, then add a
 Playwright e2e test for the simulator-to-approval workflow.
+
+## 2026-05-09 - Post-implementation skeleton audit
+
+### What changed
+
+Reviewed the initial repository foundation against the architecture, MVP scope,
+testing, learning-mode, README, planning, and code-review docs. Applied small
+reliability fixes only: formatted the Python code, made the API not-found
+response match the documented `{"error": ...}` envelope, added a regression test
+for that contract, and split the FastAPI startup commands into `make api` and
+`make api-reload`.
+
+### Why it matters
+
+The first skeleton is the base that later milestones build on. Keeping setup,
+tests, and API contracts reliable now prevents contributors from learning the
+wrong workflow or depending on accidental response shapes.
+
+### How it works
+
+The current platform skeleton still follows the simulator-backed path. The
+simulator writes normalized event JSONL, ingestion validates those events through
+`packages/factory-events` and stores accepted records, Process Sentinel reads the
+stored events to create detections, evidence, and recommendations, and FastAPI
+serves that state. Human review endpoints update recommendation state and append
+approval/audit records; they do not perform industrial writeback.
+
+### How to run it
+
+```bash
+make setup
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+make api
+```
+
+Use `make api-reload` when local file watching is useful during development.
+
+### How to test it
+
+```bash
+.venv/bin/python -m ruff format --check packages services
+make lint
+make typecheck
+make test
+make test-unit
+make test-integration
+make test-contract
+make test-e2e
+```
+
+`make test-e2e` is still an intentional placeholder until the web workbench is
+implemented.
+
+### Key files
+
+- `Makefile`
+- `README.md`
+- `docs/DEVELOPMENT.md`
+- `services/api/factory_api/main.py`
+- `services/api/tests/test_api.py`
+
+### What to learn next
+
+The next narrow implementation step should be the shared event contract
+milestone: tighten schema fixtures and contract documentation before adding more
+simulator or UI behavior.
+
+## 2026-05-11 - Local contributor readiness pass
+
+### What changed
+
+Updated the README with a clearer local setup path and added
+`DEVELOPMENT_STATUS.md` to show what works, what is incomplete, and which
+commands new contributors should run.
+
+### Why it matters
+
+New contributors need an honest path through the current skeleton. The project
+has runnable backend pieces, but the web workbench and e2e flow are not ready
+yet, so the docs should make that boundary explicit.
+
+### How it works
+
+The default development flow remains JSONL-backed: simulator output is written
+to `.local/`, ingestion validates it, Process Sentinel produces state files, and
+FastAPI reads those files for local API responses. Docker Compose is available
+for the PostgreSQL service, but it is not required for the default skeleton run.
+
+### How to run it
+
+```bash
+make setup
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+make api
+```
+
+### How to test it
+
+```bash
+make lint
+make typecheck
+make test
+make test-e2e
+make dev-db
+docker compose -f infra/docker/docker-compose.yml config
+docker compose -f infra/docker/docker-compose.yml ps
+```
+
+### Key files
+
+- `README.md`
+- `DEVELOPMENT_STATUS.md`
+- `.env.example`
+- `infra/docker/docker-compose.yml`
+
+### What to learn next
+
+Use the development status file as the handoff point for the next milestone:
+shared event contract hardening before building more UI or storage behavior.

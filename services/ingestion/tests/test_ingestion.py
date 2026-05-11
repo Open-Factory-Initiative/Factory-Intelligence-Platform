@@ -41,4 +41,3 @@ def test_ingestion_rejects_invalid_event_and_keeps_processing(tmp_path: Path) ->
     assert result.rejected_count == 1
     assert len(store.list_events()) == 1
     assert "unsupported event_type" in dead_letter_path.read_text()
-

@@ -63,4 +63,3 @@ class PostgresEventStore:
                         json.dumps(event.model_dump(mode="json")),
                     ),
                 )
-

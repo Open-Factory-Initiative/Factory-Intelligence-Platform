@@ -86,4 +86,3 @@ class RcaCapaDraft(StrictModel):
     evidence_summary: list[str]
     recommended_containment: str
     capa_placeholder: str
-

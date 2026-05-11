@@ -153,10 +153,32 @@ The default developer loop uses JSONL files under `.local/` so contributors can
 run tests without a database. PostgreSQL is included for the durable storage path
 and initialized with the MVP schema.
 
-Quick path:
+## Local Setup
+
+Prerequisites:
+
+- Python 3.12+
+- Make
+- Docker Desktop or another Docker Compose-compatible runtime
+
+Install the Python development environment:
 
 ```bash
 make setup
+```
+
+Optional: create a local environment file from the checked-in template:
+
+```bash
+cp .env.example .env
+```
+
+The current backend skeleton does not require `.env` for the default JSONL path;
+the template documents the local paths and future PostgreSQL configuration.
+
+Run the simulator-backed Process Sentinel flow:
+
+```bash
 make simulate SCENARIO=gradual_drift
 make ingest INPUT=.local/events/gradual_drift.jsonl
 make sentinel-run
@@ -168,6 +190,33 @@ Then open:
 ```text
 http://127.0.0.1:8000/docs
 ```
+
+Use `make api-reload` instead of `make api` when you want Uvicorn to watch files
+and restart automatically during local development.
+
+To start the optional local PostgreSQL service:
+
+```bash
+make dev-db
+```
+
+The default MVP commands still use JSONL storage under `.local/`; PostgreSQL is
+present so durable storage work can evolve without changing the repo structure.
+
+Run validation commands before opening a pull request:
+
+```bash
+make lint
+make typecheck
+make test
+make test-unit
+make test-integration
+make test-contract
+make test-e2e
+```
+
+`make test-e2e` is currently a placeholder because `apps/web` does not yet
+contain the Next.js workbench.
 
 ## Working With Codex
 

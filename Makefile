@@ -9,7 +9,7 @@ SENTINEL_STATE_DIR ?= .local/storage/sentinel
 PYTHONPATH := packages/factory-events:services/simulator:services/ingestion:services/process-sentinel:services/api
 export PYTHONPATH
 
-.PHONY: help setup dev dev-db simulate ingest sentinel-run api test test-unit test-integration test-contract test-e2e lint typecheck docs
+.PHONY: help setup dev dev-db simulate ingest sentinel-run api api-reload test test-unit test-integration test-contract test-e2e lint typecheck docs
 
 help:
 	@echo "Factory Intelligence Platform"
@@ -21,6 +21,7 @@ help:
 	@echo "  make ingest             Validate and ingest simulator events"
 	@echo "  make sentinel-run       Run Process Sentinel over ingested events"
 	@echo "  make api                Start FastAPI API"
+	@echo "  make api-reload         Start FastAPI API with auto-reload"
 	@echo "  make test               Run all configured tests"
 	@echo "  make test-unit          Run unit tests"
 	@echo "  make test-integration   Run integration tests"
@@ -56,6 +57,9 @@ sentinel-run:
 	$(PYTHON) -m process_sentinel.cli --events-store $(EVENTS_STORE) --state-dir $(SENTINEL_STATE_DIR)
 
 api:
+	FACTORY_EVENTS_STORE=$(EVENTS_STORE) SENTINEL_STATE_DIR=$(SENTINEL_STATE_DIR) $(VENV)/bin/uvicorn factory_api.main:app --app-dir services/api
+
+api-reload:
 	FACTORY_EVENTS_STORE=$(EVENTS_STORE) SENTINEL_STATE_DIR=$(SENTINEL_STATE_DIR) $(VENV)/bin/uvicorn factory_api.main:app --reload --app-dir services/api
 
 test:
