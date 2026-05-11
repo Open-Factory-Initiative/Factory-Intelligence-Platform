@@ -47,6 +47,32 @@ def test_event_and_detection_query_endpoints(tmp_path: Path) -> None:
     assert detections_response.json()[0]["status"] == "recommendation_created"
 
 
+def test_domain_model_query_endpoints(tmp_path: Path) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    site_response = client.get("/sites/site_demo")
+    signal_response = client.get("/process-signals/fill_weight")
+    quality_response = client.get("/quality-results?batch_id=batch_demo_1001")
+    investigation_response = client.get("/investigations/inv_fill_weight_drift_1001")
+
+    assert site_response.status_code == 200
+    assert site_response.json()["name"] == "Demo Manufacturing Site"
+    assert signal_response.status_code == 200
+    assert signal_response.json()["equipment_id"] == "eq_filler_1"
+    assert quality_response.status_code == 200
+    assert quality_response.json()[0]["related_signal_ids"] == [
+        "fill_weight",
+        "filler_nozzle_pressure",
+    ]
+    assert investigation_response.status_code == 200
+    assert investigation_response.json()["deviation"]["deviation_id"] == (
+        "dev_fill_weight_drift_1001"
+    )
+
+
 def test_missing_event_uses_documented_error_shape(tmp_path: Path) -> None:
     events_store_path, state_dir = seed_state(tmp_path)
     client = TestClient(
@@ -60,6 +86,23 @@ def test_missing_event_uses_documented_error_shape(tmp_path: Path) -> None:
         "error": {
             "code": "event_not_found",
             "message": "Event not found: does-not-exist",
+        }
+    }
+
+
+def test_missing_domain_object_uses_documented_error_shape(tmp_path: Path) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    response = client.get("/equipment/does-not-exist")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {
+            "code": "equipment_not_found",
+            "message": "Equipment not found: does-not-exist",
         }
     }
 

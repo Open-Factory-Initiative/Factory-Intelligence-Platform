@@ -2,9 +2,19 @@
 
 ## Overview
 
-The domain model describes the core manufacturing concepts used by the Factory Intelligence Platform.
+The first MVP domain model describes the minimum manufacturing context needed
+for a future Process Sentinel quality drift agent. It is intentionally small:
+one site, one area, a few equipment records, process signals, a batch, quality
+results, a deviation, an alert, and an investigation.
 
-The MVP should use a small but realistic domain model. Avoid modeling every possible manufacturing concept at the beginning.
+The current implementation lives in:
+
+```text
+services/api/factory_api/domain.py
+```
+
+The API exposes deterministic demo data so contributors can build UI and
+Process Sentinel workflows without connecting to real plant systems.
 
 ## Entities
 
@@ -21,7 +31,7 @@ Fields:
 
 ### Area
 
-A functional area within a site.
+A functional area inside a site.
 
 Fields:
 
@@ -30,257 +40,206 @@ Fields:
 - `name`
 - `description`
 
-### Line
+### Equipment
 
-A production line within an area.
+A physical machine, cell, or process unit.
 
 Fields:
 
-- `line_id`
+- `equipment_id`
 - `area_id`
 - `name`
-- `description`
-
-### Asset
-
-A physical machine, cell, process unit, or equipment item.
-
-Fields:
-
-- `asset_id`
-- `line_id`
-- `name`
-- `asset_type`
+- `equipment_type`
 - `criticality`
 
-### Signal / Tag
+### ProcessSignal
 
-A named measurement emitted by an asset or process.
+A named measurement emitted by equipment or a process.
 
 Fields:
 
 - `signal_id`
-- `asset_id`
+- `equipment_id`
 - `name`
 - `unit`
-- `data_type`
 - `normal_min`
 - `normal_max`
 
-### Work Order
+### Batch
 
-A production order or batch execution context.
-
-Fields:
-
-- `work_order_id`
-- `product_id`
-- `line_id`
-- `status`
-- `planned_start`
-- `planned_end`
-- `actual_start`
-- `actual_end`
-
-### Product
-
-A manufactured product or SKU.
+A production batch or execution context.
 
 Fields:
 
-- `product_id`
-- `name`
-- `revision`
-- `quality_specs`
-
-### Material Lot
-
-A lot of input material used in production.
-
-Fields:
-
-- `material_lot_id`
-- `material_name`
-- `supplier`
-- `received_at`
-- `status`
-
-### Process Measurement
-
-A time-stamped process value.
-
-Fields:
-
-- `event_id`
-- `timestamp`
+- `batch_id`
 - `site_id`
-- `line_id`
-- `asset_id`
-- `signal_id`
-- `work_order_id`
-- `value`
-- `unit`
-- `quality`
-- `source`
+- `area_id`
+- `product_name`
+- `status`
+- `started_at`
+- `ended_at`
 
-### Quality Measurement
+### QualityResult
 
-A time-stamped quality result.
+A quality measurement for a batch. It links back to the process signals that
+may explain the result.
 
 Fields:
 
-- `event_id`
-- `timestamp`
-- `site_id`
-- `line_id`
-- `work_order_id`
-- `product_id`
+- `quality_result_id`
+- `batch_id`
 - `measurement_name`
 - `value`
 - `unit`
 - `spec_min`
 - `spec_max`
 - `result`
+- `related_signal_ids`
+- `recorded_at`
 
-### Detection
+### Deviation
 
-A platform-generated finding indicating drift, excursion, or risk.
+A quality or process exception requiring investigation.
 
 Fields:
 
-- `detection_id`
-- `detection_type`
+- `deviation_id`
+- `batch_id`
+- `quality_result_id`
+- `title`
 - `severity`
 - `status`
-- `created_at`
-- `time_window_start`
-- `time_window_end`
-- `summary`
-- `confidence`
-- `related_work_order_id`
-- `related_asset_ids`
+- `related_signal_ids`
+- `opened_at`
 
-### Evidence Item
+### Alert
 
-A specific piece of evidence supporting a detection.
+A platform-visible warning about an active condition. Alerts can point to a
+deviation once one has been opened.
 
 Fields:
 
-- `evidence_id`
-- `detection_id`
-- `evidence_type`
-- `timestamp`
+- `alert_id`
+- `deviation_id`
+- `batch_id`
+- `signal_id`
 - `title`
-- `description`
-- `source_event_ids`
-- `score`
-
-### Recommendation
-
-A proposed human-reviewed action.
-
-Fields:
-
-- `recommendation_id`
-- `detection_id`
+- `severity`
 - `status`
-- `recommended_action`
-- `rationale`
-- `risk_level`
-- `requires_approval`
-- `created_at`
+- `triggered_at`
 
-### Approval Decision
+### Investigation
 
-A human decision on a recommendation.
+A human investigation that groups the deviation, alerts, quality results, and
+process signals needed for review.
 
 Fields:
 
-- `approval_id`
-- `recommendation_id`
-- `reviewer`
-- `decision`
-- `reason`
-- `created_at`
-
-### Audit Event
-
-An immutable record of important platform activity.
-
-Fields:
-
-- `audit_event_id`
-- `timestamp`
-- `actor`
-- `action`
-- `entity_type`
-- `entity_id`
-- `details`
+- `investigation_id`
+- `deviation_id`
+- `title`
+- `status`
+- `owner`
+- `alert_ids`
+- `quality_result_ids`
+- `related_signal_ids`
+- `opened_at`
 
 ## Relationships
 
 ```mermaid
 erDiagram
     SITE ||--o{ AREA : contains
-    AREA ||--o{ LINE : contains
-    LINE ||--o{ ASSET : contains
-    ASSET ||--o{ SIGNAL : emits
-    SIGNAL ||--o{ PROCESS_MEASUREMENT : produces
-    WORK_ORDER ||--o{ PROCESS_MEASUREMENT : contextualizes
-    WORK_ORDER ||--o{ QUALITY_MEASUREMENT : produces
-    PRODUCT ||--o{ WORK_ORDER : manufactured_by
-    MATERIAL_LOT ||--o{ WORK_ORDER : consumed_by
-    DETECTION ||--o{ EVIDENCE_ITEM : supported_by
-    DETECTION ||--o{ RECOMMENDATION : creates
-    RECOMMENDATION ||--o{ APPROVAL_DECISION : reviewed_by
-    APPROVAL_DECISION ||--o{ AUDIT_EVENT : records
+    AREA ||--o{ EQUIPMENT : contains
+    EQUIPMENT ||--o{ PROCESS_SIGNAL : emits
+    SITE ||--o{ BATCH : runs
+    AREA ||--o{ BATCH : runs
+    BATCH ||--o{ QUALITY_RESULT : produces
+    PROCESS_SIGNAL ||--o{ QUALITY_RESULT : explains
+    QUALITY_RESULT ||--o{ DEVIATION : can_open
+    BATCH ||--o{ DEVIATION : contextualizes
+    PROCESS_SIGNAL ||--o{ ALERT : triggers
+    DEVIATION ||--o{ ALERT : groups
+    DEVIATION ||--o{ INVESTIGATION : requires
+    ALERT ||--o{ INVESTIGATION : supports
+    QUALITY_RESULT ||--o{ INVESTIGATION : supports
+    PROCESS_SIGNAL ||--o{ INVESTIGATION : supports
 ```
+
+## Demo Data
+
+The current demo context uses:
+
+- `site_demo`
+- `area_packaging`
+- `eq_filler_1`
+- `eq_checkweigher_1`
+- `fill_weight`
+- `filler_nozzle_pressure`
+- `batch_demo_1001`
+- `qr_fill_weight_1001`
+- `dev_fill_weight_drift_1001`
+- `alert_fill_weight_trend_1001`
+- `inv_fill_weight_drift_1001`
+
+This data intentionally mirrors the simulator-backed Process Sentinel scenario:
+fill weight trends upward, the related quality result fails the upper
+specification, a deviation is opened, and the investigation links the quality
+outcome back to the process signals.
+
+## API Access
+
+Read-only MVP endpoints expose list and detail access:
+
+```text
+GET /sites
+GET /sites/{site_id}
+GET /areas
+GET /areas/{area_id}
+GET /equipment
+GET /equipment/{equipment_id}
+GET /process-signals
+GET /process-signals/{signal_id}
+GET /batches
+GET /batches/{batch_id}
+GET /quality-results
+GET /quality-results/{quality_result_id}
+GET /deviations
+GET /deviations/{deviation_id}
+GET /alerts
+GET /alerts/{alert_id}
+GET /investigations
+GET /investigations/{investigation_id}
+```
+
+The investigation detail endpoint returns the investigation plus its linked
+deviation, alerts, quality results, and process signals. No write endpoints or
+industrial actions are added in this MVP model.
 
 ## Status Values
 
-### Work Order Status
+### Batch Status
 
 - `planned`
 - `running`
-- `paused`
 - `completed`
-- `cancelled`
+- `held`
+- `released`
 
-### Detection Status
+### Deviation Status
 
-- `new`
-- `investigating`
-- `recommendation_created`
+- `open`
+- `under_investigation`
+- `closed`
+
+### Alert Status
+
+- `active`
 - `acknowledged`
 - `closed`
-- `false_positive`
 
-### Recommendation Status
+### Investigation Status
 
-- `draft`
-- `proposed`
-- `needs_review`
-- `approved`
-- `rejected`
-- `deferred`
-- `executed`
+- `open`
+- `in_review`
 - `closed`
-
-### Approval Decision
-
-- `approved`
-- `rejected`
-- `deferred`
-- `needs_more_evidence`
-
-## Modeling Guidance
-
-Keep the model small until the MVP works.
-
-Do not add entities unless:
-
-- They are needed by the MVP workflow
-- They improve traceability
-- They are required for evidence
-- They are required for governance
-- They are required for tests

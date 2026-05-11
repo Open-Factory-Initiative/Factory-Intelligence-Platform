@@ -30,19 +30,35 @@ GET /events
 GET /events/{event_id}
 ```
 
-### Assets
+`POST /events` is part of the target API design. The current skeleton exposes
+read-only event queries over local JSONL storage.
+
+### Domain Context
 
 ```text
-GET /assets
-GET /assets/{asset_id}
+GET /sites
+GET /sites/{site_id}
+GET /areas
+GET /areas/{area_id}
+GET /equipment
+GET /equipment/{equipment_id}
+GET /process-signals
+GET /process-signals/{signal_id}
+GET /batches
+GET /batches/{batch_id}
+GET /quality-results
+GET /quality-results/{quality_result_id}
+GET /deviations
+GET /deviations/{deviation_id}
+GET /alerts
+GET /alerts/{alert_id}
+GET /investigations
+GET /investigations/{investigation_id}
 ```
 
-### Work Orders
-
-```text
-GET /work-orders
-GET /work-orders/{work_order_id}
-```
+The current domain endpoints are read-only and return simulator/demo context for
+the first Process Sentinel MVP. Investigation detail responses include linked
+deviation, alert, quality result, and process signal records.
 
 ### Process Sentinel
 
