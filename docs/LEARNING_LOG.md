@@ -259,3 +259,59 @@ make typecheck
 Connect Process Sentinel detections to these domain identifiers so drift
 evidence can be shown beside the related batch, quality result, deviation, and
 investigation context.
+
+## 2026-05-12 - Base FactoryEvent schema
+
+### What changed
+
+Added `FactoryEvent` as the named base event envelope in the shared
+`factory-events` package while keeping `EventEnvelope` available for existing
+service code. The event context now supports an optional `batch_id`, and a base
+event fixture demonstrates event identity, event type, UTC timestamp, source,
+line and asset context, optional batch/work order references, payload, and
+metadata.
+
+### Why it matters
+
+Simulator, ingestion, Process Sentinel, evidence, and API workflows need one
+shared event contract. A named base event model makes that contract explicit and
+keeps validation behavior centralized.
+
+### How it works
+
+`FactoryEvent` validates the common envelope, dispatches payload validation by
+`event_type`, rejects unsupported event types, requires UTC timestamps, and
+requires simulator events to be marked as simulated. Payload-specific models
+still validate process measurements, quality measurements, detections,
+recommendations, approvals, and audit events.
+
+### How to run it
+
+No developer workflow changed. The same simulator and ingestion commands use the
+shared event contract.
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+### How to test it
+
+```bash
+make test-contract
+make lint
+make typecheck
+make test
+```
+
+### Key files
+
+- `packages/factory-events/factory_events/models.py`
+- `packages/factory-events/tests/test_event_contracts.py`
+- `packages/test-fixtures/valid-events/base_factory_event.json`
+- `docs/DATA_CONTRACTS.md`
+
+### What to learn next
+
+Define the next event-specific contracts from epic #8, starting with process
+signal and quality event fixtures that build on this base envelope.

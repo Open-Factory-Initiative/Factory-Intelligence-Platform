@@ -27,6 +27,7 @@ class EventContext(StrictModel):
     area_id: str = Field(min_length=1)
     line_id: str = Field(min_length=1)
     asset_id: str | None = None
+    batch_id: str | None = None
     work_order_id: str | None = None
 
 
@@ -127,7 +128,7 @@ EVENT_PAYLOAD_MODELS: dict[str, type[Payload]] = {
 }
 
 
-class EventEnvelope(StrictModel):
+class FactoryEvent(StrictModel):
     event_id: str = Field(min_length=1)
     event_type: str = Field(min_length=1)
     schema_version: str
@@ -156,7 +157,7 @@ class EventEnvelope(StrictModel):
         return data
 
     @model_validator(mode="after")
-    def validate_envelope_rules(self) -> EventEnvelope:
+    def validate_envelope_rules(self) -> FactoryEvent:
         if self.schema_version != SUPPORTED_SCHEMA_VERSION:
             msg = f"schema_version must be {SUPPORTED_SCHEMA_VERSION}"
             raise ValueError(msg)
@@ -164,6 +165,10 @@ class EventEnvelope(StrictModel):
             msg = "simulator events must include metadata.simulated = true"
             raise ValueError(msg)
         return self
+
+
+class EventEnvelope(FactoryEvent):
+    """Backward-compatible name for the base FactoryEvent envelope."""
 
 
 def require_utc_datetime(value: datetime) -> datetime:
@@ -181,8 +186,8 @@ def payload_model_for_event_type(event_type: str) -> type[Payload]:
         raise UnsupportedEventTypeError(msg) from exc
 
 
-def validate_event(data: dict[str, Any]) -> EventEnvelope:
+def validate_event(data: dict[str, Any]) -> FactoryEvent:
     event_type = data.get("event_type")
     if isinstance(event_type, str):
         payload_model_for_event_type(event_type)
-    return EventEnvelope.model_validate(data)
+    return FactoryEvent.model_validate(data)
