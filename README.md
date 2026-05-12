@@ -237,6 +237,12 @@ Read AGENTS.md, PLANS.md, CODE_REVIEW.md, docs/START_HERE_FOR_CODEX.md, docs/ARC
 Do not write code yet. Inspect the repository and propose an execution plan for creating the initial Factory Intelligence Platform MVP skeleton. Include repo structure, first services, test strategy, and documentation updates. Ask me only for blockers that cannot be resolved from the docs.
 ```
 
+## Contributing
+
+New contributors should start with [CONTRIBUTING.md](./CONTRIBUTING.md). It
+explains the project mission, local setup, issue workflow, branch naming, pull
+request expectations, test commands, and how to find beginner-friendly work.
+
 ## License
 
 This project uses the repository license in `LICENSE`.
