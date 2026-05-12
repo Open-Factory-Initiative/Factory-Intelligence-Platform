@@ -1,3 +1,10 @@
+## Linked Issue
+
+Closes #<!-- issue-number -->
+
+If this PR should not close an issue automatically, explain why and link the
+related issue instead.
+
 ## Summary
 
 What changed?
@@ -27,6 +34,11 @@ Commands run:
 - [ ] Testing docs updated if needed
 - [ ] Data contracts updated if needed
 - [ ] Learning log updated if needed
+
+## Reviewer Notes
+
+What should reviewers focus on? Note any tradeoffs, known limitations, or
+follow-up work.
 
 ## Safety / Governance
 
