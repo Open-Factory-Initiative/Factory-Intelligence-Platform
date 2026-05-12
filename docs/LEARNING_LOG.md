@@ -442,3 +442,53 @@ sed -n '1,220p' docs/decisions/README.md
 
 Use the ADR process for the next durable platform choice, such as storage
 strategy, connector architecture, or governed action lifecycle details.
+
+## 2026-05-12 - Contributor onboarding guide
+
+### What changed
+
+Expanded the contributor guide with the project mission, current repository
+shape, issue types, beginner-friendly work guidance, local setup commands,
+branch naming, pull request expectations, testing commands, and support paths.
+Added a README link that points new contributors to the guide.
+
+### Why it matters
+
+New contributors need one practical entry point before they can make safe,
+focused changes. The guide keeps project onboarding aligned with the current
+simulator-backed Process Sentinel skeleton and the repository's review
+expectations.
+
+### How it works
+
+`CONTRIBUTING.md` now walks contributors from project orientation through local
+setup, validation, branch creation, and pull request submission. It also points
+architecture decisions to the ADR process and routes questions through GitHub
+Issues or Discussions.
+
+### How to run it
+
+No runtime command is needed for this documentation-only change.
+
+### How to test it
+
+Review the Markdown and verify the documented commands still match the repo:
+
+```bash
+make lint
+make typecheck
+make test
+make test-e2e
+make docs
+```
+
+### Key files
+
+- `CONTRIBUTING.md`
+- `README.md`
+- `docs/LEARNING_LOG.md`
+
+### What to learn next
+
+Use early contributor feedback to refine issue labels, issue templates, and the
+good-first-issue path as the project attracts external contributors.
