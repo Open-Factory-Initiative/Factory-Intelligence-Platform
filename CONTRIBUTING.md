@@ -72,6 +72,10 @@ cd Factory-Intelligence-Platform
 make setup
 ```
 
+`make setup` creates a repo-local `.venv` and installs development dependencies
+from `requirements-dev.txt`. The first run needs network access to PyPI unless
+the packages are already available in your local pip cache.
+
 Optional: create a local environment file from the checked-in template:
 
 ```bash
@@ -132,7 +136,7 @@ Create a branch from `main` and keep the branch name tied to the issue:
 ```bash
 git switch main
 git pull
-git switch -c task/issue-21-contributor-onboarding
+git switch -c task/issue-number-short-name
 ```
 
 Use these prefixes:
