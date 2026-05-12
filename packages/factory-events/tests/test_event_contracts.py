@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
-from factory_events import UnsupportedEventTypeError, validate_event
+from factory_events import FactoryEvent, UnsupportedEventTypeError, validate_event
 from pydantic import ValidationError
 
 FIXTURES = Path(__file__).resolve().parents[2] / "test-fixtures"
@@ -24,6 +24,20 @@ def test_valid_process_measurement_event_contract() -> None:
     assert validated.metadata.simulated is True
 
 
+def test_base_factory_event_contract_supports_batch_and_work_order_refs() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "base_factory_event.json")
+
+    validated = FactoryEvent.model_validate(event)
+
+    assert validated.event_id == "evt_base_000001"
+    assert validated.source.system == "factory-simulator"
+    assert validated.context.line_id == "line_1"
+    assert validated.context.asset_id == "asset_filler_1"
+    assert validated.context.batch_id == "batch_demo_1001"
+    assert validated.context.work_order_id == "wo_1001"
+    assert validated.payload.signal_id == "fill_weight"
+
+
 def test_valid_quality_measurement_event_contract() -> None:
     event = load_fixture(FIXTURES / "valid-events" / "quality_measurement_recorded.json")
 
@@ -37,6 +51,22 @@ def test_missing_required_field_is_rejected() -> None:
     event = load_fixture(FIXTURES / "invalid-events" / "missing_event_id.json")
 
     with pytest.raises(ValidationError):
+        validate_event(event)
+
+
+def test_missing_required_metadata_field_is_rejected() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "base_factory_event.json")
+    del event["metadata"]["trace_id"]
+
+    with pytest.raises(ValidationError, match="trace_id"):
+        validate_event(event)
+
+
+def test_invalid_payload_reports_payload_validation_error() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "base_factory_event.json")
+    del event["payload"]["signal_id"]
+
+    with pytest.raises(ValidationError, match="signal_id"):
         validate_event(event)
 
 

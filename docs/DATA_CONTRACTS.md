@@ -14,6 +14,9 @@ The MVP skeleton implements the first contracts in:
 packages/factory-events/factory_events/models.py
 ```
 
+The base event model is `FactoryEvent`. `EventEnvelope` remains available as a
+backward-compatible name for existing simulator, ingestion, and API code.
+
 Contract fixtures live in:
 
 ```text
@@ -28,11 +31,12 @@ Run contract tests with:
 make test-contract
 ```
 
-The implementation currently validates the common envelope, UTC timestamps,
-schema version `1.0.0`, simulator metadata, supported event types, and payload
-shape. Unknown event types are rejected by ingestion.
+The implementation currently validates the common envelope, event identity,
+UTC timestamps, schema version `1.0.0`, source system metadata, line and asset
+context, optional batch and work order references, supported event types, and
+payload shape. Unknown event types are rejected by ingestion.
 
-## Event Envelope
+## Base FactoryEvent Envelope
 
 Every platform event should use a common envelope.
 
@@ -52,9 +56,16 @@ Every platform event should use a common envelope.
     "area_id": "area_packaging",
     "line_id": "line_1",
     "asset_id": "asset_filler_1",
+    "batch_id": "batch_demo_1001",
     "work_order_id": "wo_1001"
   },
-  "payload": {},
+  "payload": {
+    "signal_id": "fill_weight",
+    "signal_name": "Fill Weight",
+    "value": 501.2,
+    "unit": "g",
+    "quality": "good"
+  },
   "metadata": {
     "simulated": true,
     "trace_id": "trace_000001"
@@ -62,7 +73,39 @@ Every platform event should use a common envelope.
 }
 ```
 
+The checked-in example lives at:
+
+```text
+packages/test-fixtures/valid-events/base_factory_event.json
+```
+
+### Envelope Fields
+
+- `event_id`: stable event identity.
+- `event_type`: constrained to the currently supported MVP event types.
+- `schema_version`: currently `1.0.0`.
+- `timestamp`: timezone-aware UTC timestamp.
+- `source.system`: source system name, such as `factory-simulator`.
+- `source.adapter`: adapter that produced the event, such as `simulator`.
+- `source.source_event_id`: original source-side event identity.
+- `context.site_id`, `context.area_id`, `context.line_id`: required location and line context.
+- `context.asset_id`: optional equipment or asset context.
+- `context.batch_id`: optional batch reference.
+- `context.work_order_id`: optional work order reference.
+- `payload`: event-type-specific payload validated by the shared contract package.
+- `metadata.simulated`: marks simulator/demo events.
+- `metadata.trace_id`: trace identity for correlating processing and evidence.
+
 ## Event Types
+
+Supported MVP event types are:
+
+- `process.measurement.recorded`
+- `quality.measurement.recorded`
+- `sentinel.detection.created`
+- `governance.recommendation.proposed`
+- `governance.approval.recorded`
+- `governance.audit.recorded`
 
 ### Process Measurement Recorded
 
@@ -150,6 +193,8 @@ Every platform event should use a common envelope.
 - Every event must have `schema_version`.
 - Every event must have an ISO-8601 UTC timestamp.
 - Every event must include `source`.
+- Every event must include required line context.
+- `batch_id` and `work_order_id` are optional context references.
 - Simulator events must include `metadata.simulated = true`.
 - Payloads must be validated.
 - Unknown event types must be rejected or sent to a dead-letter path.
