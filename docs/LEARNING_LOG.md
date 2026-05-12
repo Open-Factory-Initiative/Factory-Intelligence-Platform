@@ -346,6 +346,41 @@ when a contributor opens a pull request.
 Open a draft pull request and confirm the template appears. For local validation
 of this documentation-only change, run:
 
+## 2026-05-12 - Baseline CI workflow hardening
+
+### What changed
+
+Updated the GitHub Actions CI workflow to use stable checkout, Python, and Node
+actions, install backend dependencies with `make setup`, and run `make lint`,
+`make typecheck`, and `make test` as explicit named steps. Updated the
+contributor guide with the same local validation commands.
+
+### Why it matters
+
+The project foundation needs CI that mirrors contributor workflows. Clear step
+names make failures easier to understand, and reusing Makefile commands keeps
+local and pull-request validation aligned.
+
+### How it works
+
+CI runs on pull requests and pushes to `main`. The backend job sets up Python,
+installs dependencies, then runs linting, type/syntax checks, and tests through
+the Makefile. The frontend job remains conditional until a frontend package
+exists.
+
+### How to run it
+
+CI runs automatically on GitHub. Locally, run:
+
+```bash
+make setup
+make lint
+make typecheck
+make test
+```
+
+### How to test it
+
 ```bash
 make lint
 make typecheck
@@ -355,9 +390,11 @@ make test
 ### Key files
 
 - `.github/pull_request_template.md`
+- `.github/workflows/ci.yml`
 - `CONTRIBUTING.md`
 
 ### What to learn next
 
 Keep refining contributor workflow docs as the project adds more active checks
-and review expectations.
+and review expectations. Once the web workbench exists, replace the placeholder e2e command with real
+Playwright coverage and add that check to CI.
