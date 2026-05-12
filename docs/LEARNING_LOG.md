@@ -398,3 +398,47 @@ make test
 Keep refining contributor workflow docs as the project adds more active checks
 and review expectations. Once the web workbench exists, replace the placeholder e2e command with real
 Playwright coverage and add that check to CI.
+
+## 2026-05-12 - ADR template and process
+
+### What changed
+
+Added a reusable Architecture Decision Record template and a decisions README
+that explains when contributors should create an ADR.
+
+### Why it matters
+
+The project is starting to make durable architecture choices around event
+models, storage, connectors, governed actions, and validation. Recording those
+decisions keeps future work aligned with the reasoning behind the platform.
+
+### How it works
+
+Contributors copy `docs/decisions/ADR_TEMPLATE.md` to the next numbered ADR
+file, fill in the required decision sections, and submit it with the pull
+request that introduces or depends on the decision. Superseded decisions stay in
+place and point to the newer ADR.
+
+### How to run it
+
+No runtime command is needed for this documentation-only change.
+
+### How to test it
+
+Review the Markdown headings and links in GitHub or locally:
+
+```bash
+sed -n '1,220p' docs/decisions/ADR_TEMPLATE.md
+sed -n '1,220p' docs/decisions/README.md
+```
+
+### Key files
+
+- `docs/decisions/ADR_TEMPLATE.md`
+- `docs/decisions/README.md`
+- `docs/LEARNING_LOG.md`
+
+### What to learn next
+
+Use the ADR process for the next durable platform choice, such as storage
+strategy, connector architecture, or governed action lifecycle details.
