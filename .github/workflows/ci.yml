@@ -10,38 +10,56 @@ jobs:
   repository-hygiene:
     name: Repository hygiene
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
-      - name: Show repository tree
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show tracked repository files
         run: find . -maxdepth 3 -type f | sort
 
   backend-tests:
-    name: Backend tests
+    name: Backend lint, typecheck, and tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: ${{ hashFiles('pyproject.toml', 'requirements-dev.txt', 'services/**/pyproject.toml', 'services/**/requirements.txt') != '' }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install backend dependencies
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install backend dependencies with make setup
         run: make setup
-      - name: Run backend tests
-        run: make test
-      - name: Run lint
+
+      - name: Run lint with make lint
         run: make lint
-      - name: Run type/syntax checks
+
+      - name: Run type/syntax checks with make typecheck
         run: make typecheck
+
+      - name: Run tests with make test
+        run: make test
 
   frontend-tests:
     name: Frontend tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: ${{ hashFiles('apps/**/package.json') != '' }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
+
       - name: Run frontend tests if configured
         run: |
           if [ -f "apps/web/package.json" ]; then
