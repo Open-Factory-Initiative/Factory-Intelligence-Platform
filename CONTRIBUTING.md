@@ -37,6 +37,29 @@ Please read:
 5. Open a pull request.
 6. Explain what changed and how it was tested.
 
+## Local Validation
+
+The baseline CI workflow uses the same Makefile commands contributors should run
+locally before opening a pull request:
+
+```bash
+make setup
+make lint
+make typecheck
+make test
+```
+
+Run narrower suites while iterating:
+
+```bash
+make test-unit
+make test-integration
+make test-contract
+```
+
+`make test-e2e` is currently a documented placeholder until the web workbench is
+implemented.
+
 ## Pull Request Checklist
 
 - [ ] I read the relevant docs.
