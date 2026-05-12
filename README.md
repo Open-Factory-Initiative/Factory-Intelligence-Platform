@@ -157,11 +157,24 @@ and initialized with the MVP schema.
 
 Prerequisites:
 
+- Git
 - Python 3.12+
 - Make
 - Docker Desktop or another Docker Compose-compatible runtime
 
-Install the Python development environment:
+Clone the repository and install the Python development environment:
+
+```bash
+git clone https://github.com/Open-Factory-Initiative/Factory-Intelligence-Platform.git
+cd Factory-Intelligence-Platform
+make setup
+```
+
+`make setup` creates a repo-local `.venv` and installs development dependencies
+from `requirements-dev.txt`. The first run needs network access to PyPI unless
+the packages are already available in your local pip cache.
+
+If the repository is already cloned, run setup from the repository root:
 
 ```bash
 make setup

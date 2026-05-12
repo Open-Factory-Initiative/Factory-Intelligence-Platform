@@ -492,3 +492,58 @@ make docs
 
 Use early contributor feedback to refine issue labels, issue templates, and the
 good-first-issue path as the project attracts external contributors.
+
+## 2026-05-12 - Local setup verification
+
+### What changed
+
+Verified the local developer setup from a fresh local clone and tightened setup
+docs where the walkthrough exposed small gaps. README now includes clone
+commands, lists Git as a prerequisite, and explains that first-time dependency
+installation needs PyPI access. CONTRIBUTING now carries the same setup note and
+uses a generic issue branch example.
+
+### Why it matters
+
+The project foundation should let a new contributor clone the repo, install
+dependencies, run tests, and exercise the simulator-backed MVP path without
+guessing which steps are assumed.
+
+### How it works
+
+The verified path creates a repo-local `.venv`, installs `requirements-dev.txt`,
+runs lint/typecheck/tests, generates simulator events, ingests them into local
+JSONL storage, runs Process Sentinel, and starts the FastAPI API over that
+local state.
+
+### How to run it
+
+```bash
+make setup
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+make api
+```
+
+### How to test it
+
+```bash
+make help
+make lint
+make typecheck
+make test
+make test-e2e
+make docs
+```
+
+### Key files
+
+- `README.md`
+- `CONTRIBUTING.md`
+- `docs/LEARNING_LOG.md`
+
+### What to learn next
+
+Add a real docs checker and e2e workflow when the web workbench exists so the
+currently documented placeholder commands can become active validation steps.
