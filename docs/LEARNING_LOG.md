@@ -316,6 +316,36 @@ make test
 Define the next event-specific contracts from epic #8, starting with process
 signal and quality event fixtures that build on this base envelope.
 
+## 2026-05-12 - Pull request template expectations
+
+### What changed
+
+Updated the pull request template with a linked issue section, an explicit
+`Closes #issue-number` reminder, and reviewer notes. Updated the contributor
+checklist to match those PR expectations.
+
+### Why it matters
+
+Small, reviewable pull requests need clear issue linkage, test evidence,
+documentation impact, and reviewer guidance before they are merged. This keeps
+open-source contribution review consistent.
+
+### How it works
+
+New pull requests now prompt contributors to identify the linked issue at the
+top of the PR body and to call out anything reviewers should focus on. The
+contributor guide mirrors that expectation in the PR checklist.
+
+### How to run it
+
+No runtime command is needed. GitHub applies `.github/pull_request_template.md`
+when a contributor opens a pull request.
+
+### How to test it
+
+Open a draft pull request and confirm the template appears. For local validation
+of this documentation-only change, run:
+
 ## 2026-05-12 - Baseline CI workflow hardening
 
 ### What changed
@@ -359,10 +389,12 @@ make test
 
 ### Key files
 
+- `.github/pull_request_template.md`
 - `.github/workflows/ci.yml`
 - `CONTRIBUTING.md`
 
 ### What to learn next
 
-Once the web workbench exists, replace the placeholder e2e command with real
+Keep refining contributor workflow docs as the project adds more active checks
+and review expectations. Once the web workbench exists, replace the placeholder e2e command with real
 Playwright coverage and add that check to CI.

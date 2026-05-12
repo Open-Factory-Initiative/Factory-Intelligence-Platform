@@ -62,10 +62,13 @@ implemented.
 
 ## Pull Request Checklist
 
+- [ ] I linked the relevant issue and used `Closes #issue-number` when the PR should close it.
+- [ ] I summarized what changed and why.
 - [ ] I read the relevant docs.
 - [ ] I kept the change focused.
 - [ ] I added or updated tests.
 - [ ] I updated documentation.
+- [ ] I included test evidence and reviewer notes in the pull request template.
 - [ ] I did not add secrets.
 - [ ] I did not add unsafe industrial writeback behavior.
 - [ ] I updated `docs/LEARNING_LOG.md` if this is a meaningful feature/change.
