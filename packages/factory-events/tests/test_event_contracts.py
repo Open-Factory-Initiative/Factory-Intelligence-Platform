@@ -8,6 +8,7 @@ from factory_events import (
     BatchEvent,
     FactoryEvent,
     ProcessSignalEvent,
+    QualityEvent,
     UnsupportedEventTypeError,
     WorkOrderEvent,
     validate_event,
@@ -88,7 +89,57 @@ def test_valid_quality_measurement_event_contract() -> None:
     validated = validate_event(event)
 
     assert validated.event_type == "quality.measurement.recorded"
+    assert validated.context.batch_id == "batch_demo_1001"
+    assert validated.context.work_order_id == "wo_1001"
+    assert validated.payload.quality_check_type == "inline_check"
+    assert validated.payload.value == 501.0
+    assert validated.payload.result_status == "pass"
     assert validated.payload.result == "pass"
+    assert validated.payload.severity == "low"
+    assert validated.payload.spec_min == 495.0
+    assert validated.payload.spec_max == 505.0
+
+
+def test_valid_in_spec_quality_event_contract() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "quality_in_spec_result.json")
+
+    validated = validate_event(event)
+    quality_event = QualityEvent.model_validate(event)
+
+    assert validated.event_type == "quality.measurement.recorded"
+    assert quality_event.context.batch_id == "batch_demo_1001"
+    assert quality_event.context.work_order_id == "wo_1001"
+    assert quality_event.payload.quality_check_type == "inline_check"
+    assert quality_event.payload.value == 501.0
+    assert quality_event.payload.result_status == "pass"
+    assert quality_event.payload.severity == "low"
+    assert quality_event.payload.spec_min == 495.0
+    assert quality_event.payload.spec_max == 505.0
+
+
+def test_valid_out_of_spec_quality_event_contract() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "quality_out_of_spec_result.json")
+
+    validated = QualityEvent.model_validate(event)
+
+    assert validated.context.batch_id == "batch_demo_1001"
+    assert validated.context.work_order_id == "wo_1001"
+    assert validated.payload.quality_check_type == "inspection"
+    assert validated.payload.value == 509.8
+    assert validated.payload.result_status == "fail"
+    assert validated.payload.result == "fail"
+    assert validated.payload.severity == "high"
+
+
+def test_quality_event_allows_missing_optional_specification_limits() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "quality_visual_inspection.json")
+
+    validated = QualityEvent.model_validate(event)
+
+    assert validated.payload.quality_check_type == "inspection"
+    assert validated.payload.result_status == "pass"
+    assert validated.payload.spec_min is None
+    assert validated.payload.spec_max is None
 
 
 def test_valid_batch_started_event_contract() -> None:
@@ -202,6 +253,45 @@ def test_process_signal_normal_range_requires_both_limits() -> None:
     del event["payload"]["normal_max"]
 
     with pytest.raises(ValidationError, match="normal_min and normal_max"):
+        validate_event(event)
+
+
+def test_quality_event_missing_check_type_is_rejected() -> None:
+    event = load_fixture(FIXTURES / "invalid-events" / "quality_missing_check_type.json")
+
+    with pytest.raises(ValidationError, match="quality_check_type"):
+        validate_event(event)
+
+
+def test_quality_event_missing_result_status_is_rejected() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "quality_in_spec_result.json")
+    del event["payload"]["result_status"]
+
+    with pytest.raises(ValidationError, match="result_status"):
+        validate_event(event)
+
+
+def test_quality_event_invalid_severity_is_rejected() -> None:
+    event = load_fixture(FIXTURES / "invalid-events" / "quality_invalid_severity.json")
+
+    with pytest.raises(ValidationError, match="severity"):
+        validate_event(event)
+
+
+def test_quality_event_specification_limits_require_min_less_than_max() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "quality_in_spec_result.json")
+    event["payload"]["spec_min"] = 505.0
+    event["payload"]["spec_max"] = 495.0
+
+    with pytest.raises(ValidationError, match="spec_min must be less than spec_max"):
+        validate_event(event)
+
+
+def test_quality_event_specification_limits_require_both_bounds() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "quality_in_spec_result.json")
+    del event["payload"]["spec_max"]
+
+    with pytest.raises(ValidationError, match="spec_min and spec_max"):
         validate_event(event)
 
 
