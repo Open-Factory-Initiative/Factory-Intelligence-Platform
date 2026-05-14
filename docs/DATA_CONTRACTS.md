@@ -33,8 +33,9 @@ make test-contract
 
 The implementation currently validates the common envelope, event identity,
 UTC timestamps, schema version `1.0.0`, source system metadata, line and asset
-context, optional batch and work order references, supported event types, and
-payload shape. Unknown event types are rejected by ingestion.
+context, optional batch and work order references, production batch and work
+order payloads, supported event types, and payload shape. Unknown event types
+are rejected by ingestion.
 
 ## Base FactoryEvent Envelope
 
@@ -102,6 +103,12 @@ Supported MVP event types are:
 
 - `process.measurement.recorded`
 - `quality.measurement.recorded`
+- `production.batch.started`
+- `production.batch.completed`
+- `production.batch.status.updated`
+- `production.work_order.started`
+- `production.work_order.completed`
+- `production.work_order.status.updated`
 - `sentinel.detection.created`
 - `governance.recommendation.proposed`
 - `governance.approval.recorded`
@@ -134,6 +141,112 @@ Supported MVP event types are:
     "spec_min": 495.0,
     "spec_max": 505.0,
     "result": "pass"
+  }
+}
+```
+
+### Batch Started
+
+```json
+{
+  "event_type": "production.batch.started",
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "batch_id": "batch_demo_1001",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "batch_id": "batch_demo_1001",
+    "lot_id": "lot_demo_20260101",
+    "product_id": "prod_demo_tablets",
+    "product_name": "Demo Tablets",
+    "material_id": "mat_demo_blend",
+    "material_name": "Demo Blend",
+    "work_order_id": "wo_1001",
+    "previous_status": "planned",
+    "status": "started",
+    "status_reason": "Batch released to packaging line."
+  }
+}
+```
+
+### Batch Completed
+
+```json
+{
+  "event_type": "production.batch.completed",
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "batch_id": "batch_demo_1001",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "batch_id": "batch_demo_1001",
+    "lot_id": "lot_demo_20260101",
+    "product_id": "prod_demo_tablets",
+    "product_name": "Demo Tablets",
+    "material_id": "mat_demo_blend",
+    "material_name": "Demo Blend",
+    "work_order_id": "wo_1001",
+    "previous_status": "started",
+    "status": "completed",
+    "status_reason": "Batch production finished."
+  }
+}
+```
+
+### Work Order Started
+
+```json
+{
+  "event_type": "production.work_order.started",
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "work_order_id": "wo_1001",
+    "product_id": "prod_demo_tablets",
+    "product_name": "Demo Tablets",
+    "material_id": "mat_demo_blend",
+    "material_name": "Demo Blend",
+    "batch_id": "batch_demo_1001",
+    "lot_id": "lot_demo_20260101",
+    "previous_status": "planned",
+    "status": "started",
+    "status_reason": "Line is ready and materials are staged."
+  }
+}
+```
+
+### Work Order Completed
+
+```json
+{
+  "event_type": "production.work_order.completed",
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "work_order_id": "wo_1001",
+    "product_id": "prod_demo_tablets",
+    "product_name": "Demo Tablets",
+    "material_id": "mat_demo_blend",
+    "material_name": "Demo Blend",
+    "batch_id": "batch_demo_1001",
+    "lot_id": "lot_demo_20260101",
+    "previous_status": "started",
+    "status": "completed",
+    "status_reason": "Planned production quantity completed."
   }
 }
 ```
@@ -197,6 +310,15 @@ Supported MVP event types are:
 - `batch_id` and `work_order_id` are optional context references.
 - Simulator events must include `metadata.simulated = true`.
 - Payloads must be validated.
+- Batch event payloads must include `batch_id`, `lot_id`, `product_id`,
+  `product_name`, and a constrained batch `status`.
+- Work order event payloads must include `work_order_id`, `product_id`,
+  `product_name`, and a constrained work order `status`.
+- Batch and work order lifecycle event names must match their payload status:
+  started events use `status = "started"` and completed events use
+  `status = "completed"`.
+- If `context.batch_id` or `context.work_order_id` is also present in a
+  production context event, it must match the corresponding payload identifier.
 - Unknown event types must be rejected or sent to a dead-letter path.
 - Schema changes require tests and documentation updates.
 

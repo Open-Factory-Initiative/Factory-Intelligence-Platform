@@ -1,6 +1,8 @@
 from factory_events.models import (
     ApprovalDecisionPayload,
     AuditEventPayload,
+    BatchEvent,
+    BatchEventPayload,
     EventContext,
     EventEnvelope,
     EventMetadata,
@@ -11,6 +13,8 @@ from factory_events.models import (
     RecommendationPayload,
     SentinelDetectionPayload,
     UnsupportedEventTypeError,
+    WorkOrderEvent,
+    WorkOrderEventPayload,
     payload_model_for_event_type,
     validate_event,
 )
@@ -18,6 +22,8 @@ from factory_events.models import (
 __all__ = [
     "ApprovalDecisionPayload",
     "AuditEventPayload",
+    "BatchEvent",
+    "BatchEventPayload",
     "EventContext",
     "EventEnvelope",
     "EventMetadata",
@@ -28,6 +34,8 @@ __all__ = [
     "RecommendationPayload",
     "SentinelDetectionPayload",
     "UnsupportedEventTypeError",
+    "WorkOrderEvent",
+    "WorkOrderEventPayload",
     "payload_model_for_event_type",
     "validate_event",
 ]
