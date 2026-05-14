@@ -7,6 +7,7 @@ import pytest
 from factory_events import (
     BatchEvent,
     FactoryEvent,
+    ProcessSignalEvent,
     UnsupportedEventTypeError,
     WorkOrderEvent,
     validate_event,
@@ -27,7 +28,43 @@ def test_valid_process_measurement_event_contract() -> None:
 
     assert validated.event_type == "process.measurement.recorded"
     assert validated.payload.signal_id == "fill_weight"
+    assert validated.payload.tag_name == "asset_filler_1.fill_weight"
+    assert validated.payload.normal_min == 495.0
+    assert validated.payload.normal_max == 505.0
+    assert validated.payload.target_value == 500.0
     assert validated.metadata.simulated is True
+
+
+def test_valid_temperature_process_signal_event_contract() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "process_temperature_signal.json")
+
+    validated = validate_event(event)
+    process_signal = ProcessSignalEvent.model_validate(event)
+
+    assert validated.event_type == "process.measurement.recorded"
+    assert process_signal.payload.signal_id == "filler_temperature"
+    assert process_signal.payload.tag_name == "asset_filler_1.filler_temperature"
+    assert process_signal.payload.value == 68.4
+    assert process_signal.payload.unit == "deg_c"
+    assert process_signal.payload.quality == "good"
+    assert process_signal.payload.normal_min == 65.0
+    assert process_signal.payload.normal_max == 72.0
+    assert process_signal.payload.target_value == 68.0
+
+
+def test_valid_pressure_process_signal_event_contract() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "process_pressure_signal.json")
+
+    validated = ProcessSignalEvent.model_validate(event)
+
+    assert validated.payload.signal_id == "filler_nozzle_pressure"
+    assert validated.payload.tag_name == "asset_filler_1.filler_nozzle_pressure"
+    assert validated.payload.value == 2.12
+    assert validated.payload.unit == "bar"
+    assert validated.payload.quality == "good"
+    assert validated.payload.normal_min is None
+    assert validated.payload.normal_max is None
+    assert validated.payload.target_value is None
 
 
 def test_base_factory_event_contract_supports_batch_and_work_order_refs() -> None:
@@ -42,6 +79,7 @@ def test_base_factory_event_contract_supports_batch_and_work_order_refs() -> Non
     assert validated.context.batch_id == "batch_demo_1001"
     assert validated.context.work_order_id == "wo_1001"
     assert validated.payload.signal_id == "fill_weight"
+    assert validated.payload.tag_name == "asset_filler_1.fill_weight"
 
 
 def test_valid_quality_measurement_event_contract() -> None:
@@ -125,6 +163,45 @@ def test_invalid_payload_reports_payload_validation_error() -> None:
     del event["payload"]["signal_id"]
 
     with pytest.raises(ValidationError, match="signal_id"):
+        validate_event(event)
+
+
+def test_process_signal_missing_tag_name_is_rejected() -> None:
+    event = load_fixture(FIXTURES / "invalid-events" / "process_signal_missing_tag_name.json")
+
+    with pytest.raises(ValidationError, match="tag_name"):
+        validate_event(event)
+
+
+def test_process_signal_missing_value_is_rejected() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "process_temperature_signal.json")
+    del event["payload"]["value"]
+
+    with pytest.raises(ValidationError, match="value"):
+        validate_event(event)
+
+
+def test_process_signal_invalid_value_type_is_rejected() -> None:
+    event = load_fixture(FIXTURES / "invalid-events" / "process_signal_invalid_value.json")
+
+    with pytest.raises(ValidationError, match="value"):
+        validate_event(event)
+
+
+def test_process_signal_normal_range_requires_min_less_than_max() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "process_temperature_signal.json")
+    event["payload"]["normal_min"] = 72.0
+    event["payload"]["normal_max"] = 65.0
+
+    with pytest.raises(ValidationError, match="normal_min must be less than normal_max"):
+        validate_event(event)
+
+
+def test_process_signal_normal_range_requires_both_limits() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "process_temperature_signal.json")
+    del event["payload"]["normal_max"]
+
+    with pytest.raises(ValidationError, match="normal_min and normal_max"):
         validate_event(event)
 
 

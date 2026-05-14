@@ -33,9 +33,9 @@ make test-contract
 
 The implementation currently validates the common envelope, event identity,
 UTC timestamps, schema version `1.0.0`, source system metadata, line and asset
-context, optional batch and work order references, production batch and work
-order payloads, supported event types, and payload shape. Unknown event types
-are rejected by ingestion.
+context, optional batch and work order references, process signal payloads,
+production batch and work order payloads, supported event types, and payload
+shape. Unknown event types are rejected by ingestion.
 
 ## Base FactoryEvent Envelope
 
@@ -63,9 +63,13 @@ Every platform event should use a common envelope.
   "payload": {
     "signal_id": "fill_weight",
     "signal_name": "Fill Weight",
+    "tag_name": "asset_filler_1.fill_weight",
     "value": 501.2,
     "unit": "g",
-    "quality": "good"
+    "quality": "good",
+    "normal_min": 495.0,
+    "normal_max": 505.0,
+    "target_value": 500.0
   },
   "metadata": {
     "simulated": true,
@@ -122,11 +126,26 @@ Supported MVP event types are:
   "payload": {
     "signal_id": "fill_weight",
     "signal_name": "Fill Weight",
+    "tag_name": "asset_filler_1.fill_weight",
     "value": 501.2,
     "unit": "g",
-    "quality": "good"
+    "quality": "good",
+    "normal_min": 495.0,
+    "normal_max": 505.0,
+    "target_value": 500.0
   }
 }
+```
+
+`ProcessSignalEvent` is the typed envelope specialization for
+`process.measurement.recorded`. It uses the same `FactoryEvent` envelope and
+adds a process-signal payload for simulated or real tag values.
+
+Additional process signal examples live at:
+
+```text
+packages/test-fixtures/valid-events/process_temperature_signal.json
+packages/test-fixtures/valid-events/process_pressure_signal.json
 ```
 
 ### Quality Measurement Recorded
@@ -310,6 +329,11 @@ Supported MVP event types are:
 - `batch_id` and `work_order_id` are optional context references.
 - Simulator events must include `metadata.simulated = true`.
 - Payloads must be validated.
+- Process signal payloads must include `signal_id`, `signal_name`, `tag_name`,
+  numeric `value`, engineering `unit`, and constrained signal `quality`.
+- Process signal payloads may include `normal_min`, `normal_max`, and
+  `target_value`. If one normal range bound is provided, both bounds are
+  required, and `normal_min` must be less than `normal_max`.
 - Batch event payloads must include `batch_id`, `lot_id`, `product_id`,
   `product_name`, and a constrained batch `status`.
 - Work order event payloads must include `work_order_id`, `product_id`,
