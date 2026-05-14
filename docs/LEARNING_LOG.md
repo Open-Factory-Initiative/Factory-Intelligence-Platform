@@ -591,3 +591,48 @@ make test
 Connect simulator output to these production context events so drift detections
 can reference the affected batch, lot, product, and work order in the evidence
 timeline.
+
+## 2026-05-14 - Process signal event schema
+
+### What changed
+
+Added `ProcessSignalEvent` as the typed factory-events envelope for
+`process.measurement.recorded` events. The process measurement payload now
+requires a process tag name and supports optional normal operating limits plus a
+target value. Valid temperature and pressure examples and invalid examples were
+added to the shared fixtures.
+
+### Why it was built that way
+
+Process Sentinel needs one consistent contract for simulator tags and future
+connector tags. Reusing the existing `FactoryEvent` envelope keeps event
+identity, source metadata, UTC timestamps, line context, and validation behavior
+consistent with the rest of the shared event model.
+
+### How data flows through it
+
+A source adapter emits a `process.measurement.recorded` event. The shared
+validator selects the process measurement payload, checks the required tag name,
+numeric value, engineering unit, quality value, and optional normal range, then
+returns a validated `FactoryEvent` or `ProcessSignalEvent`.
+
+### How to run it
+
+No service command is required for the schema change. Process signal payloads
+can be validated by importing `validate_event` or `ProcessSignalEvent` from
+`factory_events`.
+
+### How to test it
+
+```bash
+make test-contract
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Use the process signal limits in simulator scenarios and Process Sentinel
+evidence so detections can explain which tags moved outside their expected
+operating range.

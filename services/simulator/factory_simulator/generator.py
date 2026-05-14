@@ -144,6 +144,7 @@ def _process_event(
         payload=ProcessMeasurementPayload(
             signal_id=signal_id,
             signal_name=signal_name,
+            tag_name=f"{asset_id}.{signal_id}",
             value=value,
             unit=unit,
             quality="good",

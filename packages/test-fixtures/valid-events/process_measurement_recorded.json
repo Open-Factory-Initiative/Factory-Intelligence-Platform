@@ -18,13 +18,16 @@
   "payload": {
     "signal_id": "fill_weight",
     "signal_name": "Fill Weight",
+    "tag_name": "asset_filler_1.fill_weight",
     "value": 501.2,
     "unit": "g",
-    "quality": "good"
+    "quality": "good",
+    "normal_min": 495.0,
+    "normal_max": 505.0,
+    "target_value": 500.0
   },
   "metadata": {
     "simulated": true,
     "trace_id": "trace_000001"
   }
 }
-

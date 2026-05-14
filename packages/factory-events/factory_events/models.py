@@ -39,9 +39,25 @@ class EventMetadata(StrictModel):
 class ProcessMeasurementPayload(StrictModel):
     signal_id: str = Field(min_length=1)
     signal_name: str = Field(min_length=1)
+    tag_name: str = Field(min_length=1)
     value: float
     unit: str = Field(min_length=1)
     quality: Literal["good", "uncertain", "bad"]
+    normal_min: float | None = None
+    normal_max: float | None = None
+    target_value: float | None = None
+
+    @model_validator(mode="after")
+    def validate_normal_range(self) -> ProcessMeasurementPayload:
+        if self.normal_min is None and self.normal_max is None:
+            return self
+        if self.normal_min is None or self.normal_max is None:
+            msg = "normal_min and normal_max must be provided together"
+            raise ValueError(msg)
+        if self.normal_min >= self.normal_max:
+            msg = "normal_min must be less than normal_max"
+            raise ValueError(msg)
+        return self
 
 
 class QualityMeasurementPayload(StrictModel):
@@ -251,6 +267,11 @@ class FactoryEvent(StrictModel):
 
 class EventEnvelope(FactoryEvent):
     """Backward-compatible name for the base FactoryEvent envelope."""
+
+
+class ProcessSignalEvent(FactoryEvent):
+    event_type: Literal["process.measurement.recorded"]
+    payload: ProcessMeasurementPayload
 
 
 class BatchEvent(FactoryEvent):
