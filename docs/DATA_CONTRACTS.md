@@ -34,8 +34,8 @@ make test-contract
 The implementation currently validates the common envelope, event identity,
 UTC timestamps, schema version `1.0.0`, source system metadata, line and asset
 context, optional batch and work order references, process signal payloads,
-production batch and work order payloads, supported event types, and payload
-shape. Unknown event types are rejected by ingestion.
+quality event payloads, production batch and work order payloads, supported
+event types, and payload shape. Unknown event types are rejected by ingestion.
 
 ## Base FactoryEvent Envelope
 
@@ -153,15 +153,40 @@ packages/test-fixtures/valid-events/process_pressure_signal.json
 ```json
 {
   "event_type": "quality.measurement.recorded",
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "asset_id": "asset_checkweigher_1",
+    "batch_id": "batch_demo_1001",
+    "work_order_id": "wo_1001"
+  },
   "payload": {
+    "quality_check_type": "inline_check",
     "measurement_name": "Final Fill Weight",
     "value": 501.0,
     "unit": "g",
+    "result_status": "pass",
+    "result": "pass",
+    "severity": "low",
     "spec_min": 495.0,
-    "spec_max": 505.0,
-    "result": "pass"
+    "spec_max": 505.0
   }
 }
+```
+
+`QualityEvent` is the typed envelope specialization for
+`quality.measurement.recorded`. It uses the same `FactoryEvent` envelope and
+represents quality observations such as inline checks, inspections, lab results,
+deviations, defects, and outcome markers. Affected batch and work order
+references are carried in the shared event context.
+
+Additional quality examples live at:
+
+```text
+packages/test-fixtures/valid-events/quality_in_spec_result.json
+packages/test-fixtures/valid-events/quality_out_of_spec_result.json
+packages/test-fixtures/valid-events/quality_visual_inspection.json
 ```
 
 ### Batch Started
@@ -334,6 +359,14 @@ packages/test-fixtures/valid-events/process_pressure_signal.json
 - Process signal payloads may include `normal_min`, `normal_max`, and
   `target_value`. If one normal range bound is provided, both bounds are
   required, and `normal_min` must be less than `normal_max`.
+- Quality event payloads must include `quality_check_type`, `measurement_name`,
+  numeric `value`, engineering `unit`, constrained `result_status`, and
+  constrained `severity`.
+- Quality event payloads may include `spec_min` and `spec_max`. If one
+  specification bound is provided, both bounds are required, and `spec_min`
+  must be less than `spec_max`.
+- Quality event batch and work order references should use
+  `context.batch_id` and `context.work_order_id`.
 - Batch event payloads must include `batch_id`, `lot_id`, `product_id`,
   `product_name`, and a constrained batch `status`.
 - Work order event payloads must include `work_order_id`, `product_id`,

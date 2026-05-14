@@ -636,3 +636,49 @@ make test
 Use the process signal limits in simulator scenarios and Process Sentinel
 evidence so detections can explain which tags moved outside their expected
 operating range.
+
+## 2026-05-14 - Quality event schema
+
+### What changed
+
+Added `QualityEvent` as the typed factory-events envelope for
+`quality.measurement.recorded` events. The quality payload now represents the
+quality check type, result value, result status, severity, optional
+specification limits, and affected batch/work order context through the shared
+event envelope.
+
+### Why it was built that way
+
+Process Sentinel needs a consistent quality outcome contract before it can
+correlate process behavior with inspections, lab results, defects, deviations,
+or outcome markers. Reusing `FactoryEvent` keeps quality observations aligned
+with the shared source metadata, UTC timestamp, and line context rules.
+
+### How data flows through it
+
+A source adapter emits a `quality.measurement.recorded` event with a
+quality-specific payload. The shared validator selects the quality payload
+model, checks required fields such as `quality_check_type`, `result_status`,
+and `severity`, validates optional specification limits, and returns a validated
+`FactoryEvent` or `QualityEvent`.
+
+### How to run it
+
+No service command is required for the schema change. Quality payloads can be
+validated by importing `validate_event` or `QualityEvent` from
+`factory_events`.
+
+### How to test it
+
+```bash
+make test-contract
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Use richer quality event types in simulator scenarios so Process Sentinel can
+show whether process drift is connected to inspections, lab results, defects,
+or deviation signals.

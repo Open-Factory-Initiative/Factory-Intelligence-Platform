@@ -61,17 +61,39 @@ class ProcessMeasurementPayload(StrictModel):
 
 
 class QualityMeasurementPayload(StrictModel):
+    quality_check_type: Literal[
+        "inspection",
+        "lab_result",
+        "inline_check",
+        "deviation",
+        "defect",
+        "outcome_marker",
+    ]
     measurement_name: str = Field(min_length=1)
     value: float
     unit: str = Field(min_length=1)
-    spec_min: float
-    spec_max: float
-    result: Literal["pass", "fail"]
+    result_status: Literal["pass", "fail", "warning", "inconclusive"]
+    result: Literal["pass", "fail"] | None = None
+    severity: Literal["low", "medium", "high", "critical"]
+    spec_min: float | None = None
+    spec_max: float | None = None
 
     @model_validator(mode="after")
     def validate_spec_range(self) -> QualityMeasurementPayload:
+        if self.spec_min is None and self.spec_max is None:
+            return self
+        if self.spec_min is None or self.spec_max is None:
+            msg = "spec_min and spec_max must be provided together"
+            raise ValueError(msg)
         if self.spec_min >= self.spec_max:
             msg = "spec_min must be less than spec_max"
+            raise ValueError(msg)
+        return self
+
+    @model_validator(mode="after")
+    def validate_result_compatibility(self) -> QualityMeasurementPayload:
+        if self.result is not None and self.result != self.result_status:
+            msg = "result must match result_status when both are provided"
             raise ValueError(msg)
         return self
 
@@ -272,6 +294,11 @@ class EventEnvelope(FactoryEvent):
 class ProcessSignalEvent(FactoryEvent):
     event_type: Literal["process.measurement.recorded"]
     payload: ProcessMeasurementPayload
+
+
+class QualityEvent(FactoryEvent):
+    event_type: Literal["quality.measurement.recorded"]
+    payload: QualityMeasurementPayload
 
 
 class BatchEvent(FactoryEvent):

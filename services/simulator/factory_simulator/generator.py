@@ -174,12 +174,15 @@ def _quality_event(
         ),
         context=EventContext(**DEMO_CONTEXT),
         payload=QualityMeasurementPayload(
+            quality_check_type="inline_check",
             measurement_name="Final Fill Weight",
             value=value,
             unit="g",
+            result_status=result,
+            result=result,
+            severity="high" if result == "fail" else "low",
             spec_min=495.0,
             spec_max=505.0,
-            result=result,
         ),
         metadata=EventMetadata(simulated=True, trace_id=trace_id),
     )

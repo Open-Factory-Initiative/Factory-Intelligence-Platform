@@ -1,18 +1,18 @@
 {
-  "event_id": "evt_quality_000001",
+  "event_id": "evt_quality_invalid_000002",
   "event_type": "quality.measurement.recorded",
   "schema_version": "1.0.0",
-  "timestamp": "2026-01-01T12:01:00Z",
+  "timestamp": "2026-01-01T12:04:00Z",
   "source": {
     "system": "factory-simulator",
     "adapter": "simulator",
-    "source_event_id": "sim-quality-000001"
+    "source_event_id": "sim-quality-invalid-000002"
   },
   "context": {
     "site_id": "site_demo",
     "area_id": "area_packaging",
     "line_id": "line_1",
-    "asset_id": "asset_filler_1",
+    "asset_id": "asset_checkweigher_1",
     "batch_id": "batch_demo_1001",
     "work_order_id": "wo_1001"
   },
@@ -23,12 +23,12 @@
     "unit": "g",
     "result_status": "pass",
     "result": "pass",
-    "severity": "low",
+    "severity": "urgent",
     "spec_min": 495.0,
     "spec_max": 505.0
   },
   "metadata": {
     "simulated": true,
-    "trace_id": "trace_000001"
+    "trace_id": "trace_quality_invalid_000002"
   }
 }
