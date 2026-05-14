@@ -547,3 +547,47 @@ make docs
 
 Add a real docs checker and e2e workflow when the web workbench exists so the
 currently documented placeholder commands can become active validation steps.
+
+## 2026-05-14 - Batch and work order event schemas
+
+### What changed
+
+Added shared `BatchEvent` and `WorkOrderEvent` contracts to the factory-events
+package, including typed payloads, supported production event types, valid
+example fixtures, invalid example fixtures, and contract tests.
+
+### Why it was built that way
+
+Batch and work order context belongs in the shared event layer because multiple
+services need the same production identifiers before drift detections can be
+connected to affected lots, products, materials, and orders. The new models
+reuse the existing `FactoryEvent` envelope instead of creating a separate event
+shape.
+
+### How data flows through it
+
+A source adapter emits a `FactoryEvent` with a production event type such as
+`production.batch.started` or `production.work_order.completed`. The shared
+validator selects the matching payload model, validates required identifiers and
+status values, and rejects mismatches between envelope context IDs and payload
+IDs.
+
+### How to run it
+
+No service command is required for the schema change. Event payloads can be
+validated by importing `validate_event` from `factory_events`.
+
+### How to test it
+
+```bash
+make test-contract
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Connect simulator output to these production context events so drift detections
+can reference the affected batch, lot, product, and work order in the evidence
+timeline.

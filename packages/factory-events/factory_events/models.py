@@ -60,6 +60,36 @@ class QualityMeasurementPayload(StrictModel):
         return self
 
 
+BatchStatus = Literal["planned", "started", "completed", "held", "released", "cancelled"]
+WorkOrderStatus = Literal["planned", "started", "completed", "held", "cancelled"]
+
+
+class BatchEventPayload(StrictModel):
+    batch_id: str = Field(min_length=1)
+    lot_id: str = Field(min_length=1)
+    product_id: str = Field(min_length=1)
+    product_name: str = Field(min_length=1)
+    material_id: str | None = None
+    material_name: str | None = None
+    work_order_id: str | None = None
+    previous_status: BatchStatus | None = None
+    status: BatchStatus
+    status_reason: str | None = None
+
+
+class WorkOrderEventPayload(StrictModel):
+    work_order_id: str = Field(min_length=1)
+    product_id: str = Field(min_length=1)
+    product_name: str = Field(min_length=1)
+    material_id: str | None = None
+    material_name: str | None = None
+    batch_id: str | None = None
+    lot_id: str | None = None
+    previous_status: WorkOrderStatus | None = None
+    status: WorkOrderStatus
+    status_reason: str | None = None
+
+
 class SentinelDetectionPayload(StrictModel):
     detection_id: str = Field(min_length=1)
     detection_type: Literal["quality_drift", "process_excursion"]
@@ -111,6 +141,8 @@ class AuditEventPayload(StrictModel):
 Payload = (
     ProcessMeasurementPayload
     | QualityMeasurementPayload
+    | BatchEventPayload
+    | WorkOrderEventPayload
     | SentinelDetectionPayload
     | RecommendationPayload
     | ApprovalDecisionPayload
@@ -121,6 +153,12 @@ Payload = (
 EVENT_PAYLOAD_MODELS: dict[str, type[Payload]] = {
     "process.measurement.recorded": ProcessMeasurementPayload,
     "quality.measurement.recorded": QualityMeasurementPayload,
+    "production.batch.started": BatchEventPayload,
+    "production.batch.completed": BatchEventPayload,
+    "production.batch.status.updated": BatchEventPayload,
+    "production.work_order.started": WorkOrderEventPayload,
+    "production.work_order.completed": WorkOrderEventPayload,
+    "production.work_order.status.updated": WorkOrderEventPayload,
     "sentinel.detection.created": SentinelDetectionPayload,
     "governance.recommendation.proposed": RecommendationPayload,
     "governance.approval.recorded": ApprovalDecisionPayload,
@@ -164,11 +202,73 @@ class FactoryEvent(StrictModel):
         if self.source.adapter == "simulator" and self.metadata.simulated is not True:
             msg = "simulator events must include metadata.simulated = true"
             raise ValueError(msg)
+        self.validate_production_event_rules()
         return self
+
+    def validate_production_event_rules(self) -> None:
+        if isinstance(self.payload, BatchEventPayload):
+            if self.context.batch_id is not None and self.context.batch_id != self.payload.batch_id:
+                msg = "context.batch_id must match payload.batch_id"
+                raise ValueError(msg)
+            if (
+                self.context.work_order_id is not None
+                and self.payload.work_order_id is not None
+                and self.context.work_order_id != self.payload.work_order_id
+            ):
+                msg = "context.work_order_id must match payload.work_order_id"
+                raise ValueError(msg)
+            expected_status_by_type = {
+                "production.batch.started": "started",
+                "production.batch.completed": "completed",
+            }
+            expected_status = expected_status_by_type.get(self.event_type)
+            if expected_status is not None and self.payload.status != expected_status:
+                msg = f"{self.event_type} payload.status must be {expected_status}"
+                raise ValueError(msg)
+        if isinstance(self.payload, WorkOrderEventPayload):
+            if (
+                self.context.work_order_id is not None
+                and self.context.work_order_id != self.payload.work_order_id
+            ):
+                msg = "context.work_order_id must match payload.work_order_id"
+                raise ValueError(msg)
+            if (
+                self.context.batch_id is not None
+                and self.payload.batch_id is not None
+                and self.context.batch_id != self.payload.batch_id
+            ):
+                msg = "context.batch_id must match payload.batch_id"
+                raise ValueError(msg)
+            expected_status_by_type = {
+                "production.work_order.started": "started",
+                "production.work_order.completed": "completed",
+            }
+            expected_status = expected_status_by_type.get(self.event_type)
+            if expected_status is not None and self.payload.status != expected_status:
+                msg = f"{self.event_type} payload.status must be {expected_status}"
+                raise ValueError(msg)
 
 
 class EventEnvelope(FactoryEvent):
     """Backward-compatible name for the base FactoryEvent envelope."""
+
+
+class BatchEvent(FactoryEvent):
+    event_type: Literal[
+        "production.batch.started",
+        "production.batch.completed",
+        "production.batch.status.updated",
+    ]
+    payload: BatchEventPayload
+
+
+class WorkOrderEvent(FactoryEvent):
+    event_type: Literal[
+        "production.work_order.started",
+        "production.work_order.completed",
+        "production.work_order.status.updated",
+    ]
+    payload: WorkOrderEventPayload
 
 
 def require_utc_datetime(value: datetime) -> datetime:

@@ -1,0 +1,33 @@
+{
+  "event_id": "evt_work_order_000001",
+  "event_type": "production.work_order.started",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-01-01T07:45:00Z",
+  "source": {
+    "system": "factory-simulator",
+    "adapter": "simulator",
+    "source_event_id": "sim-work-order-000001"
+  },
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "work_order_id": "wo_1001",
+    "product_id": "prod_demo_tablets",
+    "product_name": "Demo Tablets",
+    "material_id": "mat_demo_blend",
+    "material_name": "Demo Blend",
+    "batch_id": "batch_demo_1001",
+    "lot_id": "lot_demo_20260101",
+    "previous_status": "planned",
+    "status": "started",
+    "status_reason": "Line is ready and materials are staged."
+  },
+  "metadata": {
+    "simulated": true,
+    "trace_id": "trace_work_order_000001"
+  }
+}
