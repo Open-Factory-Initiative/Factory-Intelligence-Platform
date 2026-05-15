@@ -716,3 +716,50 @@ make test
 
 Keep future foundation improvements as focused issues, such as docs checking,
 more CI hardening, or web workbench onboarding once `apps/web` is implemented.
+
+## 2026-05-15 - Factory event contract tests
+
+### What changed
+
+Strengthened the shared factory-events contract test suite so every valid event
+fixture is checked through both the public `validate_event` API and the
+implemented typed event model. The invalid fixture tests now also assert that
+validation failures point to the expected field and include an actionable error
+message.
+
+### Why it was built that way
+
+Issue #28 is a test guardrail for the existing shared contracts, not a request
+to redesign the event model. Keeping the change in the contract test suite
+makes simulator output, ingestion validation, and future connectors safer
+without changing runtime behavior.
+
+### How data flows through it
+
+A fixture payload is loaded from `packages/test-fixtures`, passed into
+`validate_event`, and then validated against the typed model for its event
+category. Invalid fixtures follow the same public validation path and confirm
+the contract reports the field that needs to be fixed.
+
+### How to run it
+
+No service command is required. The focused contract suite runs with:
+
+```bash
+make test-contract
+```
+
+### How to test it
+
+```bash
+make test-contract
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Use these contract tests as the first check when adding new event types, then
+add simulator fixtures and ingestion tests that prove those new events travel
+through the MVP path correctly.
