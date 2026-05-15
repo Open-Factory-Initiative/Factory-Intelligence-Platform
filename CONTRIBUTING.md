@@ -51,6 +51,12 @@ Start with issues labeled `good first issue` when available. Good first issues
 should be narrow, well-described, and safe to complete without redesigning the
 platform.
 
+Use this filtered issue list:
+
+```text
+https://github.com/Open-Factory-Initiative/Factory-Intelligence-Platform/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22
+```
+
 If no `good first issue` work is available, look for small `Task` or
 documentation issues in the current milestone. Before starting, comment on the
 issue with your intended scope so maintainers can help keep the change focused.
