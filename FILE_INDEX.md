@@ -32,6 +32,7 @@ https://github.com/Open-Factory-Initiative/Factory-Intelligence-Platform
 - `docs/ARCHITECTURE.md` — full platform architecture
 - `docs/PRODUCT_REQUIREMENTS.md` — product thesis and requirements
 - `docs/MVP_SCOPE.md` — first vertical slice
+- `docs/PROJECT_FOUNDATION.md` — foundation epic status and contributor entry points
 - `docs/DOMAIN_MODEL.md` — core manufacturing entities
 - `docs/DATA_CONTRACTS.md` — event contracts and examples
 - `docs/UNIFIED_NAMESPACE.md` — UNS/topic model

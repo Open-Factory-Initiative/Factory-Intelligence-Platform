@@ -682,3 +682,37 @@ make test
 Use richer quality event types in simulator scenarios so Process Sentinel can
 show whether process drift is connected to inspections, lab results, defects,
 or deviation signals.
+
+## 2026-05-15 - Project foundation status
+
+### What changed
+
+Added `docs/PROJECT_FOUNDATION.md` to map the project foundation epic to the
+actual repository files that satisfy it. Linked the new status page from the
+README and file index, and added a direct `good first issue` query to the
+contributor guide.
+
+### How it works
+
+The status page points new contributors to setup, issue workflow, PR
+expectations, CI, templates, ADRs, and repository structure docs. It also maps
+the foundation epic acceptance criteria and original child issues to the files
+that now exist in the repository.
+
+### How to run it
+
+No runtime command is required for this documentation-only change.
+
+### How to test it
+
+```bash
+make docs
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Keep future foundation improvements as focused issues, such as docs checking,
+more CI hardening, or web workbench onboarding once `apps/web` is implemented.

@@ -256,6 +256,10 @@ New contributors should start with [CONTRIBUTING.md](./CONTRIBUTING.md). It
 explains the project mission, local setup, issue workflow, branch naming, pull
 request expectations, test commands, and how to find beginner-friendly work.
 
+The current open-source foundation status is summarized in
+[docs/PROJECT_FOUNDATION.md](./docs/PROJECT_FOUNDATION.md), including the files
+that satisfy the foundation epic acceptance criteria.
+
 ## License
 
 This project uses the repository license in `LICENSE`.
