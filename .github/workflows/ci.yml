@@ -22,7 +22,6 @@ jobs:
     name: Backend lint, typecheck, and tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: ${{ hashFiles('pyproject.toml', 'requirements-dev.txt', 'services/**/pyproject.toml', 'services/**/requirements.txt') != '' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -50,7 +49,6 @@ jobs:
     name: Frontend tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: ${{ hashFiles('apps/**/package.json') != '' }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
