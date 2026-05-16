@@ -17,9 +17,73 @@ from pydantic import ValidationError
 
 FIXTURES = Path(__file__).resolve().parents[2] / "test-fixtures"
 
+VALID_EVENT_FIXTURES = [
+    ("base_factory_event.json", FactoryEvent, "process.measurement.recorded"),
+    ("process_measurement_recorded.json", ProcessSignalEvent, "process.measurement.recorded"),
+    ("process_temperature_signal.json", ProcessSignalEvent, "process.measurement.recorded"),
+    ("process_pressure_signal.json", ProcessSignalEvent, "process.measurement.recorded"),
+    ("quality_measurement_recorded.json", QualityEvent, "quality.measurement.recorded"),
+    ("quality_in_spec_result.json", QualityEvent, "quality.measurement.recorded"),
+    ("quality_out_of_spec_result.json", QualityEvent, "quality.measurement.recorded"),
+    ("quality_visual_inspection.json", QualityEvent, "quality.measurement.recorded"),
+    ("batch_started.json", BatchEvent, "production.batch.started"),
+    ("batch_completed.json", BatchEvent, "production.batch.completed"),
+    ("work_order_started.json", WorkOrderEvent, "production.work_order.started"),
+    ("work_order_completed.json", WorkOrderEvent, "production.work_order.completed"),
+]
+
+INVALID_EVENT_FIXTURES = [
+    ("missing_event_id.json", ("event_id",), "Field required"),
+    ("process_signal_missing_tag_name.json", ("tag_name",), "Field required"),
+    ("process_signal_invalid_value.json", ("value",), "valid number"),
+    ("quality_missing_check_type.json", ("quality_check_type",), "Field required"),
+    ("quality_invalid_severity.json", ("severity",), "low"),
+    ("batch_missing_lot_id.json", ("lot_id",), "Field required"),
+    ("work_order_invalid_status.json", ("status",), "planned"),
+]
+
 
 def load_fixture(path: Path) -> dict:
     return json.loads(path.read_text())
+
+
+@pytest.mark.parametrize(
+    ("fixture_name", "typed_model", "expected_event_type"),
+    VALID_EVENT_FIXTURES,
+)
+def test_valid_event_fixtures_pass_public_and_typed_contracts(
+    fixture_name: str,
+    typed_model: type[FactoryEvent],
+    expected_event_type: str,
+) -> None:
+    event = load_fixture(FIXTURES / "valid-events" / fixture_name)
+
+    public_event = validate_event(event)
+    typed_event = typed_model.model_validate(event)
+
+    assert public_event.event_type == expected_event_type
+    assert typed_event.event_type == expected_event_type
+
+
+@pytest.mark.parametrize(
+    ("fixture_name", "expected_location", "expected_message"),
+    INVALID_EVENT_FIXTURES,
+)
+def test_invalid_event_fixtures_report_clear_validation_errors(
+    fixture_name: str,
+    expected_location: tuple[str, ...],
+    expected_message: str,
+) -> None:
+    event = load_fixture(FIXTURES / "invalid-events" / fixture_name)
+
+    with pytest.raises(ValidationError) as error:
+        validate_event(event)
+
+    errors = error.value.errors()
+    assert any(
+        tuple(item["loc"]) == expected_location and expected_message in item["msg"]
+        for item in errors
+    )
 
 
 def test_valid_process_measurement_event_contract() -> None:
@@ -336,7 +400,7 @@ def test_batch_event_status_must_match_lifecycle_event_type() -> None:
 def test_unknown_event_type_is_rejected() -> None:
     event = load_fixture(FIXTURES / "invalid-events" / "unknown_event_type.json")
 
-    with pytest.raises(UnsupportedEventTypeError):
+    with pytest.raises(UnsupportedEventTypeError, match="unsupported event_type: asset.teleported"):
         validate_event(event)
 
 
