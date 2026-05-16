@@ -1,0 +1,34 @@
+{
+  "event_id": "evt_example_process_signal_000001",
+  "event_type": "process.measurement.recorded",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-01-01T12:01:00Z",
+  "source": {
+    "system": "factory-simulator",
+    "adapter": "simulator",
+    "source_event_id": "sim-example-process-signal-000001"
+  },
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "asset_id": "asset_filler_1",
+    "batch_id": "batch_demo_1001",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "signal_id": "filler_temperature",
+    "signal_name": "Filler Temperature",
+    "tag_name": "asset_filler_1.filler_temperature",
+    "value": 68.4,
+    "unit": "deg_c",
+    "quality": "good",
+    "normal_min": 65.0,
+    "normal_max": 72.0,
+    "target_value": 68.0
+  },
+  "metadata": {
+    "simulated": true,
+    "trace_id": "trace_example_process_signal_000001"
+  }
+}

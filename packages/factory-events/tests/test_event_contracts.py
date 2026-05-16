@@ -15,7 +15,9 @@ from factory_events import (
 )
 from pydantic import ValidationError
 
-FIXTURES = Path(__file__).resolve().parents[2] / "test-fixtures"
+REPO_ROOT = Path(__file__).resolve().parents[3]
+FIXTURES = REPO_ROOT / "packages" / "test-fixtures"
+EXAMPLES = REPO_ROOT / "examples" / "events"
 
 VALID_EVENT_FIXTURES = [
     ("base_factory_event.json", FactoryEvent, "process.measurement.recorded"),
@@ -40,6 +42,14 @@ INVALID_EVENT_FIXTURES = [
     ("quality_invalid_severity.json", ("severity",), "low"),
     ("batch_missing_lot_id.json", ("lot_id",), "Field required"),
     ("work_order_invalid_status.json", ("status",), "planned"),
+]
+
+EXAMPLE_EVENT_FILES = [
+    ("base_factory_event.json", FactoryEvent, "process.measurement.recorded"),
+    ("process_signal_event.json", ProcessSignalEvent, "process.measurement.recorded"),
+    ("quality_event.json", QualityEvent, "quality.measurement.recorded"),
+    ("batch_event.json", BatchEvent, "production.batch.started"),
+    ("work_order_event.json", WorkOrderEvent, "production.work_order.started"),
 ]
 
 
@@ -84,6 +94,25 @@ def test_invalid_event_fixtures_report_clear_validation_errors(
         tuple(item["loc"]) == expected_location and expected_message in item["msg"]
         for item in errors
     )
+
+
+@pytest.mark.parametrize(
+    ("example_name", "typed_model", "expected_event_type"),
+    EXAMPLE_EVENT_FILES,
+)
+def test_example_event_payloads_validate_against_contracts(
+    example_name: str,
+    typed_model: type[FactoryEvent],
+    expected_event_type: str,
+) -> None:
+    event = load_fixture(EXAMPLES / example_name)
+
+    public_event = validate_event(event)
+    typed_event = typed_model.model_validate(event)
+
+    assert public_event.event_type == expected_event_type
+    assert typed_event.event_type == expected_event_type
+    assert public_event.metadata.simulated is True
 
 
 def test_valid_process_measurement_event_contract() -> None:
