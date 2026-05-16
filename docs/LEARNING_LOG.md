@@ -763,3 +763,47 @@ make test
 Use these contract tests as the first check when adding new event types, then
 add simulator fixtures and ingestion tests that prove those new events travel
 through the MVP path correctly.
+
+## 2026-05-15 - Example factory event payloads
+
+### What changed
+
+Added contributor-facing JSON examples under `examples/events` for the base
+factory event envelope, process signal events, quality events, batch events,
+and work order events. The contract test suite now validates those examples
+through the shared event models.
+
+### Why it was built that way
+
+Issue #29 asks for examples that contributors can read without opening the
+implementation. Keeping examples separate from test fixtures makes the public
+examples easier to find while still testing them against the same contract
+package used by simulator and ingestion code.
+
+### How data flows through it
+
+Each example follows the shared `FactoryEvent` envelope and uses a supported
+event type. The contract tests load each file, call `validate_event`, and then
+validate the payload against the matching typed event model when one exists.
+
+### How to run it
+
+No service command is required. The examples can be inspected directly in:
+
+```text
+examples/events/
+```
+
+### How to test it
+
+```bash
+make test-contract
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Use these examples when documenting event naming conventions and when adding
+future event types such as recommendation, approval, audit, and asset events.

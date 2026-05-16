@@ -25,6 +25,12 @@ packages/test-fixtures/invalid-events/
 packages/test-fixtures/drift-scenarios/
 ```
 
+Contributor-facing example payloads live in:
+
+```text
+examples/events/
+```
+
 Run contract tests with:
 
 ```bash
@@ -81,6 +87,7 @@ Every platform event should use a common envelope.
 The checked-in example lives at:
 
 ```text
+examples/events/base_factory_event.json
 packages/test-fixtures/valid-events/base_factory_event.json
 ```
 
@@ -144,6 +151,7 @@ adds a process-signal payload for simulated or real tag values.
 Additional process signal examples live at:
 
 ```text
+examples/events/process_signal_event.json
 packages/test-fixtures/valid-events/process_temperature_signal.json
 packages/test-fixtures/valid-events/process_pressure_signal.json
 ```
@@ -184,12 +192,19 @@ references are carried in the shared event context.
 Additional quality examples live at:
 
 ```text
+examples/events/quality_event.json
 packages/test-fixtures/valid-events/quality_in_spec_result.json
 packages/test-fixtures/valid-events/quality_out_of_spec_result.json
 packages/test-fixtures/valid-events/quality_visual_inspection.json
 ```
 
 ### Batch Started
+
+Contributor-facing batch example:
+
+```text
+examples/events/batch_event.json
+```
 
 ```json
 {
@@ -244,6 +259,12 @@ packages/test-fixtures/valid-events/quality_visual_inspection.json
 ```
 
 ### Work Order Started
+
+Contributor-facing work order example:
+
+```text
+examples/events/work_order_event.json
+```
 
 ```json
 {
