@@ -161,6 +161,30 @@ flowchart LR
     Governance --> Experiences
 ```
 
+## Future AI Architecture
+
+Post-MVP AI capabilities should extend the Factory Intelligence Layer without
+changing the first Process Sentinel slice. The AI architecture should be
+local-first, model-agnostic, and governed:
+
+- Platform services and agents call a Local Model Gateway instead of calling
+  individual model providers directly.
+- The gateway can support local and remote-compatible providers such as Ollama,
+  llama.cpp, vLLM, and OpenAI-compatible endpoints.
+- A Model Router should prefer small specialized local models for routine tasks
+  and use larger local or external LLMs only for complex reasoning,
+  summarization, or fallback cases.
+- RAG indexes and Factory Memory provide site-specific context with cited
+  evidence before any fine-tuning work.
+- A Site AI Package captures site profile, hierarchy, tag mappings, document
+  corpus, RAG indexes, training/evaluation datasets, prompt templates, adapter
+  metadata, routing config, tool registry config, validation artifacts, and a
+  deployment manifest.
+- Model, prompt, tool, dataset, and evaluation registries provide auditability,
+  version tracking, approval history, and rollback support.
+- AI outputs remain human-reviewed decision support and must flow through
+  governed recommendation and approval workflows.
+
 ## Core Architectural Layers
 
 ### 1. Source Layer

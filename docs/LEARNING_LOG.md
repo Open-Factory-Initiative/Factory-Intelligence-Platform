@@ -807,3 +807,39 @@ make test
 
 Use these examples when documenting event naming conventions and when adding
 future event types such as recommendation, approval, audit, and asset events.
+
+## 2026-05-16 - Local AI and site intelligence roadmap
+
+### What changed
+
+Updated the roadmap and supporting product, architecture, MVP scope, governance,
+and security docs to include local model gateway, SLM-first/LLM-fallback
+routing, Site AI Packages, site-specific RAG, training and evaluation pipelines,
+model governance, agent orchestration, and validation-aware onboarding.
+
+### How it works
+
+The first MVP remains simulator-backed Process Sentinel. The new AI roadmap
+items are positioned as post-MVP expansion work that must stay local-first,
+model-agnostic, evidence-cited, audit-friendly, and human-reviewed through
+governed recommendation workflows.
+
+### How to run it
+
+No service command is required for this documentation-only change.
+
+### How to test it
+
+```bash
+git diff --check
+make docs
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Turn the roadmap into focused implementation issues for the Local Model Gateway,
+Site AI Package, RAG/Factory Memory, evaluation harness, and model governance
+workstreams once the Process Sentinel MVP path is stable.

@@ -66,6 +66,9 @@ As a quality engineer, I want the system to detect early quality drift from synt
 - Production deployment
 - Enterprise RBAC
 - Advanced ML models
+- Local Model Gateway implementation
+- Site-specific RAG and fine-tuning workflows
+- Production GxP validation claims
 - Full MES/QMS/ERP integration
 - Multi-site federation
 - Mobile app
@@ -86,11 +89,34 @@ The MVP is successful when a contributor can:
 9. Run unit, integration, and e2e tests.
 10. Understand the architecture from docs.
 
+## Post-MVP AI Requirements
+
+Future AI capabilities should strengthen the Factory Intelligence Layer while
+preserving human-reviewed decision support and open-source-friendly deployment:
+
+1. Provide a local-first, model-agnostic gateway for platform AI calls.
+2. Route routine tasks to small specialized local models where practical.
+3. Use larger local or external LLMs only for complex reasoning,
+   summarization, or fallback cases.
+4. Implement site-specific RAG and Factory Memory before fine-tuning.
+5. Prefer LoRA/PEFT adapters over full fine-tuning for site adaptation.
+6. Curate, approve, sanitize, and trace training and evaluation data.
+7. Evaluate model behavior for grounded answers, cited evidence, retrieval
+   quality, refusals, hallucination risk, task accuracy, latency, and resource
+   use.
+8. Maintain model, prompt, tool, dataset, adapter, and evaluation registries.
+9. Package site-specific context through a Site AI Package.
+10. Support validation-aware documentation for future site validation work
+    without claiming automatic cGMP compliance.
+
 ## Product Principles
 
 - Explain before acting.
 - Simulate before integrating.
 - Test contracts before adding services.
 - Keep AI recommendations human-governed.
+- Keep model outputs advisory and evidence-cited.
+- Prefer local-first, model-agnostic AI infrastructure.
+- Treat cGMP-related workflows as validation-aware until site validation is performed.
 - Prefer practical workflows over impressive demos.
 - Make the system teachable.

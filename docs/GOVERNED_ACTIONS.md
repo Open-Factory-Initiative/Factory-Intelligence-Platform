@@ -10,6 +10,12 @@ A governed action is any recommendation or action that could affect production, 
 
 In the MVP, all actions are recommendations. The platform may propose action, but a human must approve or reject it.
 
+Future AI-generated outputs follow the same rule. Model summaries, RCA/CAPA
+draft language, investigation suggestions, similar-event matches, and drift
+explanations are advisory decision support. They must be tied to evidence,
+shown for human review, and routed through governed recommendation states before
+any high-impact action is considered.
+
 ## Action Categories
 
 ### Low Impact
@@ -107,3 +113,8 @@ A future production-grade action dispatcher must support:
 - Reversal or cancellation when possible
 - Audit exports
 - Approval chains
+
+AI agents must not bypass this dispatcher or directly call tools that change
+factory state. Early agents should be limited to read-only analysis,
+evidence summarization, RCA/CAPA draft support, investigation path suggestions,
+similar prior event lookup, and drift signal explanation.

@@ -104,7 +104,17 @@ Create a local, simulator-backed MVP that proves the platform can detect quality
 - Cloud deployment
 - Enterprise-grade observability
 - Large language model decision autonomy
+- Local Model Gateway implementation
+- Site-specific RAG indexes
+- SLM/LLM training or fine-tuning pipeline
+- Model registry and model promotion workflow
+- Site AI Validation Package implementation
 - Production industrial control
+
+AI/model work remains post-MVP expansion. The MVP may use deterministic rules
+and human-reviewed recommendation language, but it should not depend on an LLM,
+fine-tuned model, RAG index, or validation package to complete the first
+simulator-backed Process Sentinel workflow.
 
 ## MVP Milestones
 

@@ -40,6 +40,19 @@ The MVP must not:
 
 Future production integrations must use explicit approval, policy checks, and audit trails.
 
+## Local AI Data Boundaries
+
+Future model-enabled workflows should be local-first and site-aware. Local model
+deployment is preferred for site-specific data, and remote-compatible model
+providers must be explicitly configured, approved, and audited before use.
+
+- No unapproved site data should leave the site boundary.
+- RAG corpora, training datasets, prompts, model adapters, and evaluation
+  records should be traceable to approved sources.
+- Model outputs remain advisory and must not trigger factory-state changes
+  outside governed review workflows.
+- Tool access for agents should be registered, permissioned, and logged.
+
 ## Dependency Security
 
 Before adding dependencies:
