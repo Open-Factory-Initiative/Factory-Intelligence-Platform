@@ -19,6 +19,18 @@ checks within the configured operating and specification ranges. Use it as the
 clean baseline dataset for ingestion, validation, and Process Sentinel tests
 that should not produce quality drift.
 
+Generate the gradual drift scenario:
+
+```bash
+python -m factory_simulator.cli --scenario gradual_drift --seed 42 --count 24 --output .local/events/gradual_drift.jsonl
+```
+
+The gradual drift scenario starts with a stable baseline period, then slowly
+increases fill weight and nozzle pressure. Inline quality checks continue after
+the process drift begins, with the first quality concern delayed until the drift
+has moved far enough to exceed specification. Use this scenario for Process
+Sentinel tests that need early drift evidence before a quality failure.
+
 ## Scenario Definition Format
 
 Scenario definitions live in `factory_simulator.scenarios`. They describe the

@@ -21,6 +21,8 @@ from factory_simulator.scenarios import (
     scenario_definition_for,
 )
 
+GRADUAL_DRIFT_BASELINE_SAMPLES = 8
+
 
 def generate_events(
     scenario: ScenarioName,
@@ -48,8 +50,8 @@ def generate_events(
 
     for index in range(count):
         timestamp = start_time + timedelta(minutes=index)
-        fill_weight = _fill_weight_for_scenario(scenario, index, rng)
-        pressure = _pressure_for_scenario(scenario, index, rng)
+        fill_weight = _fill_weight_for_scenario(scenario, index, rng, fill_weight_tag)
+        pressure = _pressure_for_scenario(scenario, index, rng, pressure_tag)
         events.append(
             _process_event(
                 event_id=f"evt_{scenario}_fill_{index:04d}",
@@ -104,25 +106,45 @@ def generate_events(
     return events
 
 
-def _fill_weight_for_scenario(scenario: ScenarioName, index: int, rng: Random) -> float:
-    noise = rng.uniform(-0.25, 0.25)
+def _fill_weight_for_scenario(
+    scenario: ScenarioName,
+    index: int,
+    rng: Random,
+    process_tag: ScenarioProcessTag,
+) -> float:
+    noise = rng.uniform(-process_tag.noise_band, process_tag.noise_band)
     if scenario == "normal":
-        return round(500.0 + noise, 3)
+        return round(process_tag.baseline_value + noise, 3)
     if scenario == "gradual_drift":
-        drift = max(0, index - 7) * 0.33
-        return round(500.0 + drift + noise, 3)
+        drift = max(0, index - (GRADUAL_DRIFT_BASELINE_SAMPLES - 1)) * (
+            process_tag.drift_per_step or 0.0
+        )
+        return round(process_tag.baseline_value + drift + noise, 3)
     if 10 <= index <= 12:
-        return round(509.5 + rng.uniform(-0.5, 0.5), 3)
-    return round(500.0 + noise, 3)
+        excursion_value = process_tag.excursion_value or process_tag.baseline_value
+        return round(excursion_value + rng.uniform(-0.5, 0.5), 3)
+    return round(process_tag.baseline_value + noise, 3)
 
 
-def _pressure_for_scenario(scenario: ScenarioName, index: int, rng: Random) -> float:
-    noise = rng.uniform(-0.04, 0.04)
+def _pressure_for_scenario(
+    scenario: ScenarioName,
+    index: int,
+    rng: Random,
+    process_tag: ScenarioProcessTag,
+) -> float:
+    noise = rng.uniform(-process_tag.noise_band, process_tag.noise_band)
     if scenario == "gradual_drift":
-        return round(2.1 + max(0, index - 7) * 0.025 + noise, 3)
+        drift = max(0, index - (GRADUAL_DRIFT_BASELINE_SAMPLES - 1)) * (
+            process_tag.drift_per_step or 0.0
+        )
+        return round(process_tag.baseline_value + drift + noise, 3)
     if scenario == "sudden_excursion" and 10 <= index <= 12:
-        return round(2.8 + rng.uniform(-0.08, 0.08), 3)
-    return round(2.1 + noise, 3)
+        return round(
+            (process_tag.excursion_value or process_tag.baseline_value)
+            + rng.uniform(-0.08, 0.08),
+            3,
+        )
+    return round(process_tag.baseline_value + noise, 3)
 
 
 def _process_event(
