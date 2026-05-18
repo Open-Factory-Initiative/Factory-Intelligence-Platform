@@ -843,3 +843,38 @@ make test
 Turn the roadmap into focused implementation issues for the Local Model Gateway,
 Site AI Package, RAG/Factory Memory, evaluation harness, and model governance
 workstreams once the Process Sentinel MVP path is stable.
+
+## 2026-05-18 - Simulator scenario definition format
+
+### What changed
+
+Added a typed simulator scenario definition format for the current demo
+scenarios. The format captures scenario metadata, line context, assets, process
+tag configuration, quality marker configuration, and output settings.
+
+### How it works
+
+`factory_simulator.scenarios` defines validated scenario objects for `normal`,
+`gradual_drift`, and `sudden_excursion`. The simulator still emits the same
+kind of deterministic factory events, but scenario names and context now come
+from the shared scenario definitions instead of an ad hoc list.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift
+```
+
+### How to test it
+
+```bash
+make test-unit
+make lint
+make typecheck
+make test
+```
+
+### What to learn next
+
+Use the scenario definitions to drive future scenario fixtures, including noisy
+sensor behavior, without changing the simulator CLI contract.
