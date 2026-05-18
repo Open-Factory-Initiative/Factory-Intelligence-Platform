@@ -22,6 +22,53 @@ This file should be updated by Codex after each meaningful change.
 ### What to learn next
 ```
 
+## 2026-05-18 - Deterministic simulator seed support
+
+### What changed
+
+Added explicit tests proving every generated simulator scenario produces the
+same event payloads for the same seed and different valid payloads for a
+different seed. Documented simulator seed usage for reproducible demos, tests,
+and issue debugging.
+
+### Why it matters
+
+Deterministic simulator output lets contributors reproduce failures exactly.
+That is important for debugging ingestion, Process Sentinel rules, evidence
+generation, and future demo walkthroughs without relying on real factory data.
+
+### How it works
+
+The simulator passes the requested seed into a local `Random` instance for each
+generation run. Event IDs and timestamps stay stable for a scenario and count,
+while seeded noise controls process and quality values.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift OUTPUT=.local/events/gradual_drift.jsonl
+make simulate SCENARIO=gradual_drift SEED=43 OUTPUT=.local/events/gradual_drift_seed_43.jsonl
+```
+
+### How to test it
+
+```bash
+make test-unit
+make lint
+make typecheck
+make test
+```
+
+### Key files
+
+- `services/simulator/tests/test_simulator.py`
+- `services/simulator/README.md`
+
+### What to learn next
+
+Use fixed seeds in integration tests whenever a scenario output needs to be
+compared across ingestion, detection, and evidence-generation steps.
+
 ## 2026-05-18 - Gradual drift simulator scenario
 
 ### What changed

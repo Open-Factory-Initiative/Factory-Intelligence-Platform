@@ -31,6 +31,19 @@ the process drift begins, with the first quality concern delayed until the drift
 has moved far enough to exceed specification. Use this scenario for Process
 Sentinel tests that need early drift evidence before a quality failure.
 
+## Seeded Output
+
+Use `SEED` through `make simulate` or `--seed` through the CLI to reproduce
+simulator output exactly for tests, demos, and issue debugging:
+
+```bash
+make simulate SCENARIO=gradual_drift SEED=42 OUTPUT=.local/events/gradual_drift.jsonl
+```
+
+The same scenario, seed, count, and start time produce identical event payloads.
+Changing the seed changes the generated noise while preserving valid Factory
+Event payloads and the scenario's expected behavior.
+
 ## Scenario Definition Format
 
 Scenario definitions live in `factory_simulator.scenarios`. They describe the

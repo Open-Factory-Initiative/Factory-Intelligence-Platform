@@ -2,6 +2,7 @@ VENV ?= .venv
 PYTHON ?= $(VENV)/bin/python
 SYSTEM_PYTHON ?= python3
 SCENARIO ?= gradual_drift
+SEED ?= 42
 OUTPUT ?= .local/events/$(SCENARIO).jsonl
 INPUT ?= $(OUTPUT)
 EVENTS_STORE ?= .local/storage/events.jsonl
@@ -48,7 +49,7 @@ dev-db:
 	docker compose -f infra/docker/docker-compose.yml up -d
 
 simulate:
-	$(PYTHON) -m factory_simulator.cli --scenario $(SCENARIO) --output $(OUTPUT)
+	$(PYTHON) -m factory_simulator.cli --scenario $(SCENARIO) --seed $(SEED) --output $(OUTPUT)
 
 ingest:
 	$(PYTHON) -m factory_ingestion.cli --input $(INPUT) --events-store $(EVENTS_STORE)
