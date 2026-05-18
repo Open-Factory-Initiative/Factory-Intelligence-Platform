@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from statistics import fmean
 
 import pytest
 from factory_events import (
@@ -16,6 +17,7 @@ from factory_simulator import (
     generate_events,
     scenario_definition_for,
 )
+from factory_simulator.generator import GRADUAL_DRIFT_BASELINE_SAMPLES
 from pydantic import ValidationError
 
 
@@ -188,6 +190,61 @@ def test_gradual_drift_trends_fill_weight_upward() -> None:
     ]
 
     assert max(fill_values[-6:]) - min(fill_values[:6]) > 3.0
+
+
+def test_gradual_drift_starts_after_baseline_period() -> None:
+    definition = scenario_definition_for("gradual_drift")
+    fill_weight_tag = next(
+        tag for tag in definition.process_tags if tag.signal_id == "fill_weight"
+    )
+    events = generate_events("gradual_drift", seed=42, count=24)
+    fill_values = [
+        event.payload.value
+        for event in events
+        if event.event_type == "process.measurement.recorded"
+        and event.payload.signal_id == "fill_weight"
+    ]
+
+    baseline_values = fill_values[:GRADUAL_DRIFT_BASELINE_SAMPLES]
+    drift_values = fill_values[GRADUAL_DRIFT_BASELINE_SAMPLES:]
+
+    assert fill_weight_tag.normal_min is not None
+    assert fill_weight_tag.normal_max is not None
+    assert all(
+        fill_weight_tag.normal_min <= value <= fill_weight_tag.normal_max
+        for value in baseline_values
+    )
+    assert drift_values[0] > fmean(baseline_values)
+    assert drift_values[-1] - fmean(baseline_values) > 4.0
+
+
+def test_gradual_drift_quality_concern_occurs_after_drift_begins() -> None:
+    events = generate_events("gradual_drift", seed=42, count=24)
+    fill_events = [
+        event
+        for event in events
+        if event.event_type == "process.measurement.recorded"
+        and event.payload.signal_id == "fill_weight"
+    ]
+    quality_events = [
+        event for event in events if event.event_type == "quality.measurement.recorded"
+    ]
+    drift_start_time = fill_events[GRADUAL_DRIFT_BASELINE_SAMPLES].timestamp
+    failing_quality_events = [
+        event for event in quality_events if event.payload.result == "fail"
+    ]
+
+    assert failing_quality_events
+    assert all(event.payload.result == "pass" for event in quality_events[:-1])
+    assert failing_quality_events[0].timestamp > drift_start_time
+
+
+def test_gradual_drift_events_validate_against_factory_event_schema() -> None:
+    events = generate_events("gradual_drift", seed=42, count=24)
+
+    for event in events:
+        validated = validate_event(event.model_dump(mode="json"))
+        assert validated.event_id == event.event_id
 
 
 def test_sudden_excursion_contains_known_out_of_spec_quality_result() -> None:

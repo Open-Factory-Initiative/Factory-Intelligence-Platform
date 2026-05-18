@@ -22,6 +22,54 @@ This file should be updated by Codex after each meaningful change.
 ### What to learn next
 ```
 
+## 2026-05-18 - Gradual drift simulator scenario
+
+### What changed
+
+Made the gradual drift generator use the scenario definition's baseline values,
+noise bands, and drift rates. Added tests that prove the scenario has a stable
+baseline period, a visible upward drift, a delayed failing quality marker, and
+valid Factory Event payloads.
+
+### Why it matters
+
+Process Sentinel needs a deterministic drift dataset where process evidence
+appears before the quality concern. That lets contributors test early warning,
+evidence timeline, and investigation behavior without real factory data.
+
+### How it works
+
+The first eight samples remain at baseline with bounded noise. After that, fill
+weight and nozzle pressure increase by their configured `drift_per_step` values.
+Quality checks are emitted every third sample, and the first failing quality
+event appears only after the process drift has had time to develop.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift OUTPUT=.local/events/gradual_drift.jsonl
+```
+
+### How to test it
+
+```bash
+make test-unit
+make lint
+make typecheck
+make test
+```
+
+### Key files
+
+- `services/simulator/factory_simulator/generator.py`
+- `services/simulator/tests/test_simulator.py`
+- `services/simulator/README.md`
+
+### What to learn next
+
+Use the gradual drift JSONL output to verify ingestion compatibility and
+Process Sentinel evidence generation in a follow-up task.
+
 ## 2026-05-18 - Normal operation simulator scenario
 
 ### What changed
