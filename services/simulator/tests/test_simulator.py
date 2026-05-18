@@ -1,6 +1,14 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
+from factory_events import (
+    ProcessMeasurementPayload,
+    QualityMeasurementPayload,
+    validate_event,
+)
 from factory_simulator import (
     SCENARIOS,
     SUPPORTED_SCENARIO_TYPES,
@@ -96,6 +104,78 @@ def test_simulator_output_is_deterministic_for_seed() -> None:
     assert [event.model_dump(mode="json") for event in first] == [
         event.model_dump(mode="json") for event in second
     ]
+
+
+def test_normal_scenario_output_is_deterministic_for_seed() -> None:
+    first = generate_events("normal", seed=42, count=12)
+    second = generate_events("normal", seed=42, count=12)
+
+    assert [event.model_dump(mode="json") for event in first] == [
+        event.model_dump(mode="json") for event in second
+    ]
+
+
+def test_normal_scenario_generates_expected_event_count() -> None:
+    events = generate_events("normal", seed=42, count=12)
+
+    process_events = [
+        event for event in events if event.event_type == "process.measurement.recorded"
+    ]
+    quality_events = [
+        event for event in events if event.event_type == "quality.measurement.recorded"
+    ]
+
+    assert len(events) == 28
+    assert len(process_events) == 24
+    assert len(quality_events) == 4
+
+
+def test_normal_scenario_events_validate_against_factory_event_schema() -> None:
+    events = generate_events("normal", seed=42, count=12)
+
+    for event in events:
+        validated = validate_event(event.model_dump(mode="json"))
+        assert validated.event_id == event.event_id
+
+
+def test_normal_scenario_values_remain_in_expected_ranges() -> None:
+    definition = scenario_definition_for("normal")
+    tags_by_signal = {tag.signal_id: tag for tag in definition.process_tags}
+    quality_marker = definition.quality_markers[0]
+    events = generate_events("normal", seed=42, count=24)
+
+    for event in events:
+        payload = event.payload
+        if event.event_type == "process.measurement.recorded":
+            assert isinstance(payload, ProcessMeasurementPayload)
+            tag = tags_by_signal[payload.signal_id]
+            assert tag.normal_min is not None
+            assert tag.normal_max is not None
+            assert tag.normal_min <= payload.value <= tag.normal_max
+            assert payload.normal_min == tag.normal_min
+            assert payload.normal_max == tag.normal_max
+            assert payload.target_value == tag.target_value
+        if event.event_type == "quality.measurement.recorded":
+            assert isinstance(payload, QualityMeasurementPayload)
+            assert quality_marker.spec_min <= payload.value <= quality_marker.spec_max
+            assert payload.result == "pass"
+            assert payload.spec_min == quality_marker.spec_min
+            assert payload.spec_max == quality_marker.spec_max
+
+
+def test_normal_scenario_can_be_written_as_jsonl(tmp_path: Path) -> None:
+    output_path = tmp_path / "normal.jsonl"
+    events = generate_events("normal", seed=42, count=12)
+
+    with output_path.open("w", encoding="utf-8") as output:
+        for event in events:
+            output.write(json.dumps(event.model_dump(mode="json"), sort_keys=True))
+            output.write("\n")
+
+    lines = output_path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == len(events)
+    for line in lines:
+        validate_event(json.loads(line))
 
 
 def test_gradual_drift_trends_fill_weight_upward() -> None:
