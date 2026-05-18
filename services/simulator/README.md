@@ -5,13 +5,40 @@ Generates deterministic simulator events for the Process Sentinel MVP.
 Example:
 
 ```bash
-python -m factory_simulator.cli --scenario gradual_drift --output .local/events/gradual_drift.jsonl
+make simulate SCENARIO=gradual_drift OUTPUT=.local/events/gradual_drift.jsonl
 ```
+
+## CLI Usage
+
+Generate simulator JSONL without writing Python code:
+
+```bash
+make simulate \
+  SCENARIO=gradual_drift \
+  SEED=42 \
+  DURATION_MINUTES=24 \
+  OUTPUT=.local/events/gradual_drift.jsonl
+```
+
+Supported options:
+
+- `--scenario`: one of `normal`, `gradual_drift`, or `sudden_excursion`.
+- `--output`: JSONL output path. Parent directories are created automatically.
+- `--seed`: deterministic random seed. Defaults to `42`.
+- `--count`: number of simulated samples to generate. Defaults to `24`.
+- `--duration-minutes`: duration-style sample count; overrides `--count`.
+
+The CLI prints a summary with the event count, output path, scenario, seed, and
+effective count. Invalid scenario names are rejected before any output file is
+written.
+
+For direct module execution outside `make`, set `PYTHONPATH` to include
+`packages/factory-events` and `services/simulator`.
 
 Generate the normal operation baseline:
 
 ```bash
-python -m factory_simulator.cli --scenario normal --seed 42 --count 24 --output .local/events/normal.jsonl
+make simulate SCENARIO=normal SEED=42 COUNT=24 OUTPUT=.local/events/normal.jsonl
 ```
 
 The normal scenario emits deterministic process measurements and inline quality
@@ -22,7 +49,7 @@ that should not produce quality drift.
 Generate the gradual drift scenario:
 
 ```bash
-python -m factory_simulator.cli --scenario gradual_drift --seed 42 --count 24 --output .local/events/gradual_drift.jsonl
+make simulate SCENARIO=gradual_drift SEED=42 COUNT=24 OUTPUT=.local/events/gradual_drift.jsonl
 ```
 
 The gradual drift scenario starts with a stable baseline period, then slowly

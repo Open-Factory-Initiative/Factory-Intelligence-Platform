@@ -22,6 +22,54 @@ This file should be updated by Codex after each meaningful change.
 ### What to learn next
 ```
 
+## 2026-05-18 - Simulator CLI command
+
+### What changed
+
+Refined the simulator CLI so it supports scenario name, output path, seed,
+event count, and duration-style sample count. Added CLI tests for normal output,
+gradual drift output, invalid scenario errors, JSONL file creation, and schema
+validation.
+
+### Why it matters
+
+Contributors need a simple command to generate local simulator data for tests,
+demos, and debugging without writing Python code. Clear CLI behavior also makes
+future onboarding and issue reproduction easier.
+
+### How it works
+
+The CLI parses arguments with `argparse`, calls the existing deterministic
+simulator generator, creates the output directory, writes one Factory Event JSON
+object per line, and prints a summary of the generated stream.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift SEED=42 OUTPUT=.local/events/gradual_drift.jsonl
+make simulate SCENARIO=normal SEED=42 COUNT=24 OUTPUT=.local/events/normal.jsonl
+```
+
+### How to test it
+
+```bash
+make test-unit
+make lint
+make typecheck
+make test
+```
+
+### Key files
+
+- `services/simulator/factory_simulator/cli.py`
+- `services/simulator/tests/test_simulator.py`
+- `services/simulator/README.md`
+
+### What to learn next
+
+Use the CLI-generated JSONL files as fixtures for ingestion and Process
+Sentinel workflows.
+
 ## 2026-05-18 - Deterministic simulator seed support
 
 ### What changed

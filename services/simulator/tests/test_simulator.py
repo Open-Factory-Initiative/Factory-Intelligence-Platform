@@ -17,6 +17,7 @@ from factory_simulator import (
     generate_events,
     scenario_definition_for,
 )
+from factory_simulator.cli import main as simulator_cli_main
 from factory_simulator.generator import GRADUAL_DRIFT_BASELINE_SAMPLES
 from pydantic import ValidationError
 
@@ -201,6 +202,88 @@ def test_normal_scenario_can_be_written_as_jsonl(tmp_path: Path) -> None:
     assert len(lines) == len(events)
     for line in lines:
         validate_event(json.loads(line))
+
+
+def test_cli_writes_normal_scenario_jsonl(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_path = tmp_path / "normal.jsonl"
+
+    simulator_cli_main(
+        [
+            "--scenario",
+            "normal",
+            "--seed",
+            "7",
+            "--count",
+            "6",
+            "--output",
+            str(output_path),
+        ]
+    )
+
+    stdout = capsys.readouterr().out
+    lines = output_path.read_text(encoding="utf-8").splitlines()
+
+    assert "wrote 14 events" in stdout
+    assert "scenario=normal" in stdout
+    assert "seed=7" in stdout
+    assert len(lines) == 14
+    for line in lines:
+        validate_event(json.loads(line))
+
+
+def test_cli_writes_gradual_drift_with_duration_minutes(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_path = tmp_path / "gradual_drift.jsonl"
+
+    simulator_cli_main(
+        [
+            "--scenario",
+            "gradual_drift",
+            "--seed",
+            "42",
+            "--duration-minutes",
+            "9",
+            "--output",
+            str(output_path),
+        ]
+    )
+
+    stdout = capsys.readouterr().out
+    lines = output_path.read_text(encoding="utf-8").splitlines()
+
+    assert "wrote 21 events" in stdout
+    assert "count=9" in stdout
+    assert len(lines) == 21
+    for line in lines:
+        validate_event(json.loads(line))
+
+
+def test_cli_rejects_invalid_scenario_name(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_path = tmp_path / "invalid.jsonl"
+
+    with pytest.raises(SystemExit) as exc_info:
+        simulator_cli_main(
+            [
+                "--scenario",
+                "missing",
+                "--output",
+                str(output_path),
+            ]
+        )
+
+    stderr = capsys.readouterr().err
+    assert exc_info.value.code == 2
+    assert "invalid choice" in stderr
+    assert "normal" in stderr
+    assert not output_path.exists()
 
 
 def test_gradual_drift_trends_fill_weight_upward() -> None:
