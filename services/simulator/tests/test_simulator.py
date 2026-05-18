@@ -99,6 +99,29 @@ def test_scenario_format_lists_current_and_future_supported_types() -> None:
     )
 
 
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_same_seed_and_scenario_produce_identical_output(scenario: str) -> None:
+    first = generate_events(scenario, seed=42, count=12)
+    second = generate_events(scenario, seed=42, count=12)
+
+    assert [event.model_dump(mode="json") for event in first] == [
+        event.model_dump(mode="json") for event in second
+    ]
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_different_seeds_produce_different_valid_output(scenario: str) -> None:
+    seed_42_events = generate_events(scenario, seed=42, count=12)
+    seed_43_events = generate_events(scenario, seed=43, count=12)
+
+    assert [event.model_dump(mode="json") for event in seed_42_events] != [
+        event.model_dump(mode="json") for event in seed_43_events
+    ]
+    for event in seed_43_events:
+        validated = validate_event(event.model_dump(mode="json"))
+        assert validated.event_id == event.event_id
+
+
 def test_simulator_output_is_deterministic_for_seed() -> None:
     first = generate_events("gradual_drift", seed=42, count=12)
     second = generate_events("gradual_drift", seed=42, count=12)
