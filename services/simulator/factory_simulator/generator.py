@@ -16,6 +16,8 @@ from factory_events import (
 from factory_simulator.scenarios import (
     SCENARIOS,
     ScenarioName,
+    ScenarioProcessTag,
+    ScenarioQualityMarker,
     scenario_definition_for,
 )
 
@@ -36,6 +38,10 @@ def generate_events(
 
     definition = scenario_definition_for(scenario)
     line_context = definition.line_context.model_dump(exclude_none=True)
+    process_tags = {tag.signal_id: tag for tag in definition.process_tags}
+    fill_weight_tag = process_tags["fill_weight"]
+    pressure_tag = process_tags["filler_nozzle_pressure"]
+    quality_marker = definition.quality_markers[0]
     rng = Random(seed)
     start_time = start or datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
     events: list[EventEnvelope] = []
@@ -55,6 +61,7 @@ def generate_events(
                 value=fill_weight,
                 unit="g",
                 asset_id="asset_filler_1",
+                process_tag=fill_weight_tag,
                 line_context=line_context,
             )
         )
@@ -69,20 +76,27 @@ def generate_events(
                 value=pressure,
                 unit="bar",
                 asset_id="asset_filler_1",
+                process_tag=pressure_tag,
                 line_context=line_context,
             )
         )
 
         if index % 3 == 2:
-            result = "pass" if 495.0 <= fill_weight <= 505.0 else "fail"
+            quality_value = round(fill_weight + rng.uniform(-0.2, 0.2), 3)
+            result = (
+                "pass"
+                if quality_marker.spec_min <= quality_value <= quality_marker.spec_max
+                else "fail"
+            )
             events.append(
                 _quality_event(
                     event_id=f"evt_{scenario}_quality_{index:04d}",
                     source_event_id=f"sim-{scenario}-quality-{index:04d}",
                     trace_id=f"trace_{scenario}_{index:04d}",
                     timestamp=timestamp + timedelta(seconds=20),
-                    value=round(fill_weight + rng.uniform(-0.2, 0.2), 3),
+                    value=quality_value,
                     result=result,
+                    quality_marker=quality_marker,
                     line_context=line_context,
                 )
             )
@@ -122,6 +136,7 @@ def _process_event(
     value: float,
     unit: str,
     asset_id: str,
+    process_tag: ScenarioProcessTag,
     line_context: dict[str, str],
 ) -> EventEnvelope:
     context = line_context | {"asset_id": asset_id}
@@ -143,6 +158,9 @@ def _process_event(
             value=value,
             unit=unit,
             quality="good",
+            normal_min=process_tag.normal_min,
+            normal_max=process_tag.normal_max,
+            target_value=process_tag.target_value,
         ),
         metadata=EventMetadata(simulated=True, trace_id=trace_id),
     )
@@ -156,6 +174,7 @@ def _quality_event(
     timestamp: datetime,
     value: float,
     result: Literal["pass", "fail"],
+    quality_marker: ScenarioQualityMarker,
     line_context: dict[str, str],
 ) -> EventEnvelope:
     return EventEnvelope(
@@ -171,14 +190,14 @@ def _quality_event(
         context=EventContext(**line_context, asset_id="asset_checkweigher_1"),
         payload=QualityMeasurementPayload(
             quality_check_type="inline_check",
-            measurement_name="Final Fill Weight",
+            measurement_name=quality_marker.measurement_name,
             value=value,
-            unit="g",
+            unit=quality_marker.unit,
             result_status=result,
             result=result,
-            severity="high" if result == "fail" else "low",
-            spec_min=495.0,
-            spec_max=505.0,
+            severity=quality_marker.severity_on_fail if result == "fail" else "low",
+            spec_min=quality_marker.spec_min,
+            spec_max=quality_marker.spec_max,
         ),
         metadata=EventMetadata(simulated=True, trace_id=trace_id),
     )

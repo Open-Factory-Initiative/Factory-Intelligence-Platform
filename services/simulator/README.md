@@ -8,6 +8,17 @@ Example:
 python -m factory_simulator.cli --scenario gradual_drift --output .local/events/gradual_drift.jsonl
 ```
 
+Generate the normal operation baseline:
+
+```bash
+python -m factory_simulator.cli --scenario normal --seed 42 --count 24 --output .local/events/normal.jsonl
+```
+
+The normal scenario emits deterministic process measurements and inline quality
+checks within the configured operating and specification ranges. Use it as the
+clean baseline dataset for ingestion, validation, and Process Sentinel tests
+that should not produce quality drift.
+
 ## Scenario Definition Format
 
 Scenario definitions live in `factory_simulator.scenarios`. They describe the

@@ -22,6 +22,55 @@ This file should be updated by Codex after each meaningful change.
 ### What to learn next
 ```
 
+## 2026-05-18 - Normal operation simulator scenario
+
+### What changed
+
+Added focused validation for the simulator's `normal` scenario and documented
+the normal-operation CLI command. Process measurement events now include their
+configured normal limits and target values, and quality events use the scenario
+quality marker specification.
+
+### Why it matters
+
+The normal scenario is the clean baseline for testing ingestion, schema
+validation, and Process Sentinel behavior when no quality drift should be
+detected. Keeping the generated events self-describing makes later tests easier
+to understand.
+
+### How it works
+
+The simulator reads the `normal` scenario definition, generates two process
+measurements per sample, and emits an inline quality check every third sample.
+With a fixed seed, the same count always produces the same JSONL-ready Factory
+Event payloads, and all normal values stay inside the configured ranges.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=normal OUTPUT=.local/events/normal.jsonl
+```
+
+### How to test it
+
+```bash
+make test-unit
+make lint
+make typecheck
+make test
+```
+
+### Key files
+
+- `services/simulator/factory_simulator/generator.py`
+- `services/simulator/tests/test_simulator.py`
+- `services/simulator/README.md`
+
+### What to learn next
+
+Use the normal JSONL output as a baseline fixture for ingestion and Process
+Sentinel tests that assert no drift detections are created.
+
 ## 2026-05-09 - First Process Sentinel MVP skeleton
 
 ### What changed
