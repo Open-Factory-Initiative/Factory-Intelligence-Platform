@@ -13,21 +13,10 @@ from factory_events import (
     QualityMeasurementPayload,
 )
 
-ScenarioName = Literal["normal", "gradual_drift", "sudden_excursion"]
-SCENARIOS: tuple[ScenarioName, ...] = ("normal", "gradual_drift", "sudden_excursion")
-
-DEMO_CONTEXT = {
-    "site_id": "site_demo",
-    "area_id": "area_packaging",
-    "line_id": "line_1",
-    "asset_id": "asset_filler_1",
-    "work_order_id": "wo_1001",
-}
-
-DEMO_ASSETS = (
-    "asset_filler_1",
-    "asset_checkweigher_1",
-    "asset_case_packer_1",
+from factory_simulator.scenarios import (
+    SCENARIOS,
+    ScenarioName,
+    scenario_definition_for,
 )
 
 
@@ -45,6 +34,8 @@ def generate_events(
         msg = "count must be at least 6 so drift windows are meaningful"
         raise ValueError(msg)
 
+    definition = scenario_definition_for(scenario)
+    line_context = definition.line_context.model_dump(exclude_none=True)
     rng = Random(seed)
     start_time = start or datetime(2026, 1, 1, 12, 0, tzinfo=UTC)
     events: list[EventEnvelope] = []
@@ -64,6 +55,7 @@ def generate_events(
                 value=fill_weight,
                 unit="g",
                 asset_id="asset_filler_1",
+                line_context=line_context,
             )
         )
         events.append(
@@ -77,6 +69,7 @@ def generate_events(
                 value=pressure,
                 unit="bar",
                 asset_id="asset_filler_1",
+                line_context=line_context,
             )
         )
 
@@ -90,6 +83,7 @@ def generate_events(
                     timestamp=timestamp + timedelta(seconds=20),
                     value=round(fill_weight + rng.uniform(-0.2, 0.2), 3),
                     result=result,
+                    line_context=line_context,
                 )
             )
 
@@ -128,8 +122,9 @@ def _process_event(
     value: float,
     unit: str,
     asset_id: str,
+    line_context: dict[str, str],
 ) -> EventEnvelope:
-    context = DEMO_CONTEXT | {"asset_id": asset_id}
+    context = line_context | {"asset_id": asset_id}
     return EventEnvelope(
         event_id=event_id,
         event_type="process.measurement.recorded",
@@ -161,6 +156,7 @@ def _quality_event(
     timestamp: datetime,
     value: float,
     result: Literal["pass", "fail"],
+    line_context: dict[str, str],
 ) -> EventEnvelope:
     return EventEnvelope(
         event_id=event_id,
@@ -172,7 +168,7 @@ def _quality_event(
             adapter="simulator",
             source_event_id=source_event_id,
         ),
-        context=EventContext(**DEMO_CONTEXT),
+        context=EventContext(**line_context, asset_id="asset_checkweigher_1"),
         payload=QualityMeasurementPayload(
             quality_check_type="inline_check",
             measurement_name="Final Fill Weight",
