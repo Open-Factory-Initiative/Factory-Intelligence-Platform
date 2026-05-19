@@ -235,6 +235,8 @@ def test_local_event_store_skips_duplicate_event_ids_for_repeatable_runs(tmp_pat
     assert second_result.accepted_count == len(events)
     assert len(store.list_events()) == len(events)
     assert len(jsonl_lines(store.path)) == len(events)
+
+
 def test_ingestion_cli_prints_dead_letter_count(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
@@ -265,6 +267,92 @@ def test_ingestion_cli_prints_dead_letter_count(
     assert "validation_error_examples:" in output
     assert "line 1: quality:" in output
     assert len(read_jsonl(dead_letter_path)) == 1
+
+
+def test_simulator_to_ingestion_integration_stores_valid_events(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    input_path = tmp_path / "simulator_events.jsonl"
+    events_store = tmp_path / "accepted_events.jsonl"
+    dead_letter_path = tmp_path / "dead_letter.jsonl"
+    simulator_events = [
+        event.model_dump(mode="json")
+        for event in generate_events("gradual_drift", seed=44, count=9)
+    ]
+    write_jsonl(input_path, simulator_events)
+
+    result = ingestion_cli_main(
+        [
+            "--input",
+            str(input_path),
+            "--events-store",
+            str(events_store),
+            "--dead-letter",
+            str(dead_letter_path),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    stored_rows = read_jsonl(events_store)
+    assert result == 0
+    assert f"input_file: {input_path}" in output
+    assert f"accepted_events: {len(simulator_events)}" in output
+    assert "rejected_events: 0" in output
+    assert "dead_letter_count: 0" in output
+    assert f"accepted_output: {events_store}" in output
+    assert f"dead_letter_output: {dead_letter_path}" in output
+    assert len(stored_rows) == len(simulator_events)
+    assert {row["event_id"] for row in stored_rows} == {
+        event["event_id"] for event in simulator_events
+    }
+    assert (
+        JsonlEventStore(events_store).list_events()[0].event_id
+        == simulator_events[0]["event_id"]
+    )
+    assert dead_letter_path.read_text(encoding="utf-8") == ""
+
+
+def test_simulator_to_ingestion_integration_routes_invalid_events_to_dead_letter(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    input_path = tmp_path / "mixed_events.jsonl"
+    events_store = tmp_path / "accepted_events.jsonl"
+    dead_letter_path = tmp_path / "dead_letter.jsonl"
+    valid_events = [
+        event.model_dump(mode="json") for event in generate_events("normal", seed=44, count=6)
+    ]
+    invalid_event = valid_events[0] | {"event_type": "unsupported.event"}
+    write_jsonl(input_path, [invalid_event, *valid_events])
+
+    result = ingestion_cli_main(
+        [
+            "--input",
+            str(input_path),
+            "--events-store",
+            str(events_store),
+            "--dead-letter",
+            str(dead_letter_path),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    dead_letters = read_jsonl(dead_letter_path)
+    assert result == 0
+    assert f"accepted_events: {len(valid_events)}" in output
+    assert "rejected_events: 1" in output
+    assert "dead_letter_count: 1" in output
+    assert "validation_error_examples:" in output
+    assert "unsupported event_type" in output
+    assert len(read_jsonl(events_store)) == len(valid_events)
+    assert {row["event_id"] for row in read_jsonl(events_store)} == {
+        event["event_id"] for event in valid_events
+    }
+    assert len(dead_letters) == 1
+    assert dead_letters[0]["source_path"] == str(input_path)
+    assert dead_letters[0]["line_number"] == 1
+    assert dead_letters[0]["payload"] == invalid_event
 
 
 def test_ingestion_cli_summary_includes_malformed_json_example(
