@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from factory_events import EventEnvelope
 
@@ -22,6 +23,10 @@ class InvalidJsonlEventError(ValueError):
 class IngestionResult:
     accepted_count: int
     rejected_count: int
+
+    @property
+    def dead_letter_count(self) -> int:
+        return self.rejected_count
 
 
 def ingest_jsonl(input_path: Path, *, store: EventStore, dead_letter_path: Path) -> IngestionResult:
@@ -44,6 +49,7 @@ def ingest_jsonl(input_path: Path, *, store: EventStore, dead_letter_path: Path)
             raw_line = line.strip()
             if not raw_line:
                 continue
+            raw_event: Any | None = None
             try:
                 raw_event = json.loads(raw_line)
                 if not isinstance(raw_event, dict):
@@ -62,10 +68,13 @@ def ingest_jsonl(input_path: Path, *, store: EventStore, dead_letter_path: Path)
                 dead_letter.write(
                     json.dumps(
                         {
-                            "line_number": line_number,
                             "error": str(exc),
                             "errors": validation_errors,
+                            "line_number": line_number,
+                            "payload": raw_event,
                             "raw": raw_line,
+                            "recorded_at": datetime.now(UTC).isoformat(),
+                            "source_path": str(input_path),
                         },
                         sort_keys=True,
                     )
