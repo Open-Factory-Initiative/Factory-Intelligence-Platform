@@ -270,3 +270,28 @@ the `validation_error_examples` section in the ingestion summary. Common causes
 are malformed JSON, missing required event fields, unsupported `event_type`
 values, invalid enum values, invalid process or quality ranges, and mismatched
 quality result fields.
+
+## Demo Ingestion Troubleshooting
+
+For the manufacturer demo, use the demo-specific local paths instead of the
+generic defaults:
+
+| Purpose | Demo path |
+| --- | --- |
+| Simulator output | `.local/events/fill_weight_drift_demo.jsonl` |
+| Accepted event store | `.local/storage/fill_weight_drift_demo_events.jsonl` |
+| Dead-letter records | `.local/storage/fill_weight_drift_demo_dead_letter.jsonl` |
+| Process Sentinel state | `.local/storage/fill_weight_drift_demo_sentinel/` |
+
+If no detections appear after ingestion, run the clean demo sequence:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+```
+
+The expected deterministic demo counts are 70 generated events, 70 accepted
+events, 0 rejected events, and 0 dead-letter rows. See
+`docs/DEMO_RUNBOOK.md` for the full troubleshooting checklist.
