@@ -1164,3 +1164,50 @@ make test
 
 Use the scenario definitions to drive future scenario fixtures, including noisy
 sensor behavior, without changing the simulator CLI contract.
+
+## 2026-05-19 - JSONL ingestion path
+
+### What changed
+
+Completed the local JSONL ingestion path for simulator output. Ingestion now
+checks for missing or non-file inputs before reading, rejects malformed JSON and
+non-object JSONL rows into the dead-letter file, and keeps accepted/rejected
+summary counts for each run.
+
+### Why it was built that way
+
+The first ingestion path should stay simple and reviewable: read one local file,
+validate each candidate event through the shared factory event contracts, append
+valid events to the local JSONL store, and preserve invalid rows for inspection.
+That proves the ingestion boundary without introducing MQTT, OPC UA, Kafka, or
+production streaming infrastructure.
+
+### How data flows through it
+
+The simulator writes one factory event per JSONL line. The ingestion CLI opens
+that file, parses each non-empty line, validates the event with
+`packages/factory-events`, appends accepted events to
+`.local/storage/events.jsonl`, and writes rejected rows to
+`.local/storage/dead_letter.jsonl` with the source line number and error.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use the accepted event store as the handoff point into Process Sentinel, then
+add focused integration tests that prove detections are built from ingested
+events rather than simulator objects in memory.

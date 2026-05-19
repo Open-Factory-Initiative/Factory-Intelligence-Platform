@@ -13,6 +13,10 @@ class EventStore(Protocol):
     def append(self, event: EventEnvelope) -> None: ...
 
 
+class InvalidJsonlEventError(ValueError):
+    """Raised when a JSONL row is valid JSON but not a factory event object."""
+
+
 @dataclass(frozen=True)
 class IngestionResult:
     accepted_count: int
@@ -20,6 +24,13 @@ class IngestionResult:
 
 
 def ingest_jsonl(input_path: Path, *, store: EventStore, dead_letter_path: Path) -> IngestionResult:
+    if not input_path.exists():
+        msg = f"input file not found: {input_path}"
+        raise FileNotFoundError(msg)
+    if not input_path.is_file():
+        msg = f"input path is not a file: {input_path}"
+        raise IsADirectoryError(msg)
+
     accepted = 0
     rejected = 0
     dead_letter_path.parent.mkdir(parents=True, exist_ok=True)
@@ -34,8 +45,16 @@ def ingest_jsonl(input_path: Path, *, store: EventStore, dead_letter_path: Path)
                 continue
             try:
                 raw_event = json.loads(raw_line)
+                if not isinstance(raw_event, dict):
+                    msg = "JSONL line must contain a factory event object"
+                    raise InvalidJsonlEventError(msg)
                 event = validate_event(raw_event)
-            except (json.JSONDecodeError, UnsupportedEventTypeError, ValidationError) as exc:
+            except (
+                InvalidJsonlEventError,
+                json.JSONDecodeError,
+                UnsupportedEventTypeError,
+                ValidationError,
+            ) as exc:
                 rejected += 1
                 dead_letter.write(
                     json.dumps(
