@@ -176,6 +176,9 @@ Each evidence item includes:
 - `source_event_ids`
 - `score`
 
+The UI/API contract, empty state, and error state are documented in
+`docs/EVIDENCE_TIMELINE_API_CONTRACT.md`.
+
 ### Troubleshooting Demo Ingestion
 
 If no detections appear during demo prep, first confirm that the demo is using

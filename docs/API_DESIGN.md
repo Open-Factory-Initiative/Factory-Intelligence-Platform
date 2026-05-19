@@ -68,6 +68,9 @@ GET /sentinel/detections/{detection_id}
 GET /sentinel/detections/{detection_id}/evidence
 ```
 
+The evidence timeline response shape used by the Operations Workbench is
+documented in `docs/EVIDENCE_TIMELINE_API_CONTRACT.md`.
+
 ### Recommendations
 
 ```text

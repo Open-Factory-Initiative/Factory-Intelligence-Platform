@@ -1879,3 +1879,52 @@ make typecheck
 
 Use the evidence contract in the upcoming recommendation review, RCA/CAPA
 preview, and Operations Workbench demo screens.
+
+## 2026-05-19 - Evidence timeline API/UI contract
+
+### What changed
+
+Added an evidence timeline API/UI contract for the Operations Workbench. The
+contract documents the endpoint, UI-needed fields, demo response example,
+empty-state behavior, error-state behavior, and confirms that the current API
+returns the fields needed for the MVP evidence display.
+
+### Why it was built that way
+
+Issue #129 is a contract alignment task between API and UI work. The backend
+already returns the required evidence fields, so the smallest useful change is a
+stable contract document plus tests for the documented empty and not-found
+states.
+
+### How it works
+
+The Workbench should call
+`GET /sentinel/detections/{detection_id}/evidence` and render the returned
+chronological evidence items. Each item includes the evidence type, timestamp,
+title, description, source event IDs, and score. Existing detections with no
+evidence return an empty array; missing detections return the standard
+`detection_not_found` error shape.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use this contract when implementing the Operations Workbench evidence timeline
+component.
