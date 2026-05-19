@@ -100,6 +100,16 @@ class QualityMeasurementPayload(StrictModel):
 
 BatchStatus = Literal["planned", "started", "completed", "held", "released", "cancelled"]
 WorkOrderStatus = Literal["planned", "started", "completed", "held", "cancelled"]
+AssetStatus = Literal["running", "idle", "stopped", "faulted", "maintenance", "offline"]
+
+
+class AssetEventPayload(StrictModel):
+    asset_id: str = Field(min_length=1)
+    asset_name: str = Field(min_length=1)
+    asset_type: str = Field(min_length=1)
+    previous_status: AssetStatus | None = None
+    status: AssetStatus
+    status_reason: str | None = None
 
 
 class BatchEventPayload(StrictModel):
@@ -179,6 +189,7 @@ class AuditEventPayload(StrictModel):
 Payload = (
     ProcessMeasurementPayload
     | QualityMeasurementPayload
+    | AssetEventPayload
     | BatchEventPayload
     | WorkOrderEventPayload
     | SentinelDetectionPayload
@@ -191,6 +202,7 @@ Payload = (
 EVENT_PAYLOAD_MODELS: dict[str, type[Payload]] = {
     "process.measurement.recorded": ProcessMeasurementPayload,
     "quality.measurement.recorded": QualityMeasurementPayload,
+    "asset.status.updated": AssetEventPayload,
     "production.batch.started": BatchEventPayload,
     "production.batch.completed": BatchEventPayload,
     "production.batch.status.updated": BatchEventPayload,
@@ -240,8 +252,15 @@ class FactoryEvent(StrictModel):
         if self.source.adapter == "simulator" and self.metadata.simulated is not True:
             msg = "simulator events must include metadata.simulated = true"
             raise ValueError(msg)
+        self.validate_asset_event_rules()
         self.validate_production_event_rules()
         return self
+
+    def validate_asset_event_rules(self) -> None:
+        if isinstance(self.payload, AssetEventPayload):
+            if self.context.asset_id is not None and self.context.asset_id != self.payload.asset_id:
+                msg = "context.asset_id must match payload.asset_id"
+                raise ValueError(msg)
 
     def validate_production_event_rules(self) -> None:
         if isinstance(self.payload, BatchEventPayload):
@@ -301,6 +320,11 @@ class QualityEvent(FactoryEvent):
     payload: QualityMeasurementPayload
 
 
+class AssetEvent(FactoryEvent):
+    event_type: Literal["asset.status.updated"]
+    payload: AssetEventPayload
+
+
 class BatchEvent(FactoryEvent):
     event_type: Literal[
         "production.batch.started",
@@ -317,6 +341,11 @@ class WorkOrderEvent(FactoryEvent):
         "production.work_order.status.updated",
     ]
     payload: WorkOrderEventPayload
+
+
+class RecommendationEvent(FactoryEvent):
+    event_type: Literal["governance.recommendation.proposed"]
+    payload: RecommendationPayload
 
 
 def require_utc_datetime(value: datetime) -> datetime:

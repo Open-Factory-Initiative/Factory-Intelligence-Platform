@@ -40,8 +40,9 @@ make test-contract
 The implementation currently validates the common envelope, event identity,
 UTC timestamps, schema version `1.0.0`, source system metadata, line and asset
 context, optional batch and work order references, process signal payloads,
-quality event payloads, production batch and work order payloads, supported
-event types, and payload shape. Unknown event types are rejected by ingestion.
+quality event payloads, asset status payloads, production batch and work order
+payloads, governed recommendation payloads, supported event types, and payload
+shape. Unknown event types are rejected by ingestion.
 
 ## Base FactoryEvent Envelope
 
@@ -114,6 +115,7 @@ Supported MVP event types are:
 
 - `process.measurement.recorded`
 - `quality.measurement.recorded`
+- `asset.status.updated`
 - `production.batch.started`
 - `production.batch.completed`
 - `production.batch.status.updated`
@@ -197,6 +199,39 @@ packages/test-fixtures/valid-events/quality_in_spec_result.json
 packages/test-fixtures/valid-events/quality_out_of_spec_result.json
 packages/test-fixtures/valid-events/quality_visual_inspection.json
 ```
+
+### Asset Status Updated
+
+Contributor-facing asset example:
+
+```text
+examples/events/asset_event.json
+```
+
+```json
+{
+  "event_type": "asset.status.updated",
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "asset_id": "asset_filler_1"
+  },
+  "payload": {
+    "asset_id": "asset_filler_1",
+    "asset_name": "Filler 1",
+    "asset_type": "filler",
+    "previous_status": "idle",
+    "status": "running",
+    "status_reason": "Line startup completed."
+  }
+}
+```
+
+`AssetEvent` is the typed envelope specialization for
+`asset.status.updated`. It records equipment state changes that provide context
+for process signals, investigations, and future maintenance workflows. If
+`context.asset_id` is present, it must match `payload.asset_id`.
 
 ### Batch Started
 
@@ -335,6 +370,12 @@ examples/events/work_order_event.json
 
 ### Recommendation Proposed
 
+Contributor-facing recommendation example:
+
+```text
+examples/events/recommendation_event.json
+```
+
 ```json
 {
   "event_type": "governance.recommendation.proposed",
@@ -348,6 +389,10 @@ examples/events/work_order_event.json
   }
 }
 ```
+
+`RecommendationEvent` is the typed envelope specialization for
+`governance.recommendation.proposed`. Recommendations remain advisory and
+human-reviewed; high-impact action still requires the governed approval flow.
 
 ### Approval Decision Recorded
 
@@ -388,10 +433,17 @@ examples/events/work_order_event.json
   must be less than `spec_max`.
 - Quality event batch and work order references should use
   `context.batch_id` and `context.work_order_id`.
+- Asset status payloads must include `asset_id`, `asset_name`, `asset_type`,
+  and constrained asset `status`.
+- If `context.asset_id` is present for an asset event, it must match
+  `payload.asset_id`.
 - Batch event payloads must include `batch_id`, `lot_id`, `product_id`,
   `product_name`, and a constrained batch `status`.
 - Work order event payloads must include `work_order_id`, `product_id`,
   `product_name`, and a constrained work order `status`.
+- Recommendation payloads must include `recommendation_id`, `detection_id`,
+  `recommended_action`, constrained `risk_level`, `requires_approval`, and at
+  least one `evidence_ids` entry.
 - Batch and work order lifecycle event names must match their payload status:
   started events use `status = "started"` and completed events use
   `status = "completed"`.
