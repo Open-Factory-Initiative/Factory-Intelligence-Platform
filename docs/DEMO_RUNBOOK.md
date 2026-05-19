@@ -150,6 +150,32 @@ http://127.0.0.1:8000/sentinel/detections
 http://127.0.0.1:8000/sentinel/detections/det_fill_weight_gradual_drift
 ```
 
+### Expected Demo Evidence Timeline
+
+The demo detection evidence endpoint should return a chronological timeline:
+
+```text
+http://127.0.0.1:8000/sentinel/detections/det_fill_weight_gradual_drift/evidence
+```
+
+Expected evidence items:
+
+| Order | Evidence type | Title | What it shows |
+| --- | --- | --- | --- |
+| 1 | `process_signal` | Recent fill weight average is higher than baseline | Baseline and recent fill-weight averages, source process event IDs, and a score. |
+| 2 | `quality_result` | Recent quality checks are near the upper spec limit | Recent quality checks moving in the same direction as the process signal, source quality event IDs, and a score. |
+
+Each evidence item includes:
+
+- `evidence_id`
+- `detection_id`
+- `evidence_type`
+- `timestamp`
+- `title`
+- `description`
+- `source_event_ids`
+- `score`
+
 ### Troubleshooting Demo Ingestion
 
 If no detections appear during demo prep, first confirm that the demo is using

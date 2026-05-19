@@ -71,6 +71,16 @@ def test_fill_weight_drift_demo_supports_detection_recommendation_and_rca_draft(
     assert detection.related_asset_ids == ["filler_f_201"]
     assert detection.confidence > 0.7
     assert len(evidence) >= 2
+    assert [item.timestamp for item in evidence] == sorted(item.timestamp for item in evidence)
+    assert [item.evidence_type for item in evidence] == ["process_signal", "quality_result"]
+    assert all(item.title for item in evidence)
+    assert all(item.description for item in evidence)
+    assert all(item.source_event_ids for item in evidence)
+    assert all(0.0 <= item.score <= 1.0 for item in evidence)
+    assert "Baseline average" in evidence[0].description
+    assert "recent average" in evidence[0].description
+    assert "process signal" in evidence[1].description
+    assert "quality" in evidence[1].title.lower()
     assert recommendation.status == "needs_review"
     assert recommendation.requires_approval is True
     assert recommendation.evidence_ids == [item.evidence_id for item in evidence]
