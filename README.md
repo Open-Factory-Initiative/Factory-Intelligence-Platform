@@ -198,6 +198,12 @@ make sentinel-run
 make api
 ```
 
+Simulator scenarios can be selected with `SCENARIO=normal`,
+`SCENARIO=gradual_drift`, or `SCENARIO=sudden_excursion`. Use `SEED`, `COUNT`,
+`DURATION_MINUTES`, and `OUTPUT` to reproduce specific JSONL event streams; see
+`services/simulator/README.md` for the full simulator workflow and ingestion
+handoff.
+
 Then open:
 
 ```text
