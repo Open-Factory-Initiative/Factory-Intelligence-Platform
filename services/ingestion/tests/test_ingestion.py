@@ -194,8 +194,14 @@ def test_ingestion_cli_prints_summary(tmp_path: Path, capsys: pytest.CaptureFixt
 
     output = capsys.readouterr().out
     assert result == 0
-    assert f"ingestion complete: accepted={len(events)} rejected=0" in output
-    assert "dead_letter_count=0" in output
+    assert "ingestion summary" in output
+    assert f"input_file: {input_path}" in output
+    assert f"accepted_events: {len(events)}" in output
+    assert "rejected_events: 0" in output
+    assert "dead_letter_count: 0" in output
+    assert f"accepted_output: {events_store}" in output
+    assert f"dead_letter_output: {dead_letter_path}" in output
+    assert "validation_error_examples:" not in output
     assert len(JsonlEventStore(events_store).list_events()) == len(events)
 
 
@@ -253,8 +259,45 @@ def test_ingestion_cli_prints_dead_letter_count(
 
     output = capsys.readouterr().out
     assert result == 0
-    assert "accepted=0 rejected=1 dead_letter_count=1" in output
+    assert "accepted_events: 0" in output
+    assert "rejected_events: 1" in output
+    assert "dead_letter_count: 1" in output
+    assert "validation_error_examples:" in output
+    assert "line 1: quality:" in output
     assert len(read_jsonl(dead_letter_path)) == 1
+
+
+def test_ingestion_cli_summary_includes_malformed_json_example(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    input_path = tmp_path / "events.jsonl"
+    valid_event = simulator_event("process.measurement.recorded")
+    input_path.write_text(
+        "\n".join([json.dumps(valid_event), '{"event_id": "broken"']) + "\n",
+        encoding="utf-8",
+    )
+    events_store = tmp_path / "store.jsonl"
+    dead_letter_path = tmp_path / "dead_letter.jsonl"
+
+    result = ingestion_cli_main(
+        [
+            "--input",
+            str(input_path),
+            "--events-store",
+            str(events_store),
+            "--dead-letter",
+            str(dead_letter_path),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert result == 0
+    assert "accepted_events: 1" in output
+    assert "rejected_events: 1" in output
+    assert "dead_letter_count: 1" in output
+    assert "validation_error_examples:" in output
+    assert "line 2:" in output
 
 
 def test_validation_accepts_valid_process_signal_event() -> None:

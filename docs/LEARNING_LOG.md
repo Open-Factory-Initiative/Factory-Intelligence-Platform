@@ -1328,3 +1328,48 @@ to later issues.
 Use the dead-letter count and structured error fields as the basis for a focused
 ingestion summary/reporting issue, without adding retry queues or production
 message-broker dead-letter topics yet.
+
+## 2026-05-19 - Ingestion summary output
+
+### What changed
+
+Added a human-readable ingestion summary to the ingestion CLI. The summary now
+shows the input file, accepted event count, rejected event count,
+dead-letter count, accepted output path, dead-letter output path, and a few
+validation error examples when records are rejected.
+
+### Why it was built that way
+
+Contributors should be able to understand an ingestion run without opening the
+event store or dead-letter file first. The CLI still writes the detailed data to
+local JSONL files, but the terminal output now gives enough context to decide
+what to inspect next.
+
+### How data flows through it
+
+`ingest_jsonl` validates and routes each input row, then the CLI formats the
+result into a summary. When rejected records exist, the CLI reads the first few
+dead-letter records and includes their line number and useful error detail in
+the summary.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use the summary output as the contributor-facing surface for future ingestion
+reporting work, while keeping retry queues, broker topics, and UI reporting for
+later scoped issues.
