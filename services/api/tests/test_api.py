@@ -105,6 +105,40 @@ def test_demo_detection_evidence_endpoint_returns_demo_ready_timeline(
     assert "process signal" in evidence[1]["description"]
 
 
+def test_detection_evidence_endpoint_returns_empty_state_for_detection_without_evidence(
+    tmp_path: Path,
+) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    (state_dir / "evidence.json").write_text("[]\n", encoding="utf-8")
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    response = client.get("/sentinel/detections/det_fill_weight_gradual_drift/evidence")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_detection_evidence_endpoint_returns_not_found_for_missing_detection(
+    tmp_path: Path,
+) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    response = client.get("/sentinel/detections/det_missing/evidence")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {
+            "code": "detection_not_found",
+            "message": "Detection not found: det_missing",
+        }
+    }
+
+
 def test_domain_model_query_endpoints(tmp_path: Path) -> None:
     events_store_path, state_dir = seed_state(tmp_path)
     client = TestClient(
