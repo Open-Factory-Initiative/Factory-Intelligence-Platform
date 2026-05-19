@@ -47,6 +47,32 @@ def test_event_and_detection_query_endpoints(tmp_path: Path) -> None:
     assert detections_response.json()[0]["status"] == "recommendation_created"
 
 
+def test_demo_detection_detail_endpoint_exposes_expected_lookup_fields(
+    tmp_path: Path,
+) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    list_response = client.get("/sentinel/detections")
+    detail_response = client.get("/sentinel/detections/det_fill_weight_gradual_drift")
+
+    assert list_response.status_code == 200
+    assert detail_response.status_code == 200
+    assert [item["detection_id"] for item in list_response.json()] == [
+        "det_fill_weight_gradual_drift"
+    ]
+    assert detail_response.json()["detection_id"] == "det_fill_weight_gradual_drift"
+    assert detail_response.json()["summary"] == (
+        "Fill weight is trending upward toward the upper quality limit."
+    )
+    assert detail_response.json()["severity"] == "medium"
+    assert detail_response.json()["confidence"] > 0.7
+    assert detail_response.json()["related_work_order_id"] == "WO-DEMO-1007"
+    assert detail_response.json()["related_asset_ids"] == ["filler_f_201"]
+
+
 def test_domain_model_query_endpoints(tmp_path: Path) -> None:
     events_store_path, state_dir = seed_state(tmp_path)
     client = TestClient(

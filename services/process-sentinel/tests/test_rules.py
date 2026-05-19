@@ -60,6 +60,8 @@ def test_fill_weight_drift_demo_supports_detection_recommendation_and_rca_draft(
 
     assert [item.detection_type for item in result.detections] == ["quality_drift"]
     assert detection.detection_id == "det_fill_weight_gradual_drift"
+    assert detection.summary == "Fill weight is trending upward toward the upper quality limit."
+    assert detection.severity == "medium"
     assert detection.related_work_order_id == "WO-DEMO-1007"
     assert detection.related_asset_ids == ["filler_f_201"]
     assert detection.confidence > 0.7
