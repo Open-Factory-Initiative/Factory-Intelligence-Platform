@@ -18,6 +18,7 @@ from factory_simulator.scenarios import (
     ScenarioName,
     ScenarioProcessTag,
     ScenarioQualityMarker,
+    ScenarioType,
     scenario_definition_for,
 )
 
@@ -39,6 +40,7 @@ def generate_events(
         raise ValueError(msg)
 
     definition = scenario_definition_for(scenario)
+    scenario_type = definition.metadata.scenario_type
     line_context = definition.line_context.model_dump(exclude_none=True)
     process_tags = {tag.signal_id: tag for tag in definition.process_tags}
     fill_weight_tag = process_tags["fill_weight"]
@@ -50,8 +52,8 @@ def generate_events(
 
     for index in range(count):
         timestamp = start_time + timedelta(minutes=index)
-        fill_weight = _fill_weight_for_scenario(scenario, index, rng, fill_weight_tag)
-        pressure = _pressure_for_scenario(scenario, index, rng, pressure_tag)
+        fill_weight = _fill_weight_for_scenario(scenario_type, index, rng, fill_weight_tag)
+        pressure = _pressure_for_scenario(scenario_type, index, rng, pressure_tag)
         events.append(
             _process_event(
                 event_id=f"evt_{scenario}_fill_{index:04d}",
@@ -107,15 +109,15 @@ def generate_events(
 
 
 def _fill_weight_for_scenario(
-    scenario: ScenarioName,
+    scenario_type: ScenarioType,
     index: int,
     rng: Random,
     process_tag: ScenarioProcessTag,
 ) -> float:
     noise = rng.uniform(-process_tag.noise_band, process_tag.noise_band)
-    if scenario == "normal":
+    if scenario_type == "normal":
         return round(process_tag.baseline_value + noise, 3)
-    if scenario == "gradual_drift":
+    if scenario_type == "gradual_drift":
         drift = max(0, index - (GRADUAL_DRIFT_BASELINE_SAMPLES - 1)) * (
             process_tag.drift_per_step or 0.0
         )
@@ -127,18 +129,18 @@ def _fill_weight_for_scenario(
 
 
 def _pressure_for_scenario(
-    scenario: ScenarioName,
+    scenario_type: ScenarioType,
     index: int,
     rng: Random,
     process_tag: ScenarioProcessTag,
 ) -> float:
     noise = rng.uniform(-process_tag.noise_band, process_tag.noise_band)
-    if scenario == "gradual_drift":
+    if scenario_type == "gradual_drift":
         drift = max(0, index - (GRADUAL_DRIFT_BASELINE_SAMPLES - 1)) * (
             process_tag.drift_per_step or 0.0
         )
         return round(process_tag.baseline_value + drift + noise, 3)
-    if scenario == "sudden_excursion" and 10 <= index <= 12:
+    if scenario_type == "sudden_excursion" and 10 <= index <= 12:
         return round(
             (process_tag.excursion_value or process_tag.baseline_value)
             + rng.uniform(-0.08, 0.08),
@@ -209,7 +211,7 @@ def _quality_event(
             adapter="simulator",
             source_event_id=source_event_id,
         ),
-        context=EventContext(**line_context, asset_id="asset_checkweigher_1"),
+        context=EventContext(**line_context, asset_id=quality_marker.asset_id),
         payload=QualityMeasurementPayload(
             quality_check_type="inline_check",
             measurement_name=quality_marker.measurement_name,

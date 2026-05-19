@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 ScenarioType = Literal["normal", "gradual_drift", "sudden_excursion", "noisy_sensor"]
-ScenarioName = Literal["normal", "gradual_drift", "sudden_excursion"]
+ScenarioName = Literal["normal", "gradual_drift", "sudden_excursion", "fill_weight_drift_demo"]
 
 
 class StrictModel(BaseModel):
@@ -27,6 +27,11 @@ class ScenarioLineContext(StrictModel):
     line_id: str = Field(min_length=1)
     work_order_id: str = Field(min_length=1)
     batch_id: str | None = None
+
+
+class ScenarioProduct(StrictModel):
+    product_id: str = Field(min_length=1)
+    product_name: str = Field(min_length=1)
 
 
 class ScenarioAsset(StrictModel):
@@ -86,6 +91,7 @@ class ScenarioOutputSettings(StrictModel):
 class ScenarioDefinition(StrictModel):
     metadata: ScenarioMetadata
     line_context: ScenarioLineContext
+    product: ScenarioProduct
     assets: tuple[ScenarioAsset, ...] = Field(min_length=1)
     process_tags: tuple[ScenarioProcessTag, ...] = Field(min_length=1)
     quality_markers: tuple[ScenarioQualityMarker, ...] = Field(min_length=1)
@@ -112,6 +118,11 @@ DEMO_LINE_CONTEXT = ScenarioLineContext(
     work_order_id="wo_1001",
 )
 
+DEMO_PRODUCT = ScenarioProduct(
+    product_id="prod_demo_tablets",
+    product_name="Demo Tablets",
+)
+
 DEMO_ASSETS = (
     ScenarioAsset(
         asset_id="asset_filler_1",
@@ -127,6 +138,26 @@ DEMO_ASSETS = (
         asset_id="asset_case_packer_1",
         asset_name="Case Packer 1",
         asset_type="case_packer",
+    ),
+)
+
+FILL_WEIGHT_DEMO_CONTEXT = ScenarioLineContext(
+    site_id="site_demo",
+    area_id="area_packaging",
+    line_id="line_1",
+    work_order_id="wo_demo_fill_weight_1001",
+)
+
+FILL_WEIGHT_DEMO_PRODUCT = ScenarioProduct(
+    product_id="prod_demo_oral_solution",
+    product_name="Demo Oral Solution",
+)
+
+FILL_WEIGHT_DEMO_ASSETS = (
+    ScenarioAsset(
+        asset_id="asset_filler_1",
+        asset_name="Filler 1",
+        asset_type="filler",
     ),
 )
 
@@ -178,6 +209,7 @@ SCENARIO_DEFINITIONS: dict[ScenarioName, ScenarioDefinition] = {
             duration_minutes=24,
         ),
         line_context=DEMO_LINE_CONTEXT,
+        product=DEMO_PRODUCT,
         assets=DEMO_ASSETS,
         process_tags=DEMO_PROCESS_TAGS,
         quality_markers=DEMO_QUALITY_MARKERS,
@@ -193,6 +225,7 @@ SCENARIO_DEFINITIONS: dict[ScenarioName, ScenarioDefinition] = {
             duration_minutes=24,
         ),
         line_context=DEMO_LINE_CONTEXT,
+        product=DEMO_PRODUCT,
         assets=DEMO_ASSETS,
         process_tags=(
             DEMO_PROCESS_TAGS[0].model_copy(update={"drift_per_step": 0.33}),
@@ -211,6 +244,7 @@ SCENARIO_DEFINITIONS: dict[ScenarioName, ScenarioDefinition] = {
             duration_minutes=24,
         ),
         line_context=DEMO_LINE_CONTEXT,
+        product=DEMO_PRODUCT,
         assets=DEMO_ASSETS,
         process_tags=(
             DEMO_PROCESS_TAGS[0].model_copy(update={"excursion_value": 509.5}),
@@ -218,6 +252,30 @@ SCENARIO_DEFINITIONS: dict[ScenarioName, ScenarioDefinition] = {
         ),
         quality_markers=DEMO_QUALITY_MARKERS,
         output=ScenarioOutputSettings(default_path=".local/events/sudden_excursion.jsonl"),
+    ),
+    "fill_weight_drift_demo": ScenarioDefinition(
+        metadata=ScenarioMetadata(
+            name="fill_weight_drift_demo",
+            scenario_type="gradual_drift",
+            description=(
+                "Manufacturer demo story: a single filler line runs one demo product and work "
+                "order, then fill weight drifts upward before a delayed quality concern."
+            ),
+            default_seed=120,
+            default_count=30,
+            duration_minutes=30,
+        ),
+        line_context=FILL_WEIGHT_DEMO_CONTEXT,
+        product=FILL_WEIGHT_DEMO_PRODUCT,
+        assets=FILL_WEIGHT_DEMO_ASSETS,
+        process_tags=(
+            DEMO_PROCESS_TAGS[0].model_copy(update={"drift_per_step": 0.33}),
+            DEMO_PROCESS_TAGS[1].model_copy(update={"drift_per_step": 0.01}),
+        ),
+        quality_markers=(
+            DEMO_QUALITY_MARKERS[0].model_copy(update={"asset_id": "asset_filler_1"}),
+        ),
+        output=ScenarioOutputSettings(default_path=".local/events/fill_weight_drift_demo.jsonl"),
     ),
 }
 

@@ -24,6 +24,7 @@ Current generated scenarios:
 | `normal` | Stable baseline operation with process and quality values inside limits. | `.local/events/normal.jsonl` |
 | `gradual_drift` | Process signals gradually move away from baseline before a delayed quality concern. | `.local/events/gradual_drift.jsonl` |
 | `sudden_excursion` | Short process excursion that creates an out-of-spec quality result. | `.local/events/sudden_excursion.jsonl` |
+| `fill_weight_drift_demo` | Manufacturer-ready demo story: one product, one work order, one affected filler, baseline operation, gradual fill-weight drift, and delayed quality concern. | `.local/events/fill_weight_drift_demo.jsonl` |
 
 The scenario type format also reserves `noisy_sensor` for a future simulator
 scenario, but event generation for that scenario is not implemented yet.
@@ -43,7 +44,8 @@ make simulate \
 
 Useful variables:
 
-- `SCENARIO`: `normal`, `gradual_drift`, or `sudden_excursion`. Defaults to `gradual_drift`.
+- `SCENARIO`: `normal`, `gradual_drift`, `sudden_excursion`, or
+  `fill_weight_drift_demo`. Defaults to `gradual_drift`.
 - `SEED`: deterministic random seed. Defaults to `42`.
 - `COUNT`: number of simulated samples. Defaults to `24`.
 - `DURATION_MINUTES`: duration-style sample count. When set, it overrides `COUNT`.
@@ -55,6 +57,7 @@ Examples:
 make simulate SCENARIO=normal OUTPUT=.local/events/normal.jsonl
 make simulate SCENARIO=gradual_drift SEED=42 COUNT=24 OUTPUT=.local/events/gradual_drift.jsonl
 make simulate SCENARIO=sudden_excursion SEED=7 DURATION_MINUTES=15 OUTPUT=.local/events/sudden_excursion.jsonl
+make simulate SCENARIO=fill_weight_drift_demo SEED=120 COUNT=30 OUTPUT=.local/events/fill_weight_drift_demo.jsonl
 ```
 
 ## Direct CLI Usage
@@ -73,7 +76,8 @@ PYTHONPATH=packages/factory-events:services/simulator \
 
 CLI options:
 
-- `--scenario`: one of `normal`, `gradual_drift`, or `sudden_excursion`.
+- `--scenario`: one of `normal`, `gradual_drift`, `sudden_excursion`, or
+  `fill_weight_drift_demo`.
 - `--output`: JSONL output path. Parent directories are created automatically.
 - `--seed`: deterministic random seed. Defaults to `42`.
 - `--count`: number of simulated samples to generate. Defaults to `24`.
@@ -112,6 +116,62 @@ measurements.
 
 Output directories are created automatically. The default local convention is
 `.local/events/<scenario>.jsonl`.
+
+## Manufacturer Demo Scenario
+
+Use `fill_weight_drift_demo` for the polished Process Sentinel demo path. It is
+designed to tell a clear manufacturer story:
+
+- One site: `site_demo`
+- One area: `area_packaging`
+- One line: `line_1`
+- One product: `prod_demo_oral_solution` / `Demo Oral Solution`
+- One work order: `wo_demo_fill_weight_1001`
+- One affected asset: `asset_filler_1`
+- Baseline fill-weight behavior before drift starts
+- Gradual fill-weight and nozzle-pressure drift
+- Delayed quality concern after the process trend is visible
+
+Generate the deterministic demo data:
+
+```bash
+make simulate \
+  SCENARIO=fill_weight_drift_demo \
+  SEED=120 \
+  COUNT=30 \
+  OUTPUT=.local/events/fill_weight_drift_demo.jsonl
+```
+
+Expected output:
+
+```text
+wrote 70 events to .local/events/fill_weight_drift_demo.jsonl (scenario=fill_weight_drift_demo, seed=120, count=30)
+```
+
+Then run the local demo path:
+
+```bash
+make ingest \
+  INPUT=.local/events/fill_weight_drift_demo.jsonl \
+  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl
+
+make sentinel-run \
+  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl \
+  SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+Expected Process Sentinel output includes:
+
+```text
+sentinel complete: detections=1 evidence=2 recommendations=1
+```
+
+The expected demo detection lookup is:
+
+```text
+.local/storage/fill_weight_drift_demo_sentinel/detections.json
+det_fill_weight_gradual_drift
+```
 
 ## Connect Simulator Output To Ingestion
 
@@ -169,6 +229,10 @@ Example scenario definition shape:
     "area_id": "area_packaging",
     "line_id": "line_1",
     "work_order_id": "wo_1001"
+  },
+  "product": {
+    "product_id": "prod_demo_tablets",
+    "product_name": "Demo Tablets"
   },
   "assets": [
     {

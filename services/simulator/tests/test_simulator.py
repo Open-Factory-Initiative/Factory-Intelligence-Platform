@@ -96,7 +96,12 @@ def test_scenario_definition_rejects_invalid_scenario_type() -> None:
 
 
 def test_scenario_format_lists_current_and_future_supported_types() -> None:
-    assert SCENARIOS == ("normal", "gradual_drift", "sudden_excursion")
+    assert SCENARIOS == (
+        "normal",
+        "gradual_drift",
+        "sudden_excursion",
+        "fill_weight_drift_demo",
+    )
     assert SUPPORTED_SCENARIO_TYPES == (
         "normal",
         "gradual_drift",
@@ -429,3 +434,101 @@ def test_sudden_excursion_contains_known_out_of_spec_quality_result() -> None:
     ]
 
     assert "fail" in quality_results
+
+
+def test_fill_weight_drift_demo_definition_tells_single_line_story() -> None:
+    definition = scenario_definition_for("fill_weight_drift_demo")
+
+    assert definition.metadata.name == "fill_weight_drift_demo"
+    assert definition.metadata.scenario_type == "gradual_drift"
+    assert definition.metadata.default_seed == 120
+    assert definition.metadata.default_count == 30
+    assert definition.line_context.site_id == "site_demo"
+    assert definition.line_context.area_id == "area_packaging"
+    assert definition.line_context.line_id == "line_1"
+    assert definition.line_context.work_order_id == "wo_demo_fill_weight_1001"
+    assert definition.product.product_id == "prod_demo_oral_solution"
+    assert definition.product.product_name == "Demo Oral Solution"
+    assert [asset.asset_id for asset in definition.assets] == ["asset_filler_1"]
+    assert definition.quality_markers[0].asset_id == "asset_filler_1"
+    assert definition.output.default_path == ".local/events/fill_weight_drift_demo.jsonl"
+
+
+def test_fill_weight_drift_demo_output_is_deterministic_for_seed() -> None:
+    first = generate_events("fill_weight_drift_demo", seed=120, count=30)
+    second = generate_events("fill_weight_drift_demo", seed=120, count=30)
+
+    assert [event.model_dump(mode="json") for event in first] == [
+        event.model_dump(mode="json") for event in second
+    ]
+
+
+def test_fill_weight_drift_demo_has_baseline_drift_and_delayed_quality_concern() -> None:
+    events = generate_events("fill_weight_drift_demo", seed=120, count=30)
+    fill_events = [
+        event
+        for event in events
+        if event.event_type == "process.measurement.recorded"
+        and event.payload.signal_id == "fill_weight"
+    ]
+    quality_events = [
+        event for event in events if event.event_type == "quality.measurement.recorded"
+    ]
+    pressure_values = [
+        event.payload.value
+        for event in events
+        if event.event_type == "process.measurement.recorded"
+        and event.payload.signal_id == "filler_nozzle_pressure"
+    ]
+    fill_values = [event.payload.value for event in fill_events]
+    baseline_values = fill_values[:GRADUAL_DRIFT_BASELINE_SAMPLES]
+    drift_values = fill_values[GRADUAL_DRIFT_BASELINE_SAMPLES:]
+    failing_quality_events = [
+        event for event in quality_events if event.payload.result == "fail"
+    ]
+
+    assert len(events) == expected_event_count(30)
+    assert all(495.0 <= value <= 505.0 for value in baseline_values)
+    assert drift_values[-1] - fmean(baseline_values) > 6.0
+    assert max(pressure_values) <= 2.6
+    assert failing_quality_events
+    assert all(event.payload.result == "pass" for event in quality_events[:4])
+    assert (
+        failing_quality_events[0].timestamp
+        > fill_events[GRADUAL_DRIFT_BASELINE_SAMPLES].timestamp
+    )
+    assert {event.context.site_id for event in events} == {"site_demo"}
+    assert {event.context.area_id for event in events} == {"area_packaging"}
+    assert {event.context.line_id for event in events} == {"line_1"}
+    assert {event.context.work_order_id for event in events} == {"wo_demo_fill_weight_1001"}
+    assert {event.context.asset_id for event in events} == {"asset_filler_1"}
+
+
+def test_cli_writes_fill_weight_drift_demo_jsonl(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_path = tmp_path / "fill_weight_drift_demo.jsonl"
+
+    simulator_cli_main(
+        [
+            "--scenario",
+            "fill_weight_drift_demo",
+            "--seed",
+            "120",
+            "--count",
+            "30",
+            "--output",
+            str(output_path),
+        ]
+    )
+
+    stdout = capsys.readouterr().out
+    lines = output_path.read_text(encoding="utf-8").splitlines()
+
+    assert "wrote 70 events" in stdout
+    assert "scenario=fill_weight_drift_demo" in stdout
+    assert "seed=120" in stdout
+    assert len(lines) == 70
+    for line in lines:
+        validate_event(json.loads(line))
