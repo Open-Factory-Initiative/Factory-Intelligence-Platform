@@ -179,6 +179,43 @@ Each evidence item includes:
 The UI/API contract, empty state, and error state are documented in
 `docs/EVIDENCE_TIMELINE_API_CONTRACT.md`.
 
+### Expected Demo Recommendation Review
+
+After `make demo-sentinel-run`, the demo should produce one recommendation:
+
+| Item | Expected value |
+| --- | --- |
+| Recommendation ID | `rec_fill_weight_gradual_drift` |
+| Detection ID | `det_fill_weight_gradual_drift` |
+| Status | `needs_review` |
+| Risk level | `medium` |
+| Requires approval | `true` |
+
+Query the recommendation queue and detail:
+
+```text
+http://127.0.0.1:8000/recommendations
+http://127.0.0.1:8000/recommendations/rec_fill_weight_gradual_drift
+```
+
+The recommendation includes `recommended_action`, `rationale`, `risk_level`,
+`requires_approval`, `evidence_ids`, and `created_at`.
+
+Review decisions are explicit human actions:
+
+```bash
+curl -s -X POST \
+  http://127.0.0.1:8000/recommendations/rec_fill_weight_gradual_drift/approve \
+  -H 'content-type: application/json' \
+  --data '{"reviewer":"quality_engineer","reason":"Evidence supports containment."}'
+```
+
+Use the same request shape with `/reject` or `/defer` to exercise those demo
+paths in isolated local state. Each decision response includes
+`recommendation_id`, `reviewer`, `decision`, `reason`, `created_at`, and
+`timestamp` for UI confirmation. This records local demo state only; it does not
+perform external writeback.
+
 ### Troubleshooting Demo Ingestion
 
 If no detections appear during demo prep, first confirm that the demo is using

@@ -81,6 +81,11 @@ POST /recommendations/{recommendation_id}/reject
 POST /recommendations/{recommendation_id}/defer
 ```
 
+Recommendation decision requests include `reviewer` and `reason`. Decision
+responses include `recommendation_id`, `reviewer`, `decision`, `reason`,
+`created_at`, and `timestamp` so the Operations Workbench can display a human
+review confirmation.
+
 ### Reports
 
 ```text

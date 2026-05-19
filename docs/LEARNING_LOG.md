@@ -1928,3 +1928,52 @@ make typecheck
 
 Use this contract when implementing the Operations Workbench evidence timeline
 component.
+
+## 2026-05-19 - Recommendation review workflow
+
+### What changed
+
+Verified the demo recommendation review workflow and tightened the API response
+used by the future Operations Workbench confirmation state. The recommendation
+endpoints now have tests for the demo recommendation fields and approve, reject,
+and defer decision paths.
+
+### Why it was built that way
+
+Issue #130 is about proving the governed review path for the demo, not adding
+multi-user approval chains or production electronic signatures. The existing
+local Sentinel state store already supports decisions, so the change keeps the
+workflow simulator-backed and human-reviewed.
+
+### How it works
+
+Process Sentinel creates a `needs_review` recommendation with a recommended
+action, rationale, risk level, approval requirement, and evidence IDs. A reviewer
+posts to `/approve`, `/reject`, or `/defer` with their name and reason. The API
+updates local recommendation state, records a local approval decision and audit
+event, and returns confirmation fields including reviewer, decision, reason,
+timestamp, and recommendation ID.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use the documented review response shape when building the Workbench
+recommendation approval panel.

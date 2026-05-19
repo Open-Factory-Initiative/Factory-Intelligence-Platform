@@ -67,6 +67,45 @@ Every recommendation must include:
 - Created timestamp
 - Audit trail
 
+## MVP Review API
+
+The simulator-backed demo exposes a human review workflow through the API:
+
+```text
+GET /recommendations
+GET /recommendations/{recommendation_id}
+POST /recommendations/{recommendation_id}/approve
+POST /recommendations/{recommendation_id}/reject
+POST /recommendations/{recommendation_id}/defer
+```
+
+Decision requests include the reviewer and reason:
+
+```json
+{
+  "reviewer": "quality_engineer",
+  "reason": "Evidence supports containment."
+}
+```
+
+Decision responses include the fields needed for a UI confirmation:
+
+```json
+{
+  "approval_id": "apr_rec_fill_weight_gradual_drift_approved",
+  "recommendation_id": "rec_fill_weight_gradual_drift",
+  "reviewer": "quality_engineer",
+  "decision": "approved",
+  "reason": "Evidence supports containment.",
+  "created_at": "2026-05-19T15:10:00Z",
+  "timestamp": "2026-05-19T15:10:00Z"
+}
+```
+
+The demo decision updates local Sentinel state and records an audit event. It
+does not execute industrial writeback, create external QMS/MES records, or claim
+electronic signature behavior.
+
 ## Approval States
 
 ```text
