@@ -72,7 +72,13 @@ make ingest INPUT=.local/events/gradual_drift.jsonl
 The command prints a summary such as:
 
 ```text
-ingestion complete: accepted=56 rejected=0 dead_letter_count=0 events_store=.local/storage/events.jsonl dead_letter=.local/storage/dead_letter.jsonl
+ingestion summary
+input_file: .local/events/gradual_drift.jsonl
+accepted_events: 56
+rejected_events: 0
+dead_letter_count: 0
+accepted_output: .local/storage/events.jsonl
+dead_letter_output: .local/storage/dead_letter.jsonl
 ```
 
 Malformed JSON, unsupported event types, and schema-invalid events are rejected
@@ -121,3 +127,18 @@ details:
 
 Malformed JSON rows cannot include a parsed `payload`, so those dead-letter
 records keep `payload` as `null` and preserve the original text in `raw`.
+
+When ingestion rejects records, the summary includes a few validation examples
+from the dead-letter file:
+
+```text
+ingestion summary
+input_file: .local/events/gradual_drift.jsonl
+accepted_events: 55
+rejected_events: 1
+dead_letter_count: 1
+accepted_output: .local/storage/events.jsonl
+dead_letter_output: .local/storage/dead_letter.jsonl
+validation_error_examples:
+- line 12: quality: Input should be 'good', 'uncertain' or 'bad'
+```
