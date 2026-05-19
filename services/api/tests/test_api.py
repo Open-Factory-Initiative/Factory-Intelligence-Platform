@@ -291,9 +291,19 @@ def test_rca_capa_draft_uses_detection_evidence_and_recommendation(tmp_path: Pat
         create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
     )
     detection = client.get("/sentinel/detections").json()[0]
+    evidence = client.get(f"/sentinel/detections/{detection['detection_id']}/evidence").json()
+    recommendation = client.get("/recommendations").json()[0]
 
     response = client.get(f"/reports/rca-capa-drafts/{detection['detection_id']}")
+    draft = response.json()
 
     assert response.status_code == 200
-    assert response.json()["detection_id"] == detection["detection_id"]
-    assert response.json()["evidence_summary"]
+    assert draft["detection_id"] == detection["detection_id"]
+    assert draft["title"] == f"RCA/CAPA draft for {detection['summary']}"
+    assert draft["problem_statement"] == detection["summary"]
+    assert draft["evidence_summary"] == [item["description"] for item in evidence]
+    assert draft["recommended_containment"] == recommendation["recommended_action"]
+    assert "root cause" in draft["capa_placeholder"]
+    assert "corrective action" in draft["capa_placeholder"]
+    assert "preventive action" in draft["capa_placeholder"]
+    assert draft["human_review_required"] is True

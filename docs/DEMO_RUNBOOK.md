@@ -216,6 +216,46 @@ paths in isolated local state. Each decision response includes
 `timestamp` for UI confirmation. This records local demo state only; it does not
 perform external writeback.
 
+### Expected Demo RCA/CAPA Draft
+
+The RCA/CAPA draft endpoint previews a quality-facing draft from the selected
+detection, evidence, and recommendation:
+
+```text
+http://127.0.0.1:8000/reports/rca-capa-drafts/det_fill_weight_gradual_drift
+```
+
+Expected draft fields:
+
+| Field | Expected demo behavior |
+| --- | --- |
+| `title` | Starts with `RCA/CAPA draft for` and uses the detection summary. |
+| `problem_statement` | Matches the advisory demo detection summary. |
+| `evidence_summary` | Lists the evidence item descriptions from the evidence timeline. |
+| `recommended_containment` | Matches the governed recommendation action. |
+| `capa_placeholder` | Prompts for root cause, corrective action, preventive action, owner, and due date after human investigation. |
+| `human_review_required` | `true` |
+
+Example response:
+
+```json
+{
+  "detection_id": "det_fill_weight_gradual_drift",
+  "title": "RCA/CAPA draft for Advisory: fill weight is trending upward, which may move the affected work order toward the upper quality limit.",
+  "problem_statement": "Advisory: fill weight is trending upward, which may move the affected work order toward the upper quality limit.",
+  "evidence_summary": [
+    "Baseline average was 500.07 g; recent average was 506.37 g, a 6.30 g increase.",
+    "Recent final fill weight checks show the same upward direction as the process signal."
+  ],
+  "recommended_containment": "Inspect filler calibration and increase quality checks for the affected demo work order.",
+  "capa_placeholder": "Document root cause, corrective action, preventive action, owner, and due date after human investigation.",
+  "human_review_required": true
+}
+```
+
+This is draft decision support only. It must be reviewed by a human before use
+and does not create a CAPA, close a deviation, or write to QMS/MES systems.
+
 ### Troubleshooting Demo Ingestion
 
 If no detections appear during demo prep, first confirm that the demo is using

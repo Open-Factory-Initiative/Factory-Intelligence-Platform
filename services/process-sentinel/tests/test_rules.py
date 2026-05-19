@@ -86,5 +86,11 @@ def test_fill_weight_drift_demo_supports_detection_recommendation_and_rca_draft(
     assert recommendation.evidence_ids == [item.evidence_id for item in evidence]
     assert draft is not None
     assert draft.detection_id == detection.detection_id
-    assert draft.evidence_summary
+    assert draft.title == f"RCA/CAPA draft for {detection.summary}"
+    assert draft.problem_statement == detection.summary
+    assert draft.evidence_summary == [item.description for item in evidence]
     assert draft.recommended_containment == recommendation.recommended_action
+    assert "root cause" in draft.capa_placeholder
+    assert "corrective action" in draft.capa_placeholder
+    assert "preventive action" in draft.capa_placeholder
+    assert draft.human_review_required is True
