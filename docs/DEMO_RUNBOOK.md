@@ -118,3 +118,62 @@ Expected Process Sentinel output includes:
 ```text
 sentinel complete: detections=1 evidence=2 recommendations=1
 ```
+
+### Troubleshooting Demo Ingestion
+
+If no detections appear during demo prep, first confirm that the demo is using
+the deterministic data path end to end:
+
+| Item | Expected value |
+| --- | --- |
+| Demo event file | `.local/events/fill_weight_drift_demo.jsonl` |
+| Demo accepted event store | `.local/storage/fill_weight_drift_demo_events.jsonl` |
+| Demo dead-letter file | `.local/storage/fill_weight_drift_demo_dead_letter.jsonl` |
+| Demo Sentinel state | `.local/storage/fill_weight_drift_demo_sentinel/` |
+| Generated event count | `70` |
+| Accepted event count | `70` |
+| Rejected event count | `0` |
+| Dead-letter row count | `0` |
+| Expected Sentinel result | `detections=1 evidence=2 recommendations=1` |
+
+Use a clean reset and retry when local state is stale, manually edited, or
+pointing at an older scenario:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+```
+
+Then verify the generated files:
+
+```bash
+wc -l .local/events/fill_weight_drift_demo.jsonl
+wc -l .local/storage/fill_weight_drift_demo_events.jsonl
+wc -l .local/storage/fill_weight_drift_demo_dead_letter.jsonl
+```
+
+Common ingestion failure cases:
+
+- The input file is missing because `make demo-data` was not run first.
+- `accepted_events` is `0` or lower than `70` because the command used the
+  wrong input file, scenario, seed, or count.
+- `rejected_events` or `dead_letter_count` is non-zero because at least one
+  JSONL row is malformed or does not match the shared factory event contracts.
+- Process Sentinel reads the wrong event store because `EVENTS_STORE` points to
+  `.local/storage/events.jsonl` instead of the demo accepted event store.
+- Old Sentinel state is being inspected after reruns instead of
+  `.local/storage/fill_weight_drift_demo_sentinel/` from the latest run.
+- The local files were hand-edited. Reset and regenerate instead of repairing
+  generated `.local/` files by hand.
+
+When rejected events appear, inspect the summary and the dead-letter file:
+
+```bash
+head -n 3 .local/storage/fill_weight_drift_demo_dead_letter.jsonl
+```
+
+The demo reset only clears generated local demo files under `.local/`. It does
+not remove source files, clean production databases, or interact with real plant
+systems.

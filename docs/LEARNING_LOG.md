@@ -1687,3 +1687,50 @@ make typecheck
 
 Use the verified demo ingestion path as one step in the upcoming full demo smoke
 test.
+
+## 2026-05-19 - Demo ingestion troubleshooting notes
+
+### What changed
+
+Added demo ingestion troubleshooting notes to the demo runbook and linked the
+demo-specific paths from the ingestion README. The notes list where demo events,
+accepted events, dead-letter records, and Sentinel state are written, plus the
+expected deterministic counts for a clean demo run.
+
+### Why it was built that way
+
+Issue #124 is about recovering quickly when no detections appear during demo
+prep. The docs focus on the smallest reliable recovery path: reset generated
+demo state, regenerate deterministic simulator data, ingest it, and rerun
+Process Sentinel.
+
+### How it works
+
+The troubleshooting flow keeps all generated files under `.local/`. A clean
+demo run should produce 70 generated events, 70 accepted events, 0 rejected
+events, 0 dead-letter rows, and one Sentinel detection with evidence and a
+recommendation. If those counts drift, the runbook points contributors to the
+likely ingestion or path mismatch.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+```
+
+### How to test it
+
+```bash
+make docs
+make test-integration
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Fold this troubleshooting sequence into the future demo smoke test so failures
+can show a clear recovery path before a manufacturer call.
