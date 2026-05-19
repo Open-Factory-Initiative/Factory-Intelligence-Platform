@@ -1734,3 +1734,52 @@ make typecheck
 
 Fold this troubleshooting sequence into the future demo smoke test so failures
 can show a clear recovery path before a manufacturer call.
+
+## 2026-05-19 - Demo Sentinel detection verification
+
+### What changed
+
+Added verification for the expected `fill_weight_drift_demo` Process Sentinel
+detection and documented the lookup behavior in the demo runbook. The tests now
+check the stable detection ID, summary, severity, confidence, related work
+order, related asset, and API detail endpoint.
+
+### Why it was built that way
+
+Issue #125 needs confidence that the existing demo data reliably produces the
+intended detection. The smallest safe change is to lock down the current
+rule-based Sentinel behavior and API exposure instead of adding a new detection
+algorithm.
+
+### How it works
+
+The deterministic demo data flows through ingestion into the local event store.
+Process Sentinel reads that event store, identifies the gradual fill-weight
+drift, writes Sentinel state under `.local/storage/fill_weight_drift_demo_sentinel/`,
+and the API exposes the detection through `/sentinel/detections` and
+`/sentinel/detections/det_fill_weight_gradual_drift`.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+### How to test it
+
+```bash
+make test-unit
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use this stable detection contract for the upcoming evidence timeline,
+recommendation review, RCA/CAPA preview, and full demo smoke test issues.

@@ -119,6 +119,37 @@ Expected Process Sentinel output includes:
 sentinel complete: detections=1 evidence=2 recommendations=1
 ```
 
+### Expected Demo Detection
+
+The deterministic demo run should produce one Process Sentinel detection:
+
+| Field | Expected value |
+| --- | --- |
+| Detection ID | `det_fill_weight_gradual_drift` |
+| API list endpoint | `/sentinel/detections` |
+| API detail endpoint | `/sentinel/detections/det_fill_weight_gradual_drift` |
+| Summary | Fill weight is trending upward toward the upper quality limit. |
+| Severity | `medium` |
+| Confidence | Greater than `0.7` |
+| Related work order | `WO-DEMO-1007` |
+| Related asset IDs | `filler_f_201` |
+
+After `make demo-sentinel-run`, start the API with the demo state and query the
+detection:
+
+```bash
+make api \
+  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl \
+  SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+Then open or request:
+
+```text
+http://127.0.0.1:8000/sentinel/detections
+http://127.0.0.1:8000/sentinel/detections/det_fill_weight_gradual_drift
+```
+
 ### Troubleshooting Demo Ingestion
 
 If no detections appear during demo prep, first confirm that the demo is using
