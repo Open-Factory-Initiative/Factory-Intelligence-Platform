@@ -128,7 +128,7 @@ The deterministic demo run should produce one Process Sentinel detection:
 | Detection ID | `det_fill_weight_gradual_drift` |
 | API list endpoint | `/sentinel/detections` |
 | API detail endpoint | `/sentinel/detections/det_fill_weight_gradual_drift` |
-| Summary | Fill weight is trending upward toward the upper quality limit. |
+| Summary | Advisory: fill weight is trending upward, which may move the affected work order toward the upper quality limit. |
 | Severity | `medium` |
 | Confidence | Greater than `0.7` |
 | Related work order | `WO-DEMO-1007` |

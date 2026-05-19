@@ -66,7 +66,10 @@ def _detect_gradual_fill_weight_drift(
         created_at=datetime.now(UTC),
         time_window_start=baseline[0].timestamp,
         time_window_end=recent[-1].timestamp,
-        summary="Fill weight is trending upward toward the upper quality limit.",
+        summary=(
+            "Advisory: fill weight is trending upward, which may move the affected "
+            "work order toward the upper quality limit."
+        ),
         confidence=min(0.95, 0.55 + delta / 10),
         related_work_order_id=recent[-1].context.work_order_id,
         related_asset_ids=related_asset_ids,
