@@ -12,7 +12,7 @@ from process_sentinel import SentinelStateStore, run_sentinel
 def seed_state(tmp_path: Path) -> tuple[Path, Path]:
     events_store_path = tmp_path / "events.jsonl"
     state_dir = tmp_path / "sentinel"
-    events = generate_events("gradual_drift", seed=42, count=24)
+    events = generate_events("fill_weight_drift_demo", seed=120, count=30)
     event_store = JsonlEventStore(events_store_path)
     for event in events:
         event_store.append(event)
@@ -53,23 +53,24 @@ def test_domain_model_query_endpoints(tmp_path: Path) -> None:
         create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
     )
 
-    site_response = client.get("/sites/site_demo")
+    site_response = client.get("/sites/greenville_demo_site")
     signal_response = client.get("/process-signals/fill_weight")
-    quality_response = client.get("/quality-results?batch_id=batch_demo_1001")
-    investigation_response = client.get("/investigations/inv_fill_weight_drift_1001")
+    quality_response = client.get("/quality-results?batch_id=BATCH-DEMO-1007")
+    investigation_response = client.get("/investigations/inv_fill_weight_drift_WO_DEMO_1007")
 
     assert site_response.status_code == 200
-    assert site_response.json()["name"] == "Demo Manufacturing Site"
+    assert site_response.json()["name"] == "Greenville Demo Site"
     assert signal_response.status_code == 200
-    assert signal_response.json()["equipment_id"] == "eq_filler_1"
+    assert signal_response.json()["equipment_id"] == "filler_f_201"
     assert quality_response.status_code == 200
+    assert quality_response.json()[0]["batch_id"] == "BATCH-DEMO-1007"
     assert quality_response.json()[0]["related_signal_ids"] == [
         "fill_weight",
         "filler_nozzle_pressure",
     ]
     assert investigation_response.status_code == 200
     assert investigation_response.json()["deviation"]["deviation_id"] == (
-        "dev_fill_weight_drift_1001"
+        "dev_fill_weight_drift_WO_DEMO_1007"
     )
 
 

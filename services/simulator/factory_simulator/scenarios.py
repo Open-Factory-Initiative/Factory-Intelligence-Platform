@@ -142,22 +142,28 @@ DEMO_ASSETS = (
 )
 
 FILL_WEIGHT_DEMO_CONTEXT = ScenarioLineContext(
-    site_id="site_demo",
-    area_id="area_packaging",
-    line_id="line_1",
-    work_order_id="wo_demo_fill_weight_1001",
+    site_id="greenville_demo_site",
+    area_id="packaging_area",
+    line_id="line_2",
+    work_order_id="WO-DEMO-1007",
+    batch_id="BATCH-DEMO-1007",
 )
 
 FILL_WEIGHT_DEMO_PRODUCT = ScenarioProduct(
-    product_id="prod_demo_oral_solution",
-    product_name="Demo Oral Solution",
+    product_id="ofi_demo_beverage",
+    product_name="OFI Demo Beverage",
 )
 
 FILL_WEIGHT_DEMO_ASSETS = (
     ScenarioAsset(
-        asset_id="asset_filler_1",
-        asset_name="Filler 1",
+        asset_id="filler_f_201",
+        asset_name="Filler F-201",
         asset_type="filler",
+    ),
+    ScenarioAsset(
+        asset_id="checkweigher_cw_201",
+        asset_name="Checkweigher CW-201",
+        asset_type="checkweigher",
     ),
 )
 
@@ -269,11 +275,15 @@ SCENARIO_DEFINITIONS: dict[ScenarioName, ScenarioDefinition] = {
         product=FILL_WEIGHT_DEMO_PRODUCT,
         assets=FILL_WEIGHT_DEMO_ASSETS,
         process_tags=(
-            DEMO_PROCESS_TAGS[0].model_copy(update={"drift_per_step": 0.33}),
-            DEMO_PROCESS_TAGS[1].model_copy(update={"drift_per_step": 0.01}),
+            DEMO_PROCESS_TAGS[0].model_copy(
+                update={"asset_id": "filler_f_201", "drift_per_step": 0.33}
+            ),
+            DEMO_PROCESS_TAGS[1].model_copy(
+                update={"asset_id": "filler_f_201", "drift_per_step": 0.01}
+            ),
         ),
         quality_markers=(
-            DEMO_QUALITY_MARKERS[0].model_copy(update={"asset_id": "asset_filler_1"}),
+            DEMO_QUALITY_MARKERS[0].model_copy(update={"asset_id": "checkweigher_cw_201"}),
         ),
         output=ScenarioOutputSettings(default_path=".local/events/fill_weight_drift_demo.jsonl"),
     ),

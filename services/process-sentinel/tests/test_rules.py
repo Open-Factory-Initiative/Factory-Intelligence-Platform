@@ -60,8 +60,8 @@ def test_fill_weight_drift_demo_supports_detection_recommendation_and_rca_draft(
 
     assert [item.detection_type for item in result.detections] == ["quality_drift"]
     assert detection.detection_id == "det_fill_weight_gradual_drift"
-    assert detection.related_work_order_id == "wo_demo_fill_weight_1001"
-    assert detection.related_asset_ids == ["asset_filler_1"]
+    assert detection.related_work_order_id == "WO-DEMO-1007"
+    assert detection.related_asset_ids == ["filler_f_201"]
     assert detection.confidence > 0.7
     assert len(evidence) >= 2
     assert recommendation.status == "needs_review"
