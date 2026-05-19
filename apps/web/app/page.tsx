@@ -1,6 +1,9 @@
 import Link from "next/link";
 
-import { apiBaseUrl } from "../lib/api-config";
+import { ApiErrorPanel } from "./components/demo-state";
+import { formatApiError, getApiBaseUrl, workbenchApi } from "../lib/api-client";
+
+export const dynamic = "force-dynamic";
 
 const routes = [
   {
@@ -25,7 +28,9 @@ const routes = [
   },
 ];
 
-export default function OverviewPage() {
+export default async function OverviewPage() {
+  const health = await loadHealth();
+
   return (
     <>
       <section className="hero">
@@ -41,18 +46,24 @@ export default function OverviewPage() {
         <aside className="status-panel" aria-label="Demo configuration">
           <div className="status-row">
             <span className="status-label">API base URL</span>
-            <span className="status-value">{apiBaseUrl}</span>
+            <span className="status-value">{getApiBaseUrl()}</span>
           </div>
           <div className="status-row">
             <span className="status-label">Demo source</span>
-            <span className="status-value">Synthetic Factory Simulator</span>
+            <span className="status-value">
+              {health.ok && health.data.simulator_backed
+                ? "Synthetic Factory Simulator"
+                : "Synthetic Factory Simulator expected"}
+            </span>
           </div>
           <div className="status-row">
-            <span className="status-label">Workflow</span>
-            <span className="status-value">Detection, evidence, review, draft</span>
+            <span className="status-label">API health</span>
+            <span className="status-value">{health.ok ? health.data.status : "Unavailable"}</span>
           </div>
         </aside>
       </section>
+
+      {!health.ok ? <ApiErrorPanel message={health.message} /> : null}
 
       <section className="content-grid" aria-label="Workbench routes">
         {routes.map((route) => (
@@ -67,4 +78,12 @@ export default function OverviewPage() {
       </section>
     </>
   );
+}
+
+async function loadHealth() {
+  try {
+    return { data: await workbenchApi.getHealth(), ok: true as const };
+  } catch (error) {
+    return { message: formatApiError(error), ok: false as const };
+  }
 }
