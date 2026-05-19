@@ -1415,3 +1415,46 @@ make typecheck
 
 Use this integration coverage as the base for the next Process Sentinel tests
 that consume ingested events from local storage.
+
+## 2026-05-19 - Local ingestion workflow documentation
+
+### What changed
+
+Expanded the ingestion service README with the full local
+simulator-to-ingestion workflow, default generated file paths, accepted-event
+and dead-letter inspection commands, reset commands, and troubleshooting notes.
+
+### Why it was built that way
+
+Issue #45 is documentation-focused, so the smallest useful change is a
+contributor-facing guide near the ingestion service instead of new runtime
+behavior. The guide uses the existing Makefile defaults so contributors can
+copy commands directly from the docs.
+
+### How data flows through it
+
+The simulator writes JSONL events under `.local/events/`, ingestion validates
+each line through the shared factory event contracts, accepted records are
+appended to `.local/storage/events.jsonl`, and invalid records are written to
+`.local/storage/dead_letter.jsonl` with structured error details.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+### How to test it
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make docs
+git diff --check
+```
+
+### What to learn next
+
+Use the documented local ingestion workflow as the contributor baseline for the
+next storage, Process Sentinel, or API documentation tasks.

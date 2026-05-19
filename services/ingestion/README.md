@@ -13,8 +13,52 @@ line. Simulator output already uses this format:
 make simulate SCENARIO=gradual_drift
 ```
 
+By default, simulator output is written to:
+
+```text
+.local/events/gradual_drift.jsonl
+```
+
 Each non-empty line is parsed, validated against `packages/factory-events`, and
 then routed to either the accepted event store or the dead-letter file.
+
+## Local Simulator-to-Ingestion Workflow
+
+Run the default local flow from the repository root:
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+The first command creates deterministic simulator events. The second command
+validates those events, appends accepted records to local storage, and routes
+invalid records to dead-letter storage without stopping the full file.
+
+Useful command variants:
+
+```bash
+make simulate SCENARIO=normal OUTPUT=.local/events/normal.jsonl
+make ingest INPUT=.local/events/normal.jsonl
+make ingest INPUT=.local/events/normal.jsonl EVENTS_STORE=.local/storage/normal-events.jsonl
+```
+
+The documented scenarios are `normal`, `gradual_drift`, and
+`sudden_excursion`. Use `SEED`, `COUNT`, `DURATION_MINUTES`, and `OUTPUT` when
+you need reproducible inputs for manual testing.
+
+## Local Files
+
+Default generated and ingested files:
+
+| Purpose | Default path |
+| --- | --- |
+| Simulator output | `.local/events/<scenario>.jsonl` |
+| Accepted event store | `.local/storage/events.jsonl` |
+| Dead-letter records | `.local/storage/dead_letter.jsonl` |
+| Process Sentinel state | `.local/storage/sentinel/` |
+
+The `.local/` directory is generated developer data and is ignored by Git.
 
 ## Validation Behavior
 
@@ -40,7 +84,7 @@ make ingest INPUT=.local/events/gradual_drift.jsonl
 The equivalent direct command is:
 
 ```bash
-python -m factory_ingestion.cli \
+.venv/bin/python -m factory_ingestion.cli \
   --input .local/events/gradual_drift.jsonl \
   --events-store .local/storage/events.jsonl \
   --dead-letter .local/storage/dead_letter.jsonl
@@ -58,6 +102,13 @@ This is the path used by `make ingest`, `make sentinel-run`, and the local API
 by default. Each line is one validated factory event serialized as JSON, so the
 file can be inspected with standard command-line tools and read back through
 `JsonlEventStore`.
+
+Inspect the accepted store:
+
+```bash
+wc -l .local/storage/events.jsonl
+head -n 3 .local/storage/events.jsonl
+```
 
 The local store is idempotent by `event_id`: ingesting the same deterministic
 simulator output more than once validates the events again but does not append
@@ -142,3 +193,60 @@ dead_letter_output: .local/storage/dead_letter.jsonl
 validation_error_examples:
 - line 12: quality: Input should be 'good', 'uncertain' or 'bad'
 ```
+
+Inspect dead-letter output:
+
+```bash
+wc -l .local/storage/dead_letter.jsonl
+head -n 3 .local/storage/dead_letter.jsonl
+```
+
+## Reset Local Generated Data
+
+To reset only the ingestion outputs and keep simulator input files:
+
+```bash
+rm -f .local/storage/events.jsonl .local/storage/dead_letter.jsonl
+rm -rf .local/storage/sentinel
+```
+
+To reset the full local MVP generated data set:
+
+```bash
+rm -rf .local/events .local/storage
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+## Troubleshooting
+
+If `make ingest` cannot find the input file, generate simulator output first or
+pass the exact input path:
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+If `make ingest` fails because `.venv/bin/python` is missing, install the local
+development environment:
+
+```bash
+make setup
+```
+
+If accepted counts look lower than expected after re-running the same scenario,
+the local store is likely skipping duplicate `event_id` values. Reset
+`.local/storage/events.jsonl` or write to a new `EVENTS_STORE` path for a clean
+manual run.
+
+If ingestion fails while reading `.local/storage/events.jsonl`, the local store
+may contain stale or hand-edited generated data that no longer matches the
+shared event contracts. Reset local generated storage, then re-run simulator and
+ingestion.
+
+If rejected counts are non-zero, inspect `.local/storage/dead_letter.jsonl` and
+the `validation_error_examples` section in the ingestion summary. Common causes
+are malformed JSON, missing required event fields, unsupported `event_type`
+values, invalid enum values, invalid process or quality ranges, and mismatched
+quality result fields.
