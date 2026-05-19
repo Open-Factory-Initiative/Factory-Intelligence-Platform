@@ -65,8 +65,11 @@ def test_demo_detection_detail_endpoint_exposes_expected_lookup_fields(
     ]
     assert detail_response.json()["detection_id"] == "det_fill_weight_gradual_drift"
     assert detail_response.json()["summary"] == (
-        "Fill weight is trending upward toward the upper quality limit."
+        "Advisory: fill weight is trending upward, which may move the affected "
+        "work order toward the upper quality limit."
     )
+    assert "root cause" not in detail_response.json()["summary"].lower()
+    assert "caused by" not in detail_response.json()["summary"].lower()
     assert detail_response.json()["severity"] == "medium"
     assert detail_response.json()["confidence"] > 0.7
     assert detail_response.json()["related_work_order_id"] == "WO-DEMO-1007"

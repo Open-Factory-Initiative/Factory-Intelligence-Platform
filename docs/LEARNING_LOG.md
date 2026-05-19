@@ -1783,3 +1783,49 @@ make typecheck
 
 Use this stable detection contract for the upcoming evidence timeline,
 recommendation review, RCA/CAPA preview, and full demo smoke test issues.
+
+## 2026-05-19 - Demo detection copy polish
+
+### What changed
+
+Updated the demo Process Sentinel detection summary to use advisory,
+manufacturer-friendly language. The tests now verify that the copy explains the
+risk without claiming a root cause, and the demo runbook reflects the final
+expected wording.
+
+### Why it was built that way
+
+Issue #126 is copy polish for the existing demo detection, not a new detection
+algorithm. The summary stays inside the existing deterministic rule output so
+the API and planned UI can use the same language without adding another layer.
+
+### How it works
+
+Process Sentinel still detects the fill-weight drift from the same simulator
+events. The detection now says the trend may move the affected work order toward
+the upper quality limit, framing the output as advisory decision support and
+leaving root-cause determination to human investigation.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+```
+
+### How to test it
+
+```bash
+make test-unit
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Carry the same advisory wording style into the evidence, recommendation, and
+RCA/CAPA preview demo steps.
