@@ -92,6 +92,11 @@ review confirmation.
 GET /reports/rca-capa-drafts/{detection_id}
 ```
 
+RCA/CAPA draft responses include `title`, `problem_statement`,
+`evidence_summary`, `recommended_containment`, `capa_placeholder`, and
+`human_review_required`. Drafts are preview data for human review; they are not
+final quality records and do not create external CAPA/QMS records.
+
 ## Error Format
 
 Use consistent error responses:

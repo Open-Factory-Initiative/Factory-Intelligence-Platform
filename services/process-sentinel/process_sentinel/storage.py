@@ -138,6 +138,7 @@ class SentinelStateStore:
                 "Document root cause, corrective action, preventive action, owner, and due date "
                 "after human investigation."
             ),
+            human_review_required=True,
         )
 
     def _write_models(self, filename: str, models: list) -> None:

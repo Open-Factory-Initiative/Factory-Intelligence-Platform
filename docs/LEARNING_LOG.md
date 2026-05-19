@@ -1977,3 +1977,50 @@ make typecheck
 
 Use the documented review response shape when building the Workbench
 recommendation approval panel.
+
+## 2026-05-19 - RCA/CAPA draft preview contract
+
+### What changed
+
+Verified the demo RCA/CAPA draft generation path and added an explicit
+`human_review_required` field to the draft response. The API and Sentinel tests
+now check the draft title, problem statement, evidence summary, recommended
+containment, CAPA placeholder structure, and human-review requirement.
+
+### Why it was built that way
+
+Issue #131 only needs a previewable quality-facing draft for the manufacturer
+demo. The implementation keeps the draft derived from existing detection,
+evidence, and governed recommendation state rather than adding a Markdown export
+pipeline, QMS integration, or automatic CAPA creation.
+
+### How it works
+
+The API calls the local Sentinel state store for
+`GET /reports/rca-capa-drafts/{detection_id}`. The store looks up the detection,
+collects its evidence descriptions, finds the matching recommendation action,
+and returns draft data marked as requiring human review.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+### How to test it
+
+```bash
+make test-unit
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use this response shape when building the Workbench RCA/CAPA draft preview.
