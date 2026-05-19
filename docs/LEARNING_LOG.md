@@ -1502,3 +1502,49 @@ make typecheck
 Use the shared event model as the stable boundary for simulator, ingestion,
 Process Sentinel, and API work. Future event additions should include typed
 models, fixtures, examples, docs, and contract tests in the same change.
+
+## 2026-05-19 - Manufacturer demo simulator scenario
+
+### What changed
+
+Added the `fill_weight_drift_demo` simulator scenario for the demo-ready
+Process Sentinel path. The scenario defines one demo site, area, line, product,
+work order, and affected filler asset, then produces baseline operation,
+gradual fill-weight drift, and a delayed quality concern.
+
+### Why it was built that way
+
+Issue #120 asks for a polished deterministic demo scenario, so the change stays
+inside the existing simulator and Process Sentinel test paths. The scenario
+reuses the existing shared event contracts, ingestion flow, and Process
+Sentinel drift rule instead of adding separate demo-only logic.
+
+### How it works
+
+The simulator uses the scenario definition to generate deterministic process
+and quality JSONL events. Process Sentinel reads the ingested events, detects
+the fill-weight drift, attaches process and quality evidence, creates a
+human-reviewed recommendation, and leaves enough state for the RCA/CAPA draft
+builder to produce a preview.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=fill_weight_drift_demo SEED=120 COUNT=30 OUTPUT=.local/events/fill_weight_drift_demo.jsonl
+make ingest INPUT=.local/events/fill_weight_drift_demo.jsonl EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl
+make sentinel-run EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+### How to test it
+
+```bash
+make test-unit
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use this scenario as the stable manufacturer demo input for the upcoming UI,
+demo runbook, smoke test, and presentation polish issues.
