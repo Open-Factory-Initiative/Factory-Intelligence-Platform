@@ -2024,3 +2024,49 @@ make typecheck
 ### What to learn next
 
 Use this response shape when building the Workbench RCA/CAPA draft preview.
+
+## 2026-05-19 - Backend demo API smoke test
+
+### What changed
+
+Added a backend-only smoke test for the deterministic demo data path. The new
+`make demo-api-smoke` command verifies the generated demo event store and checks
+the API app for the expected detection, evidence, recommendation, decision, and
+RCA/CAPA draft responses.
+
+### Why it was built that way
+
+Issue #136 needs demo readiness coverage without waiting for browser E2E. The
+smoke test runs against a temporary copy of local demo state so it can exercise
+the decision endpoint without changing the prepared demo files.
+
+### How it works
+
+After `make demo-data`, `make demo-ingest`, and `make demo-sentinel-run`, the
+smoke command creates a FastAPI test client for the local demo event store and a
+copied Sentinel state directory. It fails with a clear setup message when the
+demo files are missing.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make demo-api-smoke
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use this backend smoke test as the stable base for the later browser E2E demo
+workflow.
