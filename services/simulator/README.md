@@ -122,12 +122,15 @@ Output directories are created automatically. The default local convention is
 Use `fill_weight_drift_demo` for the polished Process Sentinel demo path. It is
 designed to tell a clear manufacturer story:
 
-- One site: `site_demo`
-- One area: `area_packaging`
-- One line: `line_1`
-- One product: `prod_demo_oral_solution` / `Demo Oral Solution`
-- One work order: `wo_demo_fill_weight_1001`
-- One affected asset: `asset_filler_1`
+- One site: `greenville_demo_site` / Greenville Demo Site
+- One area: `packaging_area` / Packaging Area
+- One line: `line_2` / Line 2
+- One product: `ofi_demo_beverage` / OFI Demo Beverage
+- One work order: `WO-DEMO-1007`
+- One batch: `BATCH-DEMO-1007`
+- One affected asset: `filler_f_201` / Filler F-201
+- One quality check asset: `checkweigher_cw_201` / Checkweigher CW-201
+- Process tags: `fill_weight` and `filler_nozzle_pressure`
 - Baseline fill-weight behavior before drift starts
 - Gradual fill-weight and nozzle-pressure drift
 - Delayed quality concern after the process trend is visible

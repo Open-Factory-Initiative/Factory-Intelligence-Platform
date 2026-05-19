@@ -443,14 +443,22 @@ def test_fill_weight_drift_demo_definition_tells_single_line_story() -> None:
     assert definition.metadata.scenario_type == "gradual_drift"
     assert definition.metadata.default_seed == 120
     assert definition.metadata.default_count == 30
-    assert definition.line_context.site_id == "site_demo"
-    assert definition.line_context.area_id == "area_packaging"
-    assert definition.line_context.line_id == "line_1"
-    assert definition.line_context.work_order_id == "wo_demo_fill_weight_1001"
-    assert definition.product.product_id == "prod_demo_oral_solution"
-    assert definition.product.product_name == "Demo Oral Solution"
-    assert [asset.asset_id for asset in definition.assets] == ["asset_filler_1"]
-    assert definition.quality_markers[0].asset_id == "asset_filler_1"
+    assert definition.line_context.site_id == "greenville_demo_site"
+    assert definition.line_context.area_id == "packaging_area"
+    assert definition.line_context.line_id == "line_2"
+    assert definition.line_context.work_order_id == "WO-DEMO-1007"
+    assert definition.line_context.batch_id == "BATCH-DEMO-1007"
+    assert definition.product.product_id == "ofi_demo_beverage"
+    assert definition.product.product_name == "OFI Demo Beverage"
+    assert {asset.asset_id for asset in definition.assets} == {
+        "filler_f_201",
+        "checkweigher_cw_201",
+    }
+    assert {asset.asset_name for asset in definition.assets} == {
+        "Filler F-201",
+        "Checkweigher CW-201",
+    }
+    assert definition.quality_markers[0].asset_id == "checkweigher_cw_201"
     assert definition.output.default_path == ".local/events/fill_weight_drift_demo.jsonl"
 
 
@@ -497,11 +505,40 @@ def test_fill_weight_drift_demo_has_baseline_drift_and_delayed_quality_concern()
         failing_quality_events[0].timestamp
         > fill_events[GRADUAL_DRIFT_BASELINE_SAMPLES].timestamp
     )
-    assert {event.context.site_id for event in events} == {"site_demo"}
-    assert {event.context.area_id for event in events} == {"area_packaging"}
-    assert {event.context.line_id for event in events} == {"line_1"}
-    assert {event.context.work_order_id for event in events} == {"wo_demo_fill_weight_1001"}
-    assert {event.context.asset_id for event in events} == {"asset_filler_1"}
+    assert {event.context.site_id for event in events} == {"greenville_demo_site"}
+    assert {event.context.area_id for event in events} == {"packaging_area"}
+    assert {event.context.line_id for event in events} == {"line_2"}
+    assert {event.context.work_order_id for event in events} == {"WO-DEMO-1007"}
+    assert {event.context.batch_id for event in events} == {"BATCH-DEMO-1007"}
+    assert {event.context.asset_id for event in fill_events} == {"filler_f_201"}
+    assert {event.context.asset_id for event in quality_events} == {"checkweigher_cw_201"}
+
+
+def test_fill_weight_drift_demo_events_include_ui_card_fields() -> None:
+    events = generate_events("fill_weight_drift_demo", seed=120, count=30)
+    process_event = next(
+        event
+        for event in events
+        if event.event_type == "process.measurement.recorded"
+        and event.payload.signal_id == "fill_weight"
+    )
+    quality_event = next(
+        event for event in events if event.event_type == "quality.measurement.recorded"
+    )
+
+    assert process_event.source.system == "factory-simulator"
+    assert process_event.metadata.simulated is True
+    assert process_event.metadata.trace_id.startswith("trace_fill_weight_drift_demo_")
+    assert process_event.context.site_id == "greenville_demo_site"
+    assert process_event.context.line_id == "line_2"
+    assert process_event.context.asset_id == "filler_f_201"
+    assert process_event.context.work_order_id == "WO-DEMO-1007"
+    assert process_event.context.batch_id == "BATCH-DEMO-1007"
+    assert process_event.payload.signal_name == "Fill Weight"
+    assert process_event.payload.tag_name == "filler_f_201.fill_weight"
+    assert process_event.payload.unit == "g"
+    assert quality_event.context.asset_id == "checkweigher_cw_201"
+    assert quality_event.payload.measurement_name == "Final Fill Weight"
 
 
 def test_cli_writes_fill_weight_drift_demo_jsonl(

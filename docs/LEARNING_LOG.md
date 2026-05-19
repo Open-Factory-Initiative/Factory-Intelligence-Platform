@@ -1548,3 +1548,50 @@ make typecheck
 
 Use this scenario as the stable manufacturer demo input for the upcoming UI,
 demo runbook, smoke test, and presentation polish issues.
+
+## 2026-05-19 - Realistic seeded demo data pack
+
+### What changed
+
+Updated the manufacturer demo seed data to use realistic demo names and IDs:
+Greenville Demo Site, Packaging Area, Line 2, Filler F-201, Checkweigher
+CW-201, OFI Demo Beverage, `WO-DEMO-1007`, and `BATCH-DEMO-1007`. The API demo
+domain data now matches those names, and the demo runbook records the expected
+IDs and output.
+
+### Why it was built that way
+
+Issue #121 is about making the demo feel like a real manufacturing workflow.
+The change keeps the existing event contracts and simulator architecture intact
+while improving the seeded data that UI cards, API endpoints, and demo scripts
+will display.
+
+### How it works
+
+The simulator emits process and quality events with realistic site, line, work
+order, batch, asset, source, trace, and tag fields. The API domain seed exposes
+the corresponding display names so overview and detail cards can show readable
+manufacturing context without connecting to real plant systems.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=fill_weight_drift_demo SEED=120 COUNT=30 OUTPUT=.local/events/fill_weight_drift_demo.jsonl
+make ingest INPUT=.local/events/fill_weight_drift_demo.jsonl EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl
+make sentinel-run EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+### How to test it
+
+```bash
+make test-unit
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use these realistic demo IDs as the shared contract for the upcoming demo
+runbook, smoke test, and Operations Workbench cards.

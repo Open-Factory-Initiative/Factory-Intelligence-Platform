@@ -189,32 +189,32 @@ def build_demo_domain_data() -> DomainData:
     return DomainData(
         sites=[
             Site(
-                site_id="site_demo",
-                name="Demo Manufacturing Site",
+                site_id="greenville_demo_site",
+                name="Greenville Demo Site",
                 timezone="America/New_York",
-                description="Simulator-backed site used for local Process Sentinel development.",
+                description="Simulator-backed Greenville site used for the manufacturer demo.",
             )
         ],
         areas=[
             Area(
-                area_id="area_packaging",
-                site_id="site_demo",
+                area_id="packaging_area",
+                site_id="greenville_demo_site",
                 name="Packaging Area",
-                description="Demo packaging area containing the filling and checkweighing process.",
+                description="Packaging area containing Line 2 filling and checkweighing.",
             )
         ],
         equipment=[
             Equipment(
-                equipment_id="eq_filler_1",
-                area_id="area_packaging",
-                name="Filler 1",
+                equipment_id="filler_f_201",
+                area_id="packaging_area",
+                name="Filler F-201",
                 equipment_type="filler",
                 criticality="high",
             ),
             Equipment(
-                equipment_id="eq_checkweigher_1",
-                area_id="area_packaging",
-                name="Checkweigher 1",
+                equipment_id="checkweigher_cw_201",
+                area_id="packaging_area",
+                name="Checkweigher CW-201",
                 equipment_type="checkweigher",
                 criticality="medium",
             ),
@@ -222,7 +222,7 @@ def build_demo_domain_data() -> DomainData:
         process_signals=[
             ProcessSignal(
                 signal_id="fill_weight",
-                equipment_id="eq_filler_1",
+                equipment_id="filler_f_201",
                 name="Fill Weight",
                 unit="g",
                 normal_min=495.0,
@@ -230,7 +230,7 @@ def build_demo_domain_data() -> DomainData:
             ),
             ProcessSignal(
                 signal_id="filler_nozzle_pressure",
-                equipment_id="eq_filler_1",
+                equipment_id="filler_f_201",
                 name="Filler Nozzle Pressure",
                 unit="bar",
                 normal_min=1.9,
@@ -239,10 +239,10 @@ def build_demo_domain_data() -> DomainData:
         ],
         batches=[
             Batch(
-                batch_id="batch_demo_1001",
-                site_id="site_demo",
-                area_id="area_packaging",
-                product_name="Demo Filled Product",
+                batch_id="BATCH-DEMO-1007",
+                site_id="greenville_demo_site",
+                area_id="packaging_area",
+                product_name="OFI Demo Beverage",
                 status="held",
                 started_at=started_at,
                 ended_at=None,
@@ -250,8 +250,8 @@ def build_demo_domain_data() -> DomainData:
         ],
         quality_results=[
             QualityResult(
-                quality_result_id="qr_fill_weight_1001",
-                batch_id="batch_demo_1001",
+                quality_result_id="qr_fill_weight_WO_DEMO_1007",
+                batch_id="BATCH-DEMO-1007",
                 measurement_name="Final Fill Weight",
                 value=505.4,
                 unit="g",
@@ -264,10 +264,10 @@ def build_demo_domain_data() -> DomainData:
         ],
         deviations=[
             Deviation(
-                deviation_id="dev_fill_weight_drift_1001",
-                batch_id="batch_demo_1001",
-                quality_result_id="qr_fill_weight_1001",
-                title="Fill weight drift above upper specification",
+                deviation_id="dev_fill_weight_drift_WO_DEMO_1007",
+                batch_id="BATCH-DEMO-1007",
+                quality_result_id="qr_fill_weight_WO_DEMO_1007",
+                title="Fill weight drift on WO-DEMO-1007 above upper specification",
                 severity="medium",
                 status="under_investigation",
                 related_signal_ids=["fill_weight", "filler_nozzle_pressure"],
@@ -276,11 +276,11 @@ def build_demo_domain_data() -> DomainData:
         ],
         alerts=[
             Alert(
-                alert_id="alert_fill_weight_trend_1001",
-                deviation_id="dev_fill_weight_drift_1001",
-                batch_id="batch_demo_1001",
+                alert_id="alert_fill_weight_trend_WO_DEMO_1007",
+                deviation_id="dev_fill_weight_drift_WO_DEMO_1007",
+                batch_id="BATCH-DEMO-1007",
                 signal_id="fill_weight",
-                title="Fill weight trend approaching upper spec limit",
+                title="Fill weight trend on Filler F-201 approaching upper spec limit",
                 severity="medium",
                 status="active",
                 triggered_at=drift_at,
@@ -288,13 +288,13 @@ def build_demo_domain_data() -> DomainData:
         ],
         investigations=[
             Investigation(
-                investigation_id="inv_fill_weight_drift_1001",
-                deviation_id="dev_fill_weight_drift_1001",
-                title="Investigate fill weight drift on demo batch",
+                investigation_id="inv_fill_weight_drift_WO_DEMO_1007",
+                deviation_id="dev_fill_weight_drift_WO_DEMO_1007",
+                title="Investigate fill weight drift on WO-DEMO-1007",
                 status="open",
                 owner="quality_engineer",
-                alert_ids=["alert_fill_weight_trend_1001"],
-                quality_result_ids=["qr_fill_weight_1001"],
+                alert_ids=["alert_fill_weight_trend_WO_DEMO_1007"],
+                quality_result_ids=["qr_fill_weight_WO_DEMO_1007"],
                 related_signal_ids=["fill_weight", "filler_nozzle_pressure"],
                 opened_at=drift_at,
             )

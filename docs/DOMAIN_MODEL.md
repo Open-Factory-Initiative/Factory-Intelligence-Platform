@@ -170,17 +170,20 @@ erDiagram
 
 The current demo context uses:
 
-- `site_demo`
-- `area_packaging`
-- `eq_filler_1`
-- `eq_checkweigher_1`
+- `greenville_demo_site` / Greenville Demo Site
+- `packaging_area` / Packaging Area
+- `line_2` / Line 2
+- `filler_f_201` / Filler F-201
+- `checkweigher_cw_201` / Checkweigher CW-201
+- `ofi_demo_beverage` / OFI Demo Beverage
+- `WO-DEMO-1007`
 - `fill_weight`
 - `filler_nozzle_pressure`
-- `batch_demo_1001`
-- `qr_fill_weight_1001`
-- `dev_fill_weight_drift_1001`
-- `alert_fill_weight_trend_1001`
-- `inv_fill_weight_drift_1001`
+- `BATCH-DEMO-1007`
+- `qr_fill_weight_WO_DEMO_1007`
+- `dev_fill_weight_drift_WO_DEMO_1007`
+- `alert_fill_weight_trend_WO_DEMO_1007`
+- `inv_fill_weight_drift_WO_DEMO_1007`
 
 This data intentionally mirrors the simulator-backed Process Sentinel scenario:
 fill weight trends upward, the related quality result fails the upper

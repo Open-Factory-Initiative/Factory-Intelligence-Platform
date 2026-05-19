@@ -64,7 +64,6 @@ def generate_events(
                 signal_name="Fill Weight",
                 value=fill_weight,
                 unit="g",
-                asset_id="asset_filler_1",
                 process_tag=fill_weight_tag,
                 line_context=line_context,
             )
@@ -79,7 +78,6 @@ def generate_events(
                 signal_name="Filler Nozzle Pressure",
                 value=pressure,
                 unit="bar",
-                asset_id="asset_filler_1",
                 process_tag=pressure_tag,
                 line_context=line_context,
             )
@@ -159,11 +157,10 @@ def _process_event(
     signal_name: str,
     value: float,
     unit: str,
-    asset_id: str,
     process_tag: ScenarioProcessTag,
     line_context: dict[str, str],
 ) -> EventEnvelope:
-    context = line_context | {"asset_id": asset_id}
+    context = line_context | {"asset_id": process_tag.asset_id}
     return EventEnvelope(
         event_id=event_id,
         event_type="process.measurement.recorded",
@@ -178,7 +175,7 @@ def _process_event(
         payload=ProcessMeasurementPayload(
             signal_id=signal_id,
             signal_name=signal_name,
-            tag_name=f"{asset_id}.{signal_id}",
+            tag_name=f"{process_tag.asset_id}.{signal_id}",
             value=value,
             unit=unit,
             quality="good",
