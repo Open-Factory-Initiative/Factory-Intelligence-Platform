@@ -46,6 +46,29 @@ python -m factory_ingestion.cli \
   --dead-letter .local/storage/dead_letter.jsonl
 ```
 
+## Accepted Event Storage
+
+Accepted events are written to the local JSONL event store:
+
+```text
+.local/storage/events.jsonl
+```
+
+This is the path used by `make ingest`, `make sentinel-run`, and the local API
+by default. Each line is one validated factory event serialized as JSON, so the
+file can be inspected with standard command-line tools and read back through
+`JsonlEventStore`.
+
+The local store is idempotent by `event_id`: ingesting the same deterministic
+simulator output more than once validates the events again but does not append
+duplicate accepted-event rows. To reset local accepted-event storage, remove the
+file and run ingestion again:
+
+```bash
+rm .local/storage/events.jsonl
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
 The command prints a summary such as:
 
 ```text

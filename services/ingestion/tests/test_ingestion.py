@@ -26,6 +26,10 @@ def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
 
 
+def jsonl_lines(path: Path) -> list[str]:
+    return [line for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
 def assert_iso_timestamp(value: str) -> None:
     datetime.fromisoformat(value)
 
@@ -56,6 +60,7 @@ def test_ingestion_persists_valid_simulator_events(tmp_path: Path) -> None:
     assert result.rejected_count == 0
     assert result.dead_letter_count == 0
     assert len(store.list_events()) == len(events)
+    assert len(jsonl_lines(store.path)) == len(events)
     assert dead_letter_path.read_text(encoding="utf-8") == ""
 
 
@@ -73,6 +78,8 @@ def test_ingestion_rejects_invalid_event_and_keeps_processing(tmp_path: Path) ->
     assert result.rejected_count == 1
     assert result.dead_letter_count == 1
     assert len(store.list_events()) == 1
+    assert len(read_jsonl(store.path)) == 1
+    assert "unsupported event_type" in dead_letter_path.read_text()
     dead_letter = read_jsonl(dead_letter_path)[0]
     assert dead_letter["source_path"] == str(input_path)
     assert dead_letter["line_number"] == 1
@@ -118,6 +125,7 @@ def test_ingestion_rejects_schema_invalid_event(tmp_path: Path) -> None:
     assert result.accepted_count == 0
     assert result.rejected_count == 1
     assert store.list_events() == []
+    assert not store.path.exists()
     dead_letters = read_jsonl(dead_letter_path)
     assert dead_letters[0]["line_number"] == 1
     assert dead_letters[0]["source_path"] == str(input_path)
@@ -191,6 +199,36 @@ def test_ingestion_cli_prints_summary(tmp_path: Path, capsys: pytest.CaptureFixt
     assert len(JsonlEventStore(events_store).list_events()) == len(events)
 
 
+def test_local_event_store_preserves_valid_jsonl_event_data(tmp_path: Path) -> None:
+    store = JsonlEventStore(tmp_path / "store.jsonl")
+    raw_event = simulator_event("process.measurement.recorded")
+    event = validate_incoming_event(raw_event)
+
+    store.append(event)
+
+    stored_rows = read_jsonl(store.path)
+    assert len(stored_rows) == 1
+    assert stored_rows[0] == event.model_dump(mode="json")
+    assert validate_incoming_event(stored_rows[0]).event_id == event.event_id
+
+
+def test_local_event_store_skips_duplicate_event_ids_for_repeatable_runs(tmp_path: Path) -> None:
+    input_path = tmp_path / "events.jsonl"
+    events = [event.model_dump(mode="json") for event in generate_events("normal", count=6)]
+    write_jsonl(input_path, events)
+    store = JsonlEventStore(tmp_path / "store.jsonl")
+
+    first_result = ingest_jsonl(input_path, store=store, dead_letter_path=tmp_path / "dead_1.jsonl")
+    second_result = ingest_jsonl(
+        input_path,
+        store=store,
+        dead_letter_path=tmp_path / "dead_2.jsonl",
+    )
+
+    assert first_result.accepted_count == len(events)
+    assert second_result.accepted_count == len(events)
+    assert len(store.list_events()) == len(events)
+    assert len(jsonl_lines(store.path)) == len(events)
 def test_ingestion_cli_prints_dead_letter_count(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

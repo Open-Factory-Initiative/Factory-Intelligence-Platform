@@ -1258,6 +1258,28 @@ make typecheck
 Use the structured dead-letter details to build the next ingestion reporting
 slice, including clearer summaries for accepted and rejected records.
 
+## 2026-05-19 - Local accepted-event storage
+
+### What changed
+
+Hardened the MVP local accepted-event store. Accepted events are written to
+`.local/storage/events.jsonl` as valid JSONL, invalid events are excluded from
+that store, and repeated ingestion of the same deterministic simulator output no
+longer appends duplicate rows for the same `event_id`.
+
+### Why it was built that way
+
+The MVP needs a simple handoff between ingestion, Process Sentinel, and the API
+before PostgreSQL persistence is required. A local JSONL store keeps the data
+easy to inspect while matching the existing simulator-first development loop.
+
+### How data flows through it
+
+The ingestion worker validates each candidate event and calls `JsonlEventStore`
+only for accepted events. The store serializes one validated factory event per
+line and skips duplicate `event_id` values so local reruns remain repeatable.
+Process Sentinel and the API use the same `.local/storage/events.jsonl` path by
+default.
 ## 2026-05-19 - Dead-letter handling for invalid events
 
 ### What changed
@@ -1286,6 +1308,7 @@ to `.local/storage/dead_letter.jsonl`. Malformed JSON keeps the original text in
 ```bash
 make simulate SCENARIO=gradual_drift
 make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
 ```
 
 ### How to test it
@@ -1299,6 +1322,9 @@ make typecheck
 
 ### What to learn next
 
+Use this accepted-event store as the stable input for the next Process Sentinel
+integration tests, then defer PostgreSQL persistence and retention policy work
+to later issues.
 Use the dead-letter count and structured error fields as the basis for a focused
 ingestion summary/reporting issue, without adding retry queues or production
 message-broker dead-letter topics yet.

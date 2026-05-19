@@ -12,6 +12,8 @@ class JsonlEventStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def append(self, event: EventEnvelope) -> None:
+        if event.event_id in self.event_ids():
+            return
         with self.path.open("a", encoding="utf-8") as output:
             output.write(json.dumps(event.model_dump(mode="json"), sort_keys=True))
             output.write("\n")
@@ -28,6 +30,11 @@ class JsonlEventStore:
 
     def get_event(self, event_id: str) -> EventEnvelope | None:
         return next((event for event in self.list_events() if event.event_id == event_id), None)
+
+    def event_ids(self) -> set[str]:
+        if not self.path.exists():
+            return set()
+        return {event.event_id for event in self.list_events()}
 
 
 class PostgresEventStore:
