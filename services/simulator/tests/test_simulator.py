@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from statistics import fmean
 
@@ -20,6 +21,10 @@ from factory_simulator import (
 from factory_simulator.cli import main as simulator_cli_main
 from factory_simulator.generator import GRADUAL_DRIFT_BASELINE_SAMPLES
 from pydantic import ValidationError
+
+
+def expected_event_count(sample_count: int) -> int:
+    return (sample_count * 2) + (sample_count // 3)
 
 
 def test_valid_normal_scenario_definition_describes_generation_format() -> None:
@@ -119,6 +124,47 @@ def test_different_seeds_produce_different_valid_output(scenario: str) -> None:
         event.model_dump(mode="json") for event in seed_43_events
     ]
     for event in seed_43_events:
+        validated = validate_event(event.model_dump(mode="json"))
+        assert validated.event_id == event.event_id
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_scenario_events_have_expected_count_and_timing(scenario: str) -> None:
+    start = datetime(2026, 2, 1, 8, 0, tzinfo=UTC)
+    sample_count = 12
+    events = generate_events(scenario, seed=42, count=sample_count, start=start)
+
+    process_events = [
+        event for event in events if event.event_type == "process.measurement.recorded"
+    ]
+    quality_events = [
+        event for event in events if event.event_type == "quality.measurement.recorded"
+    ]
+
+    assert len(events) == expected_event_count(sample_count)
+    assert len(process_events) == sample_count * 2
+    assert len(quality_events) == sample_count // 3
+    assert {event.timestamp for event in process_events} == {
+        start + timedelta(minutes=index) for index in range(sample_count)
+    }
+    assert [event.timestamp for event in quality_events] == [
+        start + timedelta(minutes=index, seconds=20)
+        for index in range(2, sample_count, 3)
+    ]
+
+
+@pytest.mark.parametrize("scenario", SCENARIOS)
+def test_scenario_events_are_valid_factory_events_with_stable_ids(scenario: str) -> None:
+    events = generate_events(scenario, seed=42, count=12)
+    event_ids = [event.event_id for event in events]
+    trace_ids = {event.metadata.trace_id for event in events}
+
+    assert len(event_ids) == len(set(event_ids))
+    assert all(event.source.system == "factory-simulator" for event in events)
+    assert all(event.source.adapter == "simulator" for event in events)
+    assert all(event.metadata.simulated for event in events)
+    assert all(trace_id.startswith(f"trace_{scenario}_") for trace_id in trace_ids)
+    for event in events:
         validated = validate_event(event.model_dump(mode="json"))
         assert validated.event_id == event.event_id
 
@@ -351,6 +397,27 @@ def test_gradual_drift_events_validate_against_factory_event_schema() -> None:
     for event in events:
         validated = validate_event(event.model_dump(mode="json"))
         assert validated.event_id == event.event_id
+
+
+def test_sudden_excursion_process_signals_spike_then_recover() -> None:
+    definition = scenario_definition_for("sudden_excursion")
+    pressure_tag = next(
+        tag
+        for tag in definition.process_tags
+        if tag.signal_id == "filler_nozzle_pressure"
+    )
+    events = generate_events("sudden_excursion", seed=42, count=15)
+    pressure_values = [
+        event.payload.value
+        for event in events
+        if event.event_type == "process.measurement.recorded"
+        and event.payload.signal_id == "filler_nozzle_pressure"
+    ]
+
+    assert pressure_tag.normal_max is not None
+    assert max(pressure_values[10:13]) > pressure_tag.normal_max
+    assert all(value <= pressure_tag.normal_max for value in pressure_values[:10])
+    assert all(value <= pressure_tag.normal_max for value in pressure_values[13:])
 
 
 def test_sudden_excursion_contains_known_out_of_spec_quality_result() -> None:
