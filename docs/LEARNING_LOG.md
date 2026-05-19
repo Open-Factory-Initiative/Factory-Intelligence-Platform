@@ -1280,6 +1280,28 @@ only for accepted events. The store serializes one validated factory event per
 line and skips duplicate `event_id` values so local reruns remain repeatable.
 Process Sentinel and the API use the same `.local/storage/events.jsonl` path by
 default.
+## 2026-05-19 - Dead-letter handling for invalid events
+
+### What changed
+
+Expanded local dead-letter records for rejected ingestion rows. Each record now
+includes the source file path, line number, rejection timestamp, top-level error,
+structured validation errors, raw input text, and the parsed original payload
+when JSON parsing succeeds. The ingestion summary also reports
+`dead_letter_count`.
+
+### Why it was built that way
+
+Dead-letter handling is the traceability boundary for bad input. Keeping it as
+local JSONL preserves the MVP's simulator-first workflow while giving
+contributors enough context to debug malformed or schema-invalid records.
+
+### How data flows through it
+
+The ingestion worker reads each JSONL line, parses and validates candidate
+events, appends valid events to the accepted store, and writes rejected records
+to `.local/storage/dead_letter.jsonl`. Malformed JSON keeps the original text in
+`raw`; schema-invalid JSON also keeps the parsed `payload` for inspection.
 
 ### How to run it
 
@@ -1303,3 +1325,6 @@ make typecheck
 Use this accepted-event store as the stable input for the next Process Sentinel
 integration tests, then defer PostgreSQL persistence and retention policy work
 to later issues.
+Use the dead-letter count and structured error fields as the basis for a focused
+ingestion summary/reporting issue, without adding retry queues or production
+message-broker dead-letter topics yet.

@@ -72,13 +72,20 @@ make ingest INPUT=.local/events/gradual_drift.jsonl
 The command prints a summary such as:
 
 ```text
-ingestion complete: accepted=56 rejected=0 events_store=.local/storage/events.jsonl dead_letter=.local/storage/dead_letter.jsonl
+ingestion complete: accepted=56 rejected=0 dead_letter_count=0 events_store=.local/storage/events.jsonl dead_letter=.local/storage/dead_letter.jsonl
 ```
 
 Malformed JSON, unsupported event types, and schema-invalid events are rejected
-without stopping the file. Dead-letter rows include the source line number, the
-validation error, and the raw input line so contributors can inspect bad input
-without losing the rest of the batch.
+without stopping the file. The default dead-letter output path is predictable:
+
+```text
+.local/storage/dead_letter.jsonl
+```
+
+Dead-letter rows include the source file, source line number, rejection
+timestamp, validation error, structured error details, parsed original payload
+when JSON parsing succeeds, and the raw input line so contributors can inspect
+bad input without losing the rest of the batch.
 
 Common validation errors include:
 
@@ -94,6 +101,8 @@ details:
 ```json
 {
   "line_number": 3,
+  "source_path": ".local/events/gradual_drift.jsonl",
+  "recorded_at": "2026-05-19T01:23:45.678901+00:00",
   "error": "event failed shared factory event schema validation",
   "errors": [
     {
@@ -103,6 +112,12 @@ details:
       "input": "offline"
     }
   ],
+  "payload": {
+    "event_id": "..."
+  },
   "raw": "{\"event_id\": \"...\"}"
 }
 ```
+
+Malformed JSON rows cannot include a parsed `payload`, so those dead-letter
+records keep `payload` as `null` and preserve the original text in `raw`.

@@ -26,6 +26,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(
         "ingestion complete: "
         f"accepted={result.accepted_count} rejected={result.rejected_count} "
+        f"dead_letter_count={result.dead_letter_count} "
         f"events_store={args.events_store} dead_letter={args.dead_letter}"
     )
     return 0
