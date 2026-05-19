@@ -200,6 +200,38 @@ def test_missing_domain_object_uses_documented_error_shape(tmp_path: Path) -> No
     }
 
 
+def test_demo_recommendation_endpoints_expose_review_fields(tmp_path: Path) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    list_response = client.get("/recommendations")
+    recommendation = list_response.json()[0]
+    detail_response = client.get(f"/recommendations/{recommendation['recommendation_id']}")
+
+    assert list_response.status_code == 200
+    assert detail_response.status_code == 200
+    assert recommendation["recommendation_id"] == "rec_fill_weight_gradual_drift"
+    assert recommendation["detection_id"] == "det_fill_weight_gradual_drift"
+    assert recommendation["status"] == "needs_review"
+    assert recommendation["recommended_action"] == (
+        "Inspect filler calibration and increase quality checks for the affected demo work "
+        "order."
+    )
+    assert recommendation["rationale"] == (
+        "The trend is moving toward the quality limit before confirmed broad failure."
+    )
+    assert recommendation["risk_level"] == "medium"
+    assert recommendation["requires_approval"] is True
+    assert recommendation["evidence_ids"] == [
+        "evi_fill_weight_baseline_vs_recent",
+        "evi_quality_results_recent_window",
+    ]
+    assert recommendation["created_at"]
+    assert detail_response.json() == recommendation
+
+
 def test_recommendation_approval_creates_decision_and_updates_status(tmp_path: Path) -> None:
     events_store_path, state_dir = seed_state(tmp_path)
     client = TestClient(
@@ -216,6 +248,41 @@ def test_recommendation_approval_creates_decision_and_updates_status(tmp_path: P
     assert response.status_code == 200
     assert response.json()["decision"] == "approved"
     assert updated["status"] == "approved"
+
+
+def test_recommendation_review_actions_return_ui_confirmation_fields(
+    tmp_path: Path,
+) -> None:
+    actions = [
+        ("approve", "approved"),
+        ("reject", "rejected"),
+        ("defer", "deferred"),
+    ]
+
+    for action, expected_decision in actions:
+        events_store_path, state_dir = seed_state(tmp_path / action)
+        client = TestClient(
+            create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+        )
+        recommendation = client.get("/recommendations").json()[0]
+
+        response = client.post(
+            f"/recommendations/{recommendation['recommendation_id']}/{action}",
+            json={
+                "reviewer": "quality_engineer",
+                "reason": f"Demo reviewer chose to {action} the recommendation.",
+            },
+        )
+        decision = response.json()
+        updated = client.get(f"/recommendations/{recommendation['recommendation_id']}").json()
+
+        assert response.status_code == 200
+        assert decision["recommendation_id"] == recommendation["recommendation_id"]
+        assert decision["reviewer"] == "quality_engineer"
+        assert decision["decision"] == expected_decision
+        assert decision["reason"] == f"Demo reviewer chose to {action} the recommendation."
+        assert decision["timestamp"] == decision["created_at"]
+        assert updated["status"] == expected_decision
 
 
 def test_rca_capa_draft_uses_detection_evidence_and_recommendation(tmp_path: Path) -> None:

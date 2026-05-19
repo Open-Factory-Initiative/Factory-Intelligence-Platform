@@ -286,7 +286,9 @@ def create_app(
             raise_not_found(
                 "recommendation_not_found", f"Recommendation not found: {recommendation_id}"
             )
-        return approval.model_dump(mode="json")
+        response = approval.model_dump(mode="json")
+        response["timestamp"] = response["created_at"]
+        return response
 
     return app
 
