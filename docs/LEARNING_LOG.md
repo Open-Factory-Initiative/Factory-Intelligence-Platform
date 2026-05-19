@@ -1829,3 +1829,53 @@ make typecheck
 
 Carry the same advisory wording style into the evidence, recommendation, and
 RCA/CAPA preview demo steps.
+
+## 2026-05-19 - Demo evidence timeline readiness
+
+### What changed
+
+Made the demo evidence timeline behavior explicit and test-covered. Evidence is
+returned in chronological order, and the tests now verify readable titles,
+descriptions, evidence types, source event IDs, scores, and the link between
+process signal behavior and the quality concern. The demo runbook includes the
+expected evidence endpoint and example evidence items.
+
+### Why it was built that way
+
+Issue #128 asks for demo-ready evidence, not charting or a new investigation
+engine. The implementation keeps the existing Process Sentinel evidence model
+and API endpoint, adds ordering at the state-store boundary, and locks down the
+fields the demo UI will need.
+
+### How it works
+
+Process Sentinel creates process-signal evidence that compares baseline and
+recent fill-weight averages, then quality evidence that shows recent quality
+checks moving in the same direction. The API returns those records from
+`/sentinel/detections/det_fill_weight_gradual_drift/evidence` with timestamps,
+titles, descriptions, source event IDs, evidence types, and scores.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+### How to test it
+
+```bash
+make test-unit
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use the evidence contract in the upcoming recommendation review, RCA/CAPA
+preview, and Operations Workbench demo screens.

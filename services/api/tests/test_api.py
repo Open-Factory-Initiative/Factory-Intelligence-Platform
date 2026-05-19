@@ -76,6 +76,35 @@ def test_demo_detection_detail_endpoint_exposes_expected_lookup_fields(
     assert detail_response.json()["related_asset_ids"] == ["filler_f_201"]
 
 
+def test_demo_detection_evidence_endpoint_returns_demo_ready_timeline(
+    tmp_path: Path,
+) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+
+    response = client.get("/sentinel/detections/det_fill_weight_gradual_drift/evidence")
+
+    evidence = response.json()
+    assert response.status_code == 200
+    assert len(evidence) == 2
+    assert [item["timestamp"] for item in evidence] == sorted(
+        item["timestamp"] for item in evidence
+    )
+    assert [item["evidence_type"] for item in evidence] == [
+        "process_signal",
+        "quality_result",
+    ]
+    assert all(item["title"] for item in evidence)
+    assert all(item["description"] for item in evidence)
+    assert all(item["source_event_ids"] for item in evidence)
+    assert all(0.0 <= item["score"] <= 1.0 for item in evidence)
+    assert "Baseline average" in evidence[0]["description"]
+    assert "recent average" in evidence[0]["description"]
+    assert "process signal" in evidence[1]["description"]
+
+
 def test_domain_model_query_endpoints(tmp_path: Path) -> None:
     events_store_path, state_dir = seed_state(tmp_path)
     client = TestClient(

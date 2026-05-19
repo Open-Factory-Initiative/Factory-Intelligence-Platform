@@ -43,9 +43,9 @@ class SentinelStateStore:
 
     def list_evidence(self, detection_id: str | None = None) -> list[EvidenceItem]:
         evidence = self._read_models("evidence.json", EvidenceItem)
-        if detection_id is None:
-            return evidence
-        return [item for item in evidence if item.detection_id == detection_id]
+        if detection_id is not None:
+            evidence = [item for item in evidence if item.detection_id == detection_id]
+        return sorted(evidence, key=lambda item: item.timestamp)
 
     def list_recommendations(self) -> list[Recommendation]:
         return self._read_models("recommendations.json", Recommendation)
