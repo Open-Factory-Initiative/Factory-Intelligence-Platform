@@ -29,9 +29,11 @@ test("navigation includes the required demo routes", () => {
 
 test("app shell documents configurable API base URL", () => {
   const config = readFileSync(join(root, "lib/api-config.ts"), "utf8");
+  const client = readFileSync(join(root, "lib/api-client.ts"), "utf8");
   const readme = readFileSync(join(root, "README.md"), "utf8");
 
   assert.match(config, /NEXT_PUBLIC_API_BASE_URL/);
+  assert.match(client, /apiBaseUrl/);
   assert.match(config, /http:\/\/127\.0\.0\.1:8000/);
   assert.match(readme, /NEXT_PUBLIC_API_BASE_URL/);
 });

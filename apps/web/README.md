@@ -1,6 +1,8 @@
 # Operations Workbench
 
-Minimal Next.js app shell for the simulator-backed Process Sentinel demo.
+Minimal Next.js app shell for the simulator-backed Process Sentinel demo. The
+Workbench reads from the local FastAPI backend through a small typed API client
+in `lib/api-client.ts`.
 
 ## Local Startup
 
@@ -39,17 +41,53 @@ Override without code changes:
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8001 npm run dev
 ```
 
+The API client currently covers:
+
+- `GET /health`
+- `GET /sentinel/detections`
+- `GET /sentinel/detections/{detection_id}`
+- `GET /sentinel/detections/{detection_id}/evidence`
+- `GET /recommendations`
+- `GET /recommendations/{recommendation_id}`
+- `POST /recommendations/{recommendation_id}/approve`
+- `POST /recommendations/{recommendation_id}/reject`
+- `POST /recommendations/{recommendation_id}/defer`
+- `GET /reports/rca-capa-drafts/{detection_id}`
+
+When the backend is unavailable, the demo pages render a readable API connection
+message instead of failing silently.
+
 ## Routes
 
 - `/` - Overview
-- `/detections` - Process Sentinel detections placeholder
-- `/recommendations` - Governed recommendation review placeholder
-- `/rca-capa-draft` - RCA/CAPA draft placeholder
+- `/detections` - Process Sentinel detections and first evidence timeline preview
+- `/recommendations` - Governed recommendation review preview
+- `/rca-capa-draft` - RCA/CAPA draft preview
 
-The shell labels all placeholder content as simulator-backed demo data. Future
-issues should replace placeholders with API-backed views using the existing
-FastAPI endpoints and `docs/EVIDENCE_TIMELINE_API_CONTRACT.md` for evidence
-timeline fields.
+The shell labels all demo content as simulator-backed data. The pages include
+loading states, empty states, and simple user-readable API error states.
+
+## Manual API Check
+
+In one terminal, prepare and run the backend demo API:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In another terminal, run:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Then open `http://127.0.0.1:3000` and verify Overview, Detections,
+Recommendations, and RCA/CAPA Draft render against the configured API base URL.
 
 ## Checks
 

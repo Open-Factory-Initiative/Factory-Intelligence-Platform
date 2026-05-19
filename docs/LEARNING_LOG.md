@@ -2116,3 +2116,59 @@ npm run build
 
 Connect the detection placeholder to the FastAPI detection and evidence
 endpoints.
+
+## 2026-05-19 - Workbench API client
+
+### What changed
+
+Added a typed Workbench API client under `apps/web/lib/api-client.ts` for the
+local FastAPI demo endpoints. The Overview, Detections, Recommendations, and
+RCA/CAPA Draft pages now use that client, show loading states, and render simple
+API connection errors when the backend is unavailable.
+
+### Why it was built that way
+
+Issue #100 needs a small hand-written client, not a generated OpenAPI client or
+production gateway layer. The implementation keeps the demo UI simulator-backed,
+readable, and human-review oriented while leaving full recommendation action UI
+for later Workbench issues.
+
+### How it works
+
+The client reads `NEXT_PUBLIC_API_BASE_URL`, defaults to
+`http://127.0.0.1:8000`, and calls the existing detection, evidence,
+recommendation, decision, health, and RCA/CAPA draft endpoints with typed
+response shapes. Pages catch client errors and display a user-readable message
+instead of crashing the demo view.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Turn the read-only recommendation preview into a governed review panel that can
+approve, reject, or defer recommendations with reviewer and reason fields.
