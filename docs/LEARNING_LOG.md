@@ -22,6 +22,55 @@ This file should be updated by Codex after each meaningful change.
 ### What to learn next
 ```
 
+## 2026-05-19 - Simulator usage documentation
+
+### What changed
+
+Expanded the simulator documentation with available scenarios, recommended
+`make simulate` usage, direct CLI usage, seed behavior, JSONL output format,
+default paths, example commands, and the handoff from simulator output to
+ingestion and Process Sentinel.
+
+### Why it matters
+
+Contributors need to generate realistic local data without reading simulator
+code first. Clear docs make the simulator useful for onboarding, tests, demos,
+issue reproduction, and the full Process Sentinel MVP workflow.
+
+### How it works
+
+The simulator writes Factory Event JSONL files under `.local/events/`. Ingestion
+reads that JSONL path, validates each line through the shared contracts, writes
+accepted events to `.local/storage/events.jsonl`, and leaves invalid records in
+the dead-letter file.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift OUTPUT=.local/events/gradual_drift.jsonl
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+```
+
+### How to test it
+
+```bash
+make docs
+make simulate SCENARIO=normal OUTPUT=/private/tmp/fip-docs-normal.jsonl
+make ingest INPUT=/private/tmp/fip-docs-normal.jsonl
+make test
+```
+
+### Key files
+
+- `services/simulator/README.md`
+- `README.md`
+
+### What to learn next
+
+Use the documented simulator-to-ingestion workflow as the starting point for
+future Process Sentinel walkthroughs and e2e tests.
+
 ## 2026-05-18 - Simulator scenario regression tests
 
 ### What changed
