@@ -68,12 +68,28 @@ make test-unit
 make test-integration
 make test-contract
 make test-e2e
+make demo-api-smoke
 make lint
 make typecheck
 ```
 
 `make test-e2e` is currently a documented placeholder because the web workbench
 has not been implemented yet.
+
+`make demo-api-smoke` is a backend-only smoke test for the deterministic demo
+path. Run it after:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make demo-api-smoke
+```
+
+It verifies the generated demo event store, detection endpoint, evidence
+endpoint, recommendation endpoint, decision endpoint, and RCA/CAPA draft
+endpoint without requiring the browser UI.
 
 ## Backend Testing
 

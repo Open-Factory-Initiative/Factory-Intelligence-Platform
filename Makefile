@@ -21,7 +21,7 @@ DEMO_SENTINEL_STATE_DIR ?= $(DEMO_STORAGE_DIR)/$(DEMO_SCENARIO)_sentinel
 PYTHONPATH := packages/factory-events:services/simulator:services/ingestion:services/process-sentinel:services/api
 export PYTHONPATH
 
-.PHONY: help setup dev dev-db simulate ingest sentinel-run demo-reset demo-data demo-ingest demo-sentinel-run api api-reload test test-unit test-integration test-contract test-e2e lint typecheck docs
+.PHONY: help setup dev dev-db simulate ingest sentinel-run demo-reset demo-data demo-ingest demo-sentinel-run demo-api-smoke api api-reload test test-unit test-integration test-contract test-e2e lint typecheck docs
 
 help:
 	@echo "Factory Intelligence Platform"
@@ -36,6 +36,7 @@ help:
 	@echo "  make demo-data          Generate deterministic manufacturer demo data"
 	@echo "  make demo-ingest        Ingest deterministic manufacturer demo data"
 	@echo "  make demo-sentinel-run  Run Process Sentinel over demo data"
+	@echo "  make demo-api-smoke     Smoke test demo data through the API app"
 	@echo "  make api                Start FastAPI API"
 	@echo "  make api-reload         Start FastAPI API with auto-reload"
 	@echo "  make test               Run all configured tests"
@@ -92,6 +93,9 @@ demo-sentinel-run:
 	$(PYTHON) -m process_sentinel.cli --events-store $(DEMO_EVENTS_STORE) --state-dir $(DEMO_SENTINEL_STATE_DIR)
 	@echo "Demo Sentinel state: $(DEMO_SENTINEL_STATE_DIR)"
 	@echo "Next: make api EVENTS_STORE=$(DEMO_EVENTS_STORE) SENTINEL_STATE_DIR=$(DEMO_SENTINEL_STATE_DIR)"
+
+demo-api-smoke:
+	$(PYTHON) -m factory_api.demo_smoke --events-store $(DEMO_EVENTS_STORE) --sentinel-state-dir $(DEMO_SENTINEL_STATE_DIR)
 
 api:
 	FACTORY_EVENTS_STORE=$(EVENTS_STORE) SENTINEL_STATE_DIR=$(SENTINEL_STATE_DIR) $(VENV)/bin/uvicorn factory_api.main:app --app-dir services/api

@@ -16,6 +16,7 @@ make demo-reset
 make demo-data
 make demo-ingest
 make demo-sentinel-run
+make demo-api-smoke
 ```
 
 `make demo-reset` clears only the generated local demo files:
@@ -29,7 +30,19 @@ Those paths live under `.local/`, which is ignored by Git. The reset target does
 not drop a production database, remove source files, or clean real plant data.
 
 The demo targets print the next command to run after each step. After
-`make demo-sentinel-run`, start the API against the demo state with:
+`make demo-sentinel-run`, run the backend smoke test:
+
+```bash
+make demo-api-smoke
+```
+
+The smoke test verifies that the demo event store exists, then exercises the API
+app against a temporary copy of the demo state. It checks the expected detection,
+evidence, recommendation, decision, and RCA/CAPA draft endpoints without
+requiring the browser UI or mutating the prepared demo files.
+
+To inspect the API manually after the smoke test passes, start the API against
+the demo state with:
 
 ```bash
 make api \
