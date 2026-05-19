@@ -135,7 +135,27 @@ designed to tell a clear manufacturer story:
 - Gradual fill-weight and nozzle-pressure drift
 - Delayed quality concern after the process trend is visible
 
-Generate the deterministic demo data:
+The recommended demo commands reset generated local state, generate deterministic
+data, ingest it, and run Process Sentinel:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+```
+
+`make demo-reset` removes only generated demo files under `.local/`, which is
+ignored by Git. It does not clean source files, production databases, or real
+plant data.
+
+Expected simulator output from `make demo-data`:
+
+```text
+wrote 70 events to .local/events/fill_weight_drift_demo.jsonl (scenario=fill_weight_drift_demo, seed=120, count=30)
+```
+
+The equivalent generic simulator command is:
 
 ```bash
 make simulate \
@@ -143,24 +163,6 @@ make simulate \
   SEED=120 \
   COUNT=30 \
   OUTPUT=.local/events/fill_weight_drift_demo.jsonl
-```
-
-Expected output:
-
-```text
-wrote 70 events to .local/events/fill_weight_drift_demo.jsonl (scenario=fill_weight_drift_demo, seed=120, count=30)
-```
-
-Then run the local demo path:
-
-```bash
-make ingest \
-  INPUT=.local/events/fill_weight_drift_demo.jsonl \
-  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl
-
-make sentinel-run \
-  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl \
-  SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
 ```
 
 Expected Process Sentinel output includes:

@@ -9,10 +9,19 @@ OUTPUT ?= .local/events/$(SCENARIO).jsonl
 INPUT ?= $(OUTPUT)
 EVENTS_STORE ?= .local/storage/events.jsonl
 SENTINEL_STATE_DIR ?= .local/storage/sentinel
+DEMO_SCENARIO ?= fill_weight_drift_demo
+DEMO_SEED ?= 120
+DEMO_COUNT ?= 30
+DEMO_EVENTS_DIR ?= .local/events
+DEMO_STORAGE_DIR ?= .local/storage
+DEMO_OUTPUT ?= $(DEMO_EVENTS_DIR)/$(DEMO_SCENARIO).jsonl
+DEMO_EVENTS_STORE ?= $(DEMO_STORAGE_DIR)/$(DEMO_SCENARIO)_events.jsonl
+DEMO_DEAD_LETTER ?= $(DEMO_STORAGE_DIR)/$(DEMO_SCENARIO)_dead_letter.jsonl
+DEMO_SENTINEL_STATE_DIR ?= $(DEMO_STORAGE_DIR)/$(DEMO_SCENARIO)_sentinel
 PYTHONPATH := packages/factory-events:services/simulator:services/ingestion:services/process-sentinel:services/api
 export PYTHONPATH
 
-.PHONY: help setup dev dev-db simulate ingest sentinel-run api api-reload test test-unit test-integration test-contract test-e2e lint typecheck docs
+.PHONY: help setup dev dev-db simulate ingest sentinel-run demo-reset demo-data demo-ingest demo-sentinel-run api api-reload test test-unit test-integration test-contract test-e2e lint typecheck docs
 
 help:
 	@echo "Factory Intelligence Platform"
@@ -23,6 +32,10 @@ help:
 	@echo "  make simulate           Generate simulator JSONL events"
 	@echo "  make ingest             Validate and ingest simulator events"
 	@echo "  make sentinel-run       Run Process Sentinel over ingested events"
+	@echo "  make demo-reset         Clear generated local demo files"
+	@echo "  make demo-data          Generate deterministic manufacturer demo data"
+	@echo "  make demo-ingest        Ingest deterministic manufacturer demo data"
+	@echo "  make demo-sentinel-run  Run Process Sentinel over demo data"
 	@echo "  make api                Start FastAPI API"
 	@echo "  make api-reload         Start FastAPI API with auto-reload"
 	@echo "  make test               Run all configured tests"
@@ -58,6 +71,27 @@ ingest:
 
 sentinel-run:
 	$(PYTHON) -m process_sentinel.cli --events-store $(EVENTS_STORE) --state-dir $(SENTINEL_STATE_DIR)
+
+demo-reset:
+	rm -f $(DEMO_OUTPUT) $(DEMO_EVENTS_STORE) $(DEMO_DEAD_LETTER)
+	rm -rf $(DEMO_SENTINEL_STATE_DIR)
+	@echo "Demo generated state cleared."
+	@echo "Next: make demo-data"
+
+demo-data:
+	$(PYTHON) -m factory_simulator.cli --scenario $(DEMO_SCENARIO) --seed $(DEMO_SEED) --count $(DEMO_COUNT) --output $(DEMO_OUTPUT)
+	@echo "Demo data ready: $(DEMO_OUTPUT)"
+	@echo "Next: make demo-ingest"
+
+demo-ingest:
+	$(PYTHON) -m factory_ingestion.cli --input $(DEMO_OUTPUT) --events-store $(DEMO_EVENTS_STORE) --dead-letter $(DEMO_DEAD_LETTER)
+	@echo "Demo events stored: $(DEMO_EVENTS_STORE)"
+	@echo "Next: make demo-sentinel-run"
+
+demo-sentinel-run:
+	$(PYTHON) -m process_sentinel.cli --events-store $(DEMO_EVENTS_STORE) --state-dir $(DEMO_SENTINEL_STATE_DIR)
+	@echo "Demo Sentinel state: $(DEMO_SENTINEL_STATE_DIR)"
+	@echo "Next: make api EVENTS_STORE=$(DEMO_EVENTS_STORE) SENTINEL_STATE_DIR=$(DEMO_SENTINEL_STATE_DIR)"
 
 api:
 	FACTORY_EVENTS_STORE=$(EVENTS_STORE) SENTINEL_STATE_DIR=$(SENTINEL_STATE_DIR) $(VENV)/bin/uvicorn factory_api.main:app --app-dir services/api

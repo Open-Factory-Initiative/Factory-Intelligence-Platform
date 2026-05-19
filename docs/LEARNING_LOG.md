@@ -1595,3 +1595,50 @@ make typecheck
 
 Use these realistic demo IDs as the shared contract for the upcoming demo
 runbook, smoke test, and Operations Workbench cards.
+
+## 2026-05-19 - Demo reset and data commands
+
+### What changed
+
+Added `make demo-reset`, `make demo-data`, `make demo-ingest`, and
+`make demo-sentinel-run` for the deterministic manufacturer demo path. The demo
+runbook, root README, and simulator README now document the commands and their
+generated local paths.
+
+### Why it was built that way
+
+Issue #122 needs a reliable pre-call setup flow without touching production
+storage or real plant data. Dedicated demo targets keep the polished demo path
+repeatable while leaving the generic simulator, ingestion, and Sentinel targets
+available for contributor experiments.
+
+### How it works
+
+The demo targets use the seeded `fill_weight_drift_demo` scenario and write all
+generated state under `.local/`. `make demo-reset` removes the demo JSONL event
+file, local accepted event store, demo dead-letter file, and Sentinel state
+directory, then `make demo-data`, `make demo-ingest`, and
+`make demo-sentinel-run` rebuild the path from scratch.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+```
+
+### How to test it
+
+```bash
+make test-unit
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Build the demo smoke test around these commands so future UI and runbook work
+can verify the same reset, seed, ingest, and Sentinel sequence before calls.

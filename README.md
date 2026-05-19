@@ -198,6 +198,19 @@ make sentinel-run
 make api
 ```
 
+For the deterministic manufacturer demo path, use the demo-specific targets:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+The demo commands write only generated files under `.local/`, which is ignored
+by Git. See `docs/DEMO_RUNBOOK.md` for the full demo flow and expected output.
+
 Simulator scenarios can be selected with `SCENARIO=normal`,
 `SCENARIO=gradual_drift`, or `SCENARIO=sudden_excursion`. Use `SEED`, `COUNT`,
 `DURATION_MINUTES`, and `OUTPUT` to reproduce specific JSONL event streams; see

@@ -6,14 +6,41 @@ The manufacturer demo uses the deterministic `fill_weight_drift_demo` simulator
 scenario. The data is simulator-backed and safe for local development; it does
 not represent a real plant, customer, or production system.
 
+### One-Command Demo Setup
+
+Use the demo-specific Make targets from the repository root when preparing for
+a manufacturer call:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+```
+
+`make demo-reset` clears only the generated local demo files:
+
+- `.local/events/fill_weight_drift_demo.jsonl`
+- `.local/storage/fill_weight_drift_demo_events.jsonl`
+- `.local/storage/fill_weight_drift_demo_dead_letter.jsonl`
+- `.local/storage/fill_weight_drift_demo_sentinel/`
+
+Those paths live under `.local/`, which is ignored by Git. The reset target does
+not drop a production database, remove source files, or clean real plant data.
+
+The demo targets print the next command to run after each step. After
+`make demo-sentinel-run`, start the API against the demo state with:
+
+```bash
+make api \
+  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl \
+  SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
 ### Seeded Scenario
 
 ```bash
-make simulate \
-  SCENARIO=fill_weight_drift_demo \
-  SEED=120 \
-  COUNT=30 \
-  OUTPUT=.local/events/fill_weight_drift_demo.jsonl
+make demo-data
 ```
 
 Expected simulator output:
@@ -48,13 +75,8 @@ payload fields for UI cards.
 ### Local Demo Path
 
 ```bash
-make ingest \
-  INPUT=.local/events/fill_weight_drift_demo.jsonl \
-  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl
-
-make sentinel-run \
-  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl \
-  SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+make demo-ingest
+make demo-sentinel-run
 ```
 
 Expected Process Sentinel output includes:
