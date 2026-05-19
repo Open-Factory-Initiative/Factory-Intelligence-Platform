@@ -313,6 +313,89 @@ def test_simulator_to_ingestion_integration_stores_valid_events(
     assert dead_letter_path.read_text(encoding="utf-8") == ""
 
 
+def test_demo_ingestion_path_stores_expected_demo_events(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    input_path = tmp_path / "events" / "fill_weight_drift_demo.jsonl"
+    events_store = tmp_path / "storage" / "fill_weight_drift_demo_events.jsonl"
+    dead_letter_path = tmp_path / "storage" / "fill_weight_drift_demo_dead_letter.jsonl"
+    demo_events = [
+        event.model_dump(mode="json")
+        for event in generate_events("fill_weight_drift_demo", seed=120, count=30)
+    ]
+    input_path.parent.mkdir(parents=True)
+    write_jsonl(input_path, demo_events)
+
+    result = ingestion_cli_main(
+        [
+            "--input",
+            str(input_path),
+            "--events-store",
+            str(events_store),
+            "--dead-letter",
+            str(dead_letter_path),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    stored_rows = read_jsonl(events_store)
+    assert result == 0
+    assert len(demo_events) == 70
+    assert f"input_file: {input_path}" in output
+    assert "accepted_events: 70" in output
+    assert "rejected_events: 0" in output
+    assert "dead_letter_count: 0" in output
+    assert f"accepted_output: {events_store}" in output
+    assert f"dead_letter_output: {dead_letter_path}" in output
+    assert len(stored_rows) == 70
+    assert {row["context"]["site_id"] for row in stored_rows} == {"greenville_demo_site"}
+    assert {row["context"]["work_order_id"] for row in stored_rows} == {"WO-DEMO-1007"}
+    assert dead_letter_path.exists()
+    assert dead_letter_path.read_text(encoding="utf-8") == ""
+
+
+def test_demo_ingestion_routes_invalid_demo_event_to_dead_letter(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    input_path = tmp_path / "events" / "fill_weight_drift_demo_mixed.jsonl"
+    events_store = tmp_path / "storage" / "fill_weight_drift_demo_events.jsonl"
+    dead_letter_path = tmp_path / "storage" / "fill_weight_drift_demo_dead_letter.jsonl"
+    demo_events = [
+        event.model_dump(mode="json")
+        for event in generate_events("fill_weight_drift_demo", seed=120, count=30)
+    ]
+    invalid_event = demo_events[0] | {"event_type": "unsupported.event"}
+    input_path.parent.mkdir(parents=True)
+    write_jsonl(input_path, [invalid_event, *demo_events])
+
+    result = ingestion_cli_main(
+        [
+            "--input",
+            str(input_path),
+            "--events-store",
+            str(events_store),
+            "--dead-letter",
+            str(dead_letter_path),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    dead_letters = read_jsonl(dead_letter_path)
+    assert result == 0
+    assert "accepted_events: 70" in output
+    assert "rejected_events: 1" in output
+    assert "dead_letter_count: 1" in output
+    assert "validation_error_examples:" in output
+    assert "unsupported event_type" in output
+    assert len(read_jsonl(events_store)) == 70
+    assert len(dead_letters) == 1
+    assert dead_letters[0]["source_path"] == str(input_path)
+    assert dead_letters[0]["line_number"] == 1
+    assert dead_letters[0]["payload"] == invalid_event
+
+
 def test_simulator_to_ingestion_integration_routes_invalid_events_to_dead_letter(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

@@ -43,6 +43,26 @@ make ingest INPUT=.local/events/normal.jsonl
 make ingest INPUT=.local/events/normal.jsonl EVENTS_STORE=.local/storage/normal-events.jsonl
 ```
 
+For the deterministic manufacturer demo, use the demo-specific command after
+generating demo data:
+
+```bash
+make demo-data
+make demo-ingest
+```
+
+Expected demo ingestion output:
+
+```text
+ingestion summary
+input_file: .local/events/fill_weight_drift_demo.jsonl
+accepted_events: 70
+rejected_events: 0
+dead_letter_count: 0
+accepted_output: .local/storage/fill_weight_drift_demo_events.jsonl
+dead_letter_output: .local/storage/fill_weight_drift_demo_dead_letter.jsonl
+```
+
 The documented scenarios are `normal`, `gradual_drift`, and
 `sudden_excursion`. Use `SEED`, `COUNT`, `DURATION_MINUTES`, and `OUTPUT` when
 you need reproducible inputs for manual testing.

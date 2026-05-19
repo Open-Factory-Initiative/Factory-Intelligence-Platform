@@ -79,6 +79,40 @@ make demo-ingest
 make demo-sentinel-run
 ```
 
+### Demo Ingestion Verification
+
+Run ingestion after `make demo-data`:
+
+```bash
+make demo-ingest
+```
+
+Expected ingestion summary:
+
+```text
+ingestion summary
+input_file: .local/events/fill_weight_drift_demo.jsonl
+accepted_events: 70
+rejected_events: 0
+dead_letter_count: 0
+accepted_output: .local/storage/fill_weight_drift_demo_events.jsonl
+dead_letter_output: .local/storage/fill_weight_drift_demo_dead_letter.jsonl
+```
+
+Verify the local files:
+
+```bash
+test -f .local/storage/fill_weight_drift_demo_events.jsonl
+test -f .local/storage/fill_weight_drift_demo_dead_letter.jsonl
+wc -l .local/storage/fill_weight_drift_demo_events.jsonl
+wc -l .local/storage/fill_weight_drift_demo_dead_letter.jsonl
+```
+
+The accepted event store should contain 70 rows. The dead-letter file should
+exist and contain 0 rows for the deterministic demo data. If an invalid row is
+added during manual testing, ingestion should keep processing valid rows and
+write the invalid row to the dead-letter file.
+
 Expected Process Sentinel output includes:
 
 ```text

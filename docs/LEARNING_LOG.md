@@ -1642,3 +1642,48 @@ make typecheck
 
 Build the demo smoke test around these commands so future UI and runbook work
 can verify the same reset, seed, ingest, and Sentinel sequence before calls.
+
+## 2026-05-19 - Demo ingestion verification
+
+### What changed
+
+Added demo-specific ingestion tests for the `fill_weight_drift_demo` data path
+and documented the expected `make demo-ingest` command, output paths, accepted
+count, rejected count, and dead-letter behavior.
+
+### Why it was built that way
+
+Issue #123 is a verification task, not a new connector or storage rewrite. The
+implementation keeps the existing ingestion service intact and proves the
+manufacturer demo data flows through the same validation and JSONL storage path
+as the rest of the MVP.
+
+### How it works
+
+The simulator generates 70 deterministic demo events. Ingestion validates each
+event against the shared factory event contracts, writes accepted events to the
+demo event store, creates the demo dead-letter file, and reports
+accepted/rejected/dead-letter counts in the CLI summary. A mixed-input test also
+confirms invalid demo rows are routed to dead-letter storage while valid rows
+continue into the accepted store.
+
+### How to run it
+
+```bash
+make demo-data
+make demo-ingest
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use the verified demo ingestion path as one step in the upcoming full demo smoke
+test.
