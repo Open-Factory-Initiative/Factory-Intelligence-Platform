@@ -22,6 +22,51 @@ This file should be updated by Codex after each meaningful change.
 ### What to learn next
 ```
 
+## 2026-05-18 - Simulator scenario regression tests
+
+### What changed
+
+Added simulator regression tests that cover every current generated scenario for
+expected event counts, process and quality timing, schema validity, stable event
+identity, deterministic metadata, and sudden excursion signal behavior.
+
+### Why it matters
+
+The simulator is the source of local MVP data. Strong scenario tests protect the
+ingestion and Process Sentinel workflow from accidental changes to event shape,
+timing, determinism, or scenario-specific signal patterns.
+
+### How it works
+
+The tests generate each scenario with fixed seeds and counts, validate every
+event through the shared Factory Event schema, check the expected two process
+events plus periodic quality checks, and assert that sudden excursion pressure
+spikes are bounded to the excursion window.
+
+### How to run it
+
+```bash
+make test-unit
+```
+
+### How to test it
+
+```bash
+make test-unit
+make lint
+make typecheck
+make test
+```
+
+### Key files
+
+- `services/simulator/tests/test_simulator.py`
+
+### What to learn next
+
+Use these scenario guarantees when writing ingestion and Process Sentinel
+regression tests that depend on specific simulator event timing.
+
 ## 2026-05-18 - Simulator CLI command
 
 ### What changed
