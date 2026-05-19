@@ -1,0 +1,31 @@
+{
+  "event_id": "evt_recommendation_000001",
+  "event_type": "governance.recommendation.proposed",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-01-01T12:20:00Z",
+  "source": {
+    "system": "process-sentinel",
+    "adapter": "process-sentinel",
+    "source_event_id": "rec_000001"
+  },
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "asset_id": "asset_filler_1",
+    "batch_id": "batch_demo_1001",
+    "work_order_id": "wo_1001"
+  },
+  "payload": {
+    "recommendation_id": "rec_000001",
+    "detection_id": "det_000001",
+    "recommended_action": "Inspect filler calibration and hold affected work order for quality review.",
+    "risk_level": "medium",
+    "requires_approval": true,
+    "evidence_ids": ["evi_000001", "evi_000002"]
+  },
+  "metadata": {
+    "simulated": true,
+    "trace_id": "trace_recommendation_000001"
+  }
+}

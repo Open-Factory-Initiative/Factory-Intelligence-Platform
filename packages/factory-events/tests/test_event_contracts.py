@@ -5,10 +5,12 @@ from pathlib import Path
 
 import pytest
 from factory_events import (
+    AssetEvent,
     BatchEvent,
     FactoryEvent,
     ProcessSignalEvent,
     QualityEvent,
+    RecommendationEvent,
     UnsupportedEventTypeError,
     WorkOrderEvent,
     validate_event,
@@ -28,10 +30,16 @@ VALID_EVENT_FIXTURES = [
     ("quality_in_spec_result.json", QualityEvent, "quality.measurement.recorded"),
     ("quality_out_of_spec_result.json", QualityEvent, "quality.measurement.recorded"),
     ("quality_visual_inspection.json", QualityEvent, "quality.measurement.recorded"),
+    ("asset_status_updated.json", AssetEvent, "asset.status.updated"),
     ("batch_started.json", BatchEvent, "production.batch.started"),
     ("batch_completed.json", BatchEvent, "production.batch.completed"),
     ("work_order_started.json", WorkOrderEvent, "production.work_order.started"),
     ("work_order_completed.json", WorkOrderEvent, "production.work_order.completed"),
+    (
+        "recommendation_proposed.json",
+        RecommendationEvent,
+        "governance.recommendation.proposed",
+    ),
 ]
 
 INVALID_EVENT_FIXTURES = [
@@ -40,16 +48,20 @@ INVALID_EVENT_FIXTURES = [
     ("process_signal_invalid_value.json", ("value",), "valid number"),
     ("quality_missing_check_type.json", ("quality_check_type",), "Field required"),
     ("quality_invalid_severity.json", ("severity",), "low"),
+    ("asset_missing_status.json", ("status",), "Field required"),
     ("batch_missing_lot_id.json", ("lot_id",), "Field required"),
     ("work_order_invalid_status.json", ("status",), "planned"),
+    ("recommendation_missing_evidence.json", ("evidence_ids",), "Field required"),
 ]
 
 EXAMPLE_EVENT_FILES = [
     ("base_factory_event.json", FactoryEvent, "process.measurement.recorded"),
     ("process_signal_event.json", ProcessSignalEvent, "process.measurement.recorded"),
     ("quality_event.json", QualityEvent, "quality.measurement.recorded"),
+    ("asset_event.json", AssetEvent, "asset.status.updated"),
     ("batch_event.json", BatchEvent, "production.batch.started"),
     ("work_order_event.json", WorkOrderEvent, "production.work_order.started"),
+    ("recommendation_event.json", RecommendationEvent, "governance.recommendation.proposed"),
 ]
 
 
@@ -235,6 +247,29 @@ def test_quality_event_allows_missing_optional_specification_limits() -> None:
     assert validated.payload.spec_max is None
 
 
+def test_valid_asset_status_updated_event_contract() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "asset_status_updated.json")
+
+    validated = validate_event(event)
+    asset_event = AssetEvent.model_validate(event)
+
+    assert validated.event_type == "asset.status.updated"
+    assert asset_event.context.asset_id == "asset_filler_1"
+    assert asset_event.payload.asset_id == "asset_filler_1"
+    assert asset_event.payload.asset_name == "Filler 1"
+    assert asset_event.payload.asset_type == "filler"
+    assert asset_event.payload.previous_status == "idle"
+    assert asset_event.payload.status == "running"
+
+
+def test_asset_event_context_must_match_payload_asset_id() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "asset_status_updated.json")
+    event["context"]["asset_id"] = "asset_case_packer_1"
+
+    with pytest.raises(ValidationError, match="context.asset_id must match"):
+        validate_event(event)
+
+
 def test_valid_batch_started_event_contract() -> None:
     event = load_fixture(FIXTURES / "valid-events" / "batch_started.json")
 
@@ -285,6 +320,20 @@ def test_valid_work_order_completed_event_contract() -> None:
     assert validated.event_type == "production.work_order.completed"
     assert validated.payload.previous_status == "started"
     assert validated.payload.status == "completed"
+
+
+def test_valid_recommendation_event_contract() -> None:
+    event = load_fixture(FIXTURES / "valid-events" / "recommendation_proposed.json")
+
+    validated = validate_event(event)
+    recommendation_event = RecommendationEvent.model_validate(event)
+
+    assert validated.event_type == "governance.recommendation.proposed"
+    assert recommendation_event.payload.recommendation_id == "rec_000001"
+    assert recommendation_event.payload.detection_id == "det_000001"
+    assert recommendation_event.payload.risk_level == "medium"
+    assert recommendation_event.payload.requires_approval is True
+    assert recommendation_event.payload.evidence_ids == ["evi_000001", "evi_000002"]
 
 
 def test_missing_required_field_is_rejected() -> None:

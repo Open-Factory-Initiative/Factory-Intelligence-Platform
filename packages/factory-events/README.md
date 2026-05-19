@@ -10,3 +10,7 @@ unvalidated dictionaries across boundaries.
 event type, UTC timestamp, source system, line and asset context, optional batch
 and work order references, payload, and metadata. `EventEnvelope` remains as a
 backward-compatible name for existing service code.
+
+The current MVP contract includes typed envelopes for process measurements,
+quality measurements, asset status updates, batch lifecycle events, work order
+lifecycle events, and governed recommendation proposals.

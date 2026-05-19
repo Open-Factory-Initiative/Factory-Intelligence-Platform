@@ -1,5 +1,7 @@
 from factory_events.models import (
     ApprovalDecisionPayload,
+    AssetEvent,
+    AssetEventPayload,
     AuditEventPayload,
     BatchEvent,
     BatchEventPayload,
@@ -12,6 +14,7 @@ from factory_events.models import (
     ProcessSignalEvent,
     QualityEvent,
     QualityMeasurementPayload,
+    RecommendationEvent,
     RecommendationPayload,
     SentinelDetectionPayload,
     UnsupportedEventTypeError,
@@ -23,6 +26,8 @@ from factory_events.models import (
 
 __all__ = [
     "ApprovalDecisionPayload",
+    "AssetEvent",
+    "AssetEventPayload",
     "AuditEventPayload",
     "BatchEvent",
     "BatchEventPayload",
@@ -35,6 +40,7 @@ __all__ = [
     "ProcessSignalEvent",
     "QualityEvent",
     "QualityMeasurementPayload",
+    "RecommendationEvent",
     "RecommendationPayload",
     "SentinelDetectionPayload",
     "UnsupportedEventTypeError",

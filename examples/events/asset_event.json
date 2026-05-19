@@ -1,0 +1,29 @@
+{
+  "event_id": "evt_example_asset_status_000001",
+  "event_type": "asset.status.updated",
+  "schema_version": "1.0.0",
+  "timestamp": "2026-01-01T07:50:00Z",
+  "source": {
+    "system": "factory-simulator",
+    "adapter": "simulator",
+    "source_event_id": "sim-example-asset-status-000001"
+  },
+  "context": {
+    "site_id": "site_demo",
+    "area_id": "area_packaging",
+    "line_id": "line_1",
+    "asset_id": "asset_filler_1"
+  },
+  "payload": {
+    "asset_id": "asset_filler_1",
+    "asset_name": "Filler 1",
+    "asset_type": "filler",
+    "previous_status": "idle",
+    "status": "running",
+    "status_reason": "Line startup completed."
+  },
+  "metadata": {
+    "simulated": true,
+    "trace_id": "trace_example_asset_status_000001"
+  }
+}

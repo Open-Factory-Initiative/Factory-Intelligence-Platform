@@ -1458,3 +1458,47 @@ git diff --check
 
 Use the documented local ingestion workflow as the contributor baseline for the
 next storage, Process Sentinel, or API documentation tasks.
+
+## 2026-05-19 - Shared event model epic completion
+
+### What changed
+
+Completed the remaining shared event model gaps by adding asset status and
+typed recommendation event contracts, valid and invalid contract fixtures,
+contributor-facing example payloads, contract tests, and documentation updates.
+
+### Why it was built that way
+
+Issue #8 is the shared event model epic, so the implementation stayed inside
+the existing factory-events package and documentation. The new contracts reuse
+the existing `FactoryEvent` envelope and Pydantic validation pattern instead of
+adding a new schema system.
+
+### How it works
+
+`validate_event` chooses the payload model from `event_type`, validates the
+typed payload, then applies envelope rules such as UTC timestamps, schema
+version, simulator metadata, and matching asset identifiers. Asset status
+events provide equipment state context, while recommendation events represent
+governed, evidence-backed advisory output from Process Sentinel.
+
+### How to run it
+
+```bash
+make test-contract
+```
+
+### How to test it
+
+```bash
+make test-contract
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use the shared event model as the stable boundary for simulator, ingestion,
+Process Sentinel, and API work. Future event additions should include typed
+models, fixtures, examples, docs, and contract tests in the same change.
