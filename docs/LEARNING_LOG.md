@@ -2070,3 +2070,49 @@ make typecheck
 
 Use this backend smoke test as the stable base for the later browser E2E demo
 workflow.
+
+## 2026-05-19 - Operations Workbench app shell
+
+### What changed
+
+Created the first runnable Next.js Operations Workbench shell under `apps/web`.
+The app includes a shared header, primary navigation, Overview, Detections,
+Recommendations, and RCA/CAPA Draft placeholder routes, plus a configurable API
+base URL.
+
+### Why it was built that way
+
+Issue #95 is the frontend foundation for the demo, not the full Workbench
+workflow. The shell keeps UI scope small, labels simulator-backed demo data
+clearly, and avoids auth, deployment, enterprise navigation, or production
+tenant concepts.
+
+### How it works
+
+The app uses Next.js App Router routes under `apps/web/app`. The API target is
+read from `NEXT_PUBLIC_API_BASE_URL` and defaults to `http://127.0.0.1:8000`.
+Placeholder pages document which backend endpoints later issues should connect
+to.
+
+### How to run it
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Connect the detection placeholder to the FastAPI detection and evidence
+endpoints.
