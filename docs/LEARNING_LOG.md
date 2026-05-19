@@ -1373,3 +1373,45 @@ make typecheck
 Use the summary output as the contributor-facing surface for future ingestion
 reporting work, while keeping retry queues, broker topics, and UI reporting for
 later scoped issues.
+
+## 2026-05-19 - Ingestion integration tests
+
+### What changed
+
+Added integration tests for the simulator-to-ingestion file path. The tests use
+deterministic simulator-generated events, run them through the ingestion CLI,
+verify accepted events are stored, verify invalid events go to dead-letter
+storage, and assert the ingestion summary counts are correct.
+
+### Why it was built that way
+
+This keeps the test focused on the MVP boundary between the simulator and
+ingestion worker without adding real connectors, databases, or message brokers.
+Using `tmp_path` keeps test output isolated from developer `.local/` data.
+
+### How data flows through it
+
+The simulator produces valid factory event objects, the test writes them as
+JSONL input, the ingestion CLI validates each row, accepted events are persisted
+to a temporary JSONL store, and rejected records are written to a temporary
+dead-letter file with useful error context.
+
+### How to run it
+
+```bash
+make test-integration
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use this integration coverage as the base for the next Process Sentinel tests
+that consume ingested events from local storage.
