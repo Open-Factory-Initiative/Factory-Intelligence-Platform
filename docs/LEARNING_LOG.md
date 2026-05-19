@@ -1211,3 +1211,49 @@ make typecheck
 Use the accepted event store as the handoff point into Process Sentinel, then
 add focused integration tests that prove detections are built from ingested
 events rather than simulator objects in memory.
+
+## 2026-05-19 - Ingestion schema validation
+
+### What changed
+
+Added an ingestion-facing validation wrapper around the shared factory event
+schemas. Invalid incoming events now produce structured validation issues with
+field paths, messages, and issue types, and those details are written into
+dead-letter records.
+
+### Why it was built that way
+
+The shared `packages/factory-events` models remain the source of truth for
+event contracts. The ingestion service only translates schema failures into
+operational error details so downstream services stay protected without
+duplicating validation rules.
+
+### How data flows through it
+
+JSONL rows are parsed into candidate event objects, passed to
+`validate_incoming_event`, and validated by the shared event schemas. Valid
+events continue into accepted storage. Invalid events are rejected before
+storage and written to the dead-letter file with the raw row and structured
+validation context.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+```
+
+### How to test it
+
+```bash
+make test-integration
+make test-contract
+make test
+make lint
+make typecheck
+```
+
+### What to learn next
+
+Use the structured dead-letter details to build the next ingestion reporting
+slice, including clearer summaries for accepted and rejected records.

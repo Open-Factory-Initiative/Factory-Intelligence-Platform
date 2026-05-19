@@ -4,7 +4,12 @@ import json
 from pathlib import Path
 
 import pytest
-from factory_ingestion import JsonlEventStore, ingest_jsonl
+from factory_ingestion import (
+    IncomingEventValidationError,
+    JsonlEventStore,
+    ingest_jsonl,
+    validate_incoming_event,
+)
 from factory_ingestion.cli import main as ingestion_cli_main
 from factory_simulator import generate_events
 
@@ -18,6 +23,19 @@ def write_jsonl(path: Path, rows: list[dict]) -> None:
 
 def read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+def simulator_event(event_type: str) -> dict:
+    return next(
+        event.model_dump(mode="json")
+        for event in generate_events("normal", count=6)
+        if event.event_type == event_type
+    )
+
+
+def example_event(file_name: str) -> dict:
+    path = Path("examples/events") / file_name
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def test_ingestion_persists_valid_simulator_events(tmp_path: Path) -> None:
@@ -147,3 +165,92 @@ def test_ingestion_cli_prints_summary(tmp_path: Path, capsys: pytest.CaptureFixt
     assert result == 0
     assert f"ingestion complete: accepted={len(events)} rejected=0" in output
     assert len(JsonlEventStore(events_store).list_events()) == len(events)
+
+
+def test_validation_accepts_valid_process_signal_event() -> None:
+    raw_event = simulator_event("process.measurement.recorded")
+
+    event = validate_incoming_event(raw_event)
+
+    assert event.event_type == "process.measurement.recorded"
+    assert event.payload.signal_id == raw_event["payload"]["signal_id"]
+
+
+def test_validation_rejects_invalid_process_signal_event() -> None:
+    raw_event = simulator_event("process.measurement.recorded")
+    raw_event["payload"] = raw_event["payload"] | {"quality": "offline"}
+
+    with pytest.raises(IncomingEventValidationError) as exc_info:
+        validate_incoming_event(raw_event)
+
+    assert "shared factory event schema" in str(exc_info.value)
+    assert any(issue.path == "quality" for issue in exc_info.value.issues)
+
+
+def test_validation_accepts_valid_quality_event() -> None:
+    raw_event = simulator_event("quality.measurement.recorded")
+
+    event = validate_incoming_event(raw_event)
+
+    assert event.event_type == "quality.measurement.recorded"
+    assert event.payload.measurement_name == raw_event["payload"]["measurement_name"]
+
+
+def test_validation_rejects_invalid_quality_event() -> None:
+    raw_event = simulator_event("quality.measurement.recorded")
+    raw_event["payload"] = raw_event["payload"] | {"spec_min": 10.0, "spec_max": 1.0}
+
+    with pytest.raises(IncomingEventValidationError) as exc_info:
+        validate_incoming_event(raw_event)
+
+    assert any(
+        "spec_min must be less than spec_max" in issue.message
+        for issue in exc_info.value.issues
+    )
+
+
+@pytest.mark.parametrize(
+    ("file_name", "event_type"),
+    [
+        ("batch_event.json", "production.batch.started"),
+        ("work_order_event.json", "production.work_order.started"),
+    ],
+)
+def test_validation_accepts_implemented_batch_and_work_order_events(
+    file_name: str,
+    event_type: str,
+) -> None:
+    raw_event = example_event(file_name)
+
+    event = validate_incoming_event(raw_event)
+
+    assert event.event_type == event_type
+
+
+def test_validation_rejects_missing_required_base_fields() -> None:
+    raw_event = simulator_event("process.measurement.recorded")
+    del raw_event["event_id"]
+    del raw_event["timestamp"]
+
+    with pytest.raises(IncomingEventValidationError) as exc_info:
+        validate_incoming_event(raw_event)
+
+    issue_paths = {issue.path for issue in exc_info.value.issues}
+    assert {"event_id", "timestamp"} <= issue_paths
+
+
+def test_ingestion_dead_letter_includes_structured_validation_errors(tmp_path: Path) -> None:
+    input_path = tmp_path / "events.jsonl"
+    invalid_event = simulator_event("process.measurement.recorded")
+    invalid_event["payload"] = invalid_event["payload"] | {"quality": "offline"}
+    write_jsonl(input_path, [invalid_event])
+    store = JsonlEventStore(tmp_path / "store.jsonl")
+    dead_letter_path = tmp_path / "dead_letter.jsonl"
+
+    result = ingest_jsonl(input_path, store=store, dead_letter_path=dead_letter_path)
+
+    dead_letter = read_jsonl(dead_letter_path)[0]
+    assert result.accepted_count == 0
+    assert store.list_events() == []
+    assert dead_letter["errors"][0]["path"] == "quality"
+    assert dead_letter["errors"][0]["input"] == "offline"

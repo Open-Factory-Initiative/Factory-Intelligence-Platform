@@ -5,8 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from factory_events import EventEnvelope, UnsupportedEventTypeError, validate_event
-from pydantic import ValidationError
+from factory_events import EventEnvelope
+
+from factory_ingestion.validation import IncomingEventValidationError, validate_incoming_event
 
 
 class EventStore(Protocol):
@@ -48,19 +49,22 @@ def ingest_jsonl(input_path: Path, *, store: EventStore, dead_letter_path: Path)
                 if not isinstance(raw_event, dict):
                     msg = "JSONL line must contain a factory event object"
                     raise InvalidJsonlEventError(msg)
-                event = validate_event(raw_event)
+                event = validate_incoming_event(raw_event)
             except (
                 InvalidJsonlEventError,
                 json.JSONDecodeError,
-                UnsupportedEventTypeError,
-                ValidationError,
+                IncomingEventValidationError,
             ) as exc:
                 rejected += 1
+                validation_errors = []
+                if isinstance(exc, IncomingEventValidationError):
+                    validation_errors = exc.model_dump()["issues"]
                 dead_letter.write(
                     json.dumps(
                         {
                             "line_number": line_number,
                             "error": str(exc),
+                            "errors": validation_errors,
                             "raw": raw_line,
                         },
                         sort_keys=True,
