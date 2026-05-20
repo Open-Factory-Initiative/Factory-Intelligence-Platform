@@ -27,6 +27,17 @@ test("navigation includes the required demo routes", () => {
   assert.match(layout, /RCA\/CAPA Draft/);
 });
 
+test("overview page contains manufacturer demo dashboard content", () => {
+  const overview = readFileSync(join(root, "app/page.tsx"), "utf8");
+
+  assert.match(overview, /Current demo context/);
+  assert.match(overview, /Active detections/);
+  assert.match(overview, /Pending recommendations/);
+  assert.match(overview, /Most important detection/);
+  assert.match(overview, /Open detection/);
+  assert.match(overview, /selectImportantDetection/);
+});
+
 test("app shell documents configurable API base URL", () => {
   const config = readFileSync(join(root, "lib/api-config.ts"), "utf8");
   const client = readFileSync(join(root, "lib/api-client.ts"), "utf8");

@@ -10,6 +10,10 @@ const client = readFileSync(join(root, "lib/api-client.ts"), "utf8");
 
 const requiredEndpoints = [
   "/health",
+  "/sites",
+  "/areas",
+  "/equipment",
+  "/batches",
   "/sentinel/detections",
   "/sentinel/detections/${encodeURIComponent(detectionId)}",
   "/sentinel/detections/${encodeURIComponent(detectionId)}/evidence",
@@ -19,12 +23,16 @@ const requiredEndpoints = [
   "/reports/rca-capa-drafts/${encodeURIComponent(detectionId)}",
 ];
 
-test("typed workbench API client covers the issue 100 endpoints", () => {
+test("typed workbench API client covers demo endpoints", () => {
   for (const endpoint of requiredEndpoints) {
     assert.ok(client.includes(endpoint), `missing endpoint: ${endpoint}`);
   }
 
   assert.match(client, /getHealth/);
+  assert.match(client, /listSites/);
+  assert.match(client, /listAreas/);
+  assert.match(client, /listEquipment/);
+  assert.match(client, /listBatches/);
   assert.match(client, /listDetections/);
   assert.match(client, /getDetection/);
   assert.match(client, /listDetectionEvidence/);

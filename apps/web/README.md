@@ -44,6 +44,10 @@ NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8001 npm run dev
 The API client currently covers:
 
 - `GET /health`
+- `GET /sites`
+- `GET /areas`
+- `GET /equipment`
+- `GET /batches`
 - `GET /sentinel/detections`
 - `GET /sentinel/detections/{detection_id}`
 - `GET /sentinel/detections/{detection_id}/evidence`
@@ -59,7 +63,8 @@ message instead of failing silently.
 
 ## Routes
 
-- `/` - Overview
+- `/` - Factory overview dashboard with site, line, asset, work order, product,
+  active detection count, pending recommendation count, and primary detection CTA
 - `/detections` - Process Sentinel detections and first evidence timeline preview
 - `/recommendations` - Governed recommendation review preview
 - `/rca-capa-draft` - RCA/CAPA draft preview
