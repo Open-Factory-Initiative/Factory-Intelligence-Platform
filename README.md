@@ -145,7 +145,7 @@ packages/factory-events     Shared Pydantic event contracts
 services/ingestion          Event validation, dead-letter handling, local storage
 services/process-sentinel   Explainable drift rules, evidence, recommendations
 services/api                FastAPI endpoints over stored MVP state
-apps/web                    Placeholder for the future workbench
+apps/web                    Operations Workbench for the local manufacturer demo
 infra/docker                Local PostgreSQL configuration
 ```
 
@@ -198,16 +198,50 @@ make sentinel-run
 make api
 ```
 
-For the deterministic manufacturer demo path, use the one-command demo runner:
+## Run the demo
+
+Use this path when you want to show the current simulator-backed Process
+Sentinel manufacturer demo from a clean local state.
+
+The demo is intentionally local and simulator-backed:
+
+- It does not connect to a real plant, customer system, production batch
+  record, QMS, MES, SCADA, PLC, or equipment controller.
+- Recommendations are advisory and human-reviewed.
+- It does not perform autonomous control.
+- It does not perform product disposition, QMS/MES writeback, or compliance validation.
+
+From the repository root, prepare deterministic demo state:
 
 ```bash
 make demo
 ```
 
-`make demo` clears generated demo files, generates deterministic demo events,
-ingests them, runs Process Sentinel, runs the backend smoke test, and prints the
-API and Operations Workbench startup commands. It also prints expected demo URLs
-and the expected detection ID, `det_fill_weight_gradual_drift`.
+`make demo` runs:
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make demo-api-smoke
+```
+
+Expected output includes:
+
+```text
+accepted_events: 70
+dead_letter_count: 0
+sentinel complete: detections=1 evidence=2 recommendations=1
+demo api smoke passed
+```
+
+Expected demo IDs:
+
+```text
+Detection: det_fill_weight_gradual_drift
+Recommendation: rec_fill_weight_gradual_drift
+```
 
 After `make demo` completes, start the API in one terminal:
 
@@ -222,10 +256,36 @@ cd apps/web
 npm run dev
 ```
 
+Open the Workbench:
+
+```text
+http://127.0.0.1:3000
+```
+
+The demo proves the first Process Sentinel workflow can run end to end with
+local generated data:
+
+- A deterministic synthetic factory scenario is generated and ingested.
+- Process Sentinel produces one clear fill-weight drift detection.
+- The Workbench shows the detection, readable evidence timeline, and factory
+  context.
+- A governed recommendation is available for human approve, reject, or defer
+  review.
+- The recommendation decision is recorded in local demo state.
+- An RCA/CAPA draft preview is generated for human review.
+
+Post-demo work is still separate from this local demo:
+
+- It does not prove production readiness.
+- It does not prove validated GxP use.
+- It does not include authentication/RBAC or enterprise audit controls.
+- It does not include real plant integration, cloud deployment, or closed-loop industrial writeback.
+
 The demo commands write only generated files under `.local/`, which is ignored
 by Git. See `docs/DEMO_RUNBOOK.md` for the technical demo flow,
 `docs/demo/MANUFACTURER_DEMO_RUNBOOK.md` for the manufacturer pre-call
-checklist, talk track, demo boundaries, and post-demo feedback prompts, and
+checklist, talk track, demo boundaries, and post-demo feedback prompts,
+`docs/demo/PRE_DEMO_CHECKLIST.md` for the final call-prep checklist, and
 `docs/demo/TROUBLESHOOTING.md` for local demo failure recovery.
 
 Simulator scenarios can be selected with `SCENARIO=normal`,
@@ -264,8 +324,8 @@ make test-contract
 make test-e2e
 ```
 
-`make test-e2e` is currently a placeholder because `apps/web` does not yet
-contain the Next.js workbench.
+`make test-e2e` runs the local Operations Workbench Playwright smoke test for
+the simulator-backed demo path.
 
 ## Working With Codex
 
