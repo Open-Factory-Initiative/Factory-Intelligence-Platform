@@ -42,6 +42,7 @@ test("overview page contains manufacturer demo dashboard content", () => {
 test("detections pages contain list and detail content", () => {
   const list = readFileSync(join(root, "app/detections/page.tsx"), "utf8");
   const detail = readFileSync(join(root, "app/detections/[detectionId]/page.tsx"), "utf8");
+  const styles = readFileSync(join(root, "app/globals.css"), "utf8");
 
   assert.match(list, /Process Sentinel detections from the local demo run/);
   assert.match(list, /detection.summary/);
@@ -59,9 +60,19 @@ test("detections pages contain list and detail content", () => {
   assert.match(detail, /Why this was flagged/);
   assert.match(detail, /buildFlagExplanation/);
   assert.match(detail, /Evidence timeline/);
+  assert.match(detail, /listDetectionEvidence/);
+  assert.match(detail, /sortEvidenceChronologically/);
+  assert.match(detail, /What this means/);
+  assert.match(detail, /No evidence available/);
+  assert.match(detail, /Score \/ relevance/);
+  assert.match(detail, /Source event IDs/);
+  assert.match(styles, /evidence-process-signal/);
+  assert.match(styles, /evidence-quality-result/);
+  assert.match(styles, /evidence-correlation-window/);
   assert.match(detail, /Recommendation review/);
   assert.match(detail, /RCA\/CAPA draft/);
   assert.match(detail, /Simulator-backed demo data/);
+  assert.match(detail, /Simulator-backed evidence/);
 });
 
 test("app shell documents configurable API base URL", () => {

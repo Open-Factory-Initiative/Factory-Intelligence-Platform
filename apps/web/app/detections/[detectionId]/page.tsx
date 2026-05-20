@@ -4,6 +4,7 @@ import { ApiErrorPanel } from "../../components/demo-state";
 import {
   ApiClientError,
   type Detection,
+  type EvidenceItem,
   formatApiError,
   getApiBaseUrl,
   workbenchApi,
@@ -91,21 +92,8 @@ export default async function DetectionDetailPage({ params }: DetectionDetailPag
             <h2 id="why-flagged-heading">Why this was flagged</h2>
             <p>{buildFlagExplanation(result.detection)}</p>
           </section>
+          <EvidenceTimeline evidenceItems={result.evidenceItems} />
           <section className="workflow-links" aria-label="Detection workflow sections">
-            <article className="data-card compact" id="evidence-timeline">
-              <span className="status-label">Evidence timeline</span>
-              <h2>Evidence timeline</h2>
-              <p>
-                Review the process and quality signals that support this
-                finding before acting on any recommendation.
-              </p>
-              <Link
-                className="secondary-action"
-                href={`/detections/${result.detection.detection_id}#evidence-timeline`}
-              >
-                Evidence timeline
-              </Link>
-            </article>
             <article className="data-card compact">
               <span className="status-label">Recommendation review</span>
               <h2>Recommendation review</h2>
@@ -142,7 +130,16 @@ export default async function DetectionDetailPage({ params }: DetectionDetailPag
 
 async function loadDetection(detectionId: string) {
   try {
-    return { detection: await workbenchApi.getDetection(detectionId), ok: true as const };
+    const [detection, evidenceItems] = await Promise.all([
+      workbenchApi.getDetection(detectionId),
+      workbenchApi.listDetectionEvidence(detectionId),
+    ]);
+
+    return {
+      detection,
+      evidenceItems: sortEvidenceChronologically(evidenceItems),
+      ok: true as const,
+    };
   } catch (error) {
     return {
       message: formatApiError(error),
@@ -156,6 +153,71 @@ function isMissingDetection(error: unknown): boolean {
   return (
     error instanceof ApiClientError &&
     (error.status === 404 || error.code === "detection_not_found")
+  );
+}
+
+function EvidenceTimeline({ evidenceItems }: { evidenceItems: EvidenceItem[] }) {
+  return (
+    <section
+      className="data-card evidence-timeline"
+      id="evidence-timeline"
+      aria-labelledby="evidence-timeline-heading"
+    >
+      <div>
+        <span className="demo-label">Simulator-backed evidence</span>
+        <h2 id="evidence-timeline-heading">Evidence timeline</h2>
+        <p>
+          Chronological Process Sentinel evidence from the local demo API. Use
+          this to understand why the finding exists before reviewing any
+          recommendation.
+        </p>
+      </div>
+      <section className="what-this-means" aria-labelledby="what-this-means-heading">
+        <span className="status-label">What this means</span>
+        <h3 id="what-this-means-heading">What this means</h3>
+        <p>{buildTimelineMeaning(evidenceItems)}</p>
+      </section>
+      {evidenceItems.length === 0 ? (
+        <div className="state-panel">
+          <strong>No evidence available</strong>
+          <span>
+            This detection exists, but the simulator-backed API did not return
+            evidence items for it yet.
+          </span>
+        </div>
+      ) : (
+        <ol className="timeline-list">
+          {evidenceItems.map((item) => (
+            <li
+              className={`timeline-item ${evidenceTypeClass(item.evidence_type)}`}
+              key={item.evidence_id}
+            >
+              <div className="timeline-marker" aria-hidden="true" />
+              <article>
+                <div className="timeline-heading">
+                  <div>
+                    <span className="evidence-type">{formatEnum(item.evidence_type)}</span>
+                    <h3>{item.title}</h3>
+                  </div>
+                  <time dateTime={item.timestamp}>{formatTimestamp(item.timestamp)}</time>
+                </div>
+                <p>{item.description}</p>
+                <dl className="evidence-meta">
+                  <div>
+                    <dt>Score / relevance</dt>
+                    <dd>{Math.round(item.score * 100)}%</dd>
+                  </div>
+                  <div>
+                    <dt>Source event IDs</dt>
+                    <dd>{formatSourceEventIds(item.source_event_ids)}</dd>
+                  </div>
+                </dl>
+              </article>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
   );
 }
 
@@ -181,6 +243,27 @@ function buildFlagExplanation(detection: Detection): string {
   )}. This is advisory simulator-backed context for human review, not an autonomous action.`;
 }
 
+function buildTimelineMeaning(evidenceItems: EvidenceItem[]): string {
+  if (evidenceItems.length === 0) {
+    return "The detection is present, but there is no supporting timeline evidence available yet in the simulator-backed demo state.";
+  }
+
+  const evidenceTypes = [
+    ...new Set(evidenceItems.map((item) => formatEnum(item.evidence_type))),
+  ];
+  return `Process Sentinel found ${evidenceItems.length} supporting evidence item${
+    evidenceItems.length === 1 ? "" : "s"
+  } across ${evidenceTypes.join(
+    ", ",
+  )}. Read the timeline from oldest to newest to see how the process and quality context support this advisory finding.`;
+}
+
+function sortEvidenceChronologically(evidenceItems: EvidenceItem[]): EvidenceItem[] {
+  return [...evidenceItems].sort(
+    (left, right) => Date.parse(left.timestamp) - Date.parse(right.timestamp),
+  );
+}
+
 function formatTimeWindow(detection: Detection): string {
   return `${formatTimestamp(detection.time_window_start)} to ${formatTimestamp(
     detection.time_window_end,
@@ -195,6 +278,14 @@ function formatAssets(assetIds: string[]): string {
   return assetIds.length > 0 ? assetIds.join(", ") : "No assets linked";
 }
 
+function formatSourceEventIds(eventIds: string[]): string {
+  return eventIds.length > 0 ? eventIds.join(", ") : "No source events linked";
+}
+
 function formatEnum(value: string): string {
   return value.replaceAll("_", " ");
+}
+
+function evidenceTypeClass(evidenceType: EvidenceItem["evidence_type"]): string {
+  return `evidence-${evidenceType.replaceAll("_", "-")}`;
 }
