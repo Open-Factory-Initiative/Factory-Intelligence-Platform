@@ -8,18 +8,68 @@ not represent a real plant, customer, or production system.
 
 ### One-Command Demo Setup
 
-Use the demo-specific Make targets from the repository root when preparing for
-a manufacturer call:
+Use the one-command demo runner from the repository root when preparing for a
+manufacturer call:
 
 ```bash
-make demo-reset
-make demo-data
-make demo-ingest
-make demo-sentinel-run
-make demo-api-smoke
+make demo
 ```
 
-`make demo-reset` clears only the generated local demo files:
+`make demo` runs the repeatable local demo preparation sequence:
+
+1. `make demo-reset`
+2. `make demo-data`
+3. `make demo-ingest`
+4. `make demo-sentinel-run`
+5. `make demo-api-smoke`
+
+It then prints the expected detection ID, recommendation ID, API startup
+command, Workbench startup command, and expected URLs for the demo path.
+
+Expected IDs:
+
+```text
+det_fill_weight_gradual_drift
+rec_fill_weight_gradual_drift
+```
+
+After `make demo` completes, start the API in one terminal:
+
+```bash
+make api \
+  EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl \
+  SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+Start the Workbench in another terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Expected API URLs:
+
+```text
+http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/sentinel/detections
+http://127.0.0.1:8000/sentinel/detections/det_fill_weight_gradual_drift
+http://127.0.0.1:8000/sentinel/detections/det_fill_weight_gradual_drift/evidence
+http://127.0.0.1:8000/recommendations
+http://127.0.0.1:8000/reports/rca-capa-drafts/det_fill_weight_gradual_drift
+```
+
+Expected Workbench URLs:
+
+```text
+http://127.0.0.1:3000
+http://127.0.0.1:3000/detections/det_fill_weight_gradual_drift
+http://127.0.0.1:3000/recommendations?detection_id=det_fill_weight_gradual_drift
+http://127.0.0.1:3000/rca-capa-draft?detection_id=det_fill_weight_gradual_drift
+```
+
+`make demo-reset`, which runs as the first step, clears only the generated local
+demo files:
 
 - `.local/events/fill_weight_drift_demo.jsonl`
 - `.local/storage/fill_weight_drift_demo_events.jsonl`
@@ -29,8 +79,9 @@ make demo-api-smoke
 Those paths live under `.local/`, which is ignored by Git. The reset target does
 not drop a production database, remove source files, or clean real plant data.
 
-The demo targets print the next command to run after each step. After
-`make demo-sentinel-run`, run the backend smoke test:
+The individual demo targets are still useful for troubleshooting. They print the
+next command to run after each step. After `make demo-sentinel-run`, run the
+backend smoke test:
 
 ```bash
 make demo-api-smoke
