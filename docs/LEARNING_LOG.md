@@ -2669,3 +2669,48 @@ make demo
 Use a live manufacturer conversation to refine the talk track, especially which
 evidence, approvals, and validation-aware handoffs matter most for a first site
 pilot.
+
+## 2026-05-20 - Demo troubleshooting guide
+
+### What changed
+
+Added `docs/demo/TROUBLESHOOTING.md` for local manufacturer demo failure
+recovery. The guide covers missing dependencies, no detections, API not running,
+Workbench API connection issues, stale local state, empty RCA/CAPA drafts, and
+recommendation decision feedback.
+
+### Why it was built that way
+
+Issue #135 asks to reduce demo failure risk without creating a production
+incident runbook. The guide stays focused on simulator-backed demo recovery and
+keeps production concerns, real plant connectors, cloud deployment, and
+validated audit expectations out of scope.
+
+### How it works
+
+The guide starts with the known-good `make demo` reset path, then gives
+symptoms, likely causes, intentional reproduction steps, and recovery commands
+for each demo failure mode. It links from the technical demo runbook, the
+manufacturer demo runbook, the root README, and the Workbench README.
+
+### How to run it
+
+```bash
+make demo
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+.venv/bin/pytest services/simulator/tests/test_demo_troubleshooting_docs.py
+make demo
+```
+
+### What to learn next
+
+Turn the manual troubleshooting cases into an automated demo smoke test that can
+exercise API-down, stale-state, and no-detection paths without requiring a live
+browser.

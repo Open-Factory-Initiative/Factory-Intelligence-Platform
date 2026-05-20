@@ -101,6 +101,11 @@ make api \
   SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
 ```
 
+For failure-mode recovery, see `docs/demo/TROUBLESHOOTING.md`. It covers no
+detections, API not running, frontend API connection issues, stale local state,
+missing dependencies, empty RCA/CAPA drafts, and recommendation decision
+feedback.
+
 ### Seeded Scenario
 
 ```bash
