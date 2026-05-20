@@ -45,8 +45,8 @@ Run this checklist 15-30 minutes before the call:
 6. Open the expected URLs in browser tabs.
 7. Confirm the detection, evidence, recommendation, decision controls, and
    RCA/CAPA draft preview load.
-8. Keep a terminal tab ready with `docs/DEMO_RUNBOOK.md` for technical fallback
-   details.
+8. Keep terminal tabs ready with `docs/DEMO_RUNBOOK.md` for technical fallback
+   details and `docs/demo/TROUBLESHOOTING.md` for demo failure recovery.
 
 ## Exact Demo Commands
 
@@ -290,6 +290,11 @@ Use these phrases instead:
 - "future site validation work would be required before production use"
 
 ## Troubleshooting
+
+For the full demo troubleshooting guide, including no detections, API down,
+frontend API connection issues, stale local state, missing dependencies, empty
+RCA/CAPA drafts, and recommendation decision feedback, see
+`docs/demo/TROUBLESHOOTING.md`.
 
 ### No detection appears
 

@@ -133,6 +133,8 @@ Then open `http://127.0.0.1:3000` and verify Overview, Detections,
 Recommendations, and RCA/CAPA Draft render against the configured API base URL.
 For the manufacturer-facing 8-10 minute checklist, talk track, demo boundaries,
 and feedback prompts, see `../../docs/demo/MANUFACTURER_DEMO_RUNBOOK.md`.
+For local demo failure recovery, see
+`../../docs/demo/TROUBLESHOOTING.md`.
 
 ## Checks
 

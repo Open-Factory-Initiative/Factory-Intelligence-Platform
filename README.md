@@ -223,9 +223,10 @@ npm run dev
 ```
 
 The demo commands write only generated files under `.local/`, which is ignored
-by Git. See `docs/DEMO_RUNBOOK.md` for the technical demo flow and
+by Git. See `docs/DEMO_RUNBOOK.md` for the technical demo flow,
 `docs/demo/MANUFACTURER_DEMO_RUNBOOK.md` for the manufacturer pre-call
-checklist, talk track, demo boundaries, and post-demo feedback prompts.
+checklist, talk track, demo boundaries, and post-demo feedback prompts, and
+`docs/demo/TROUBLESHOOTING.md` for local demo failure recovery.
 
 Simulator scenarios can be selected with `SCENARIO=normal`,
 `SCENARIO=gradual_drift`, or `SCENARIO=sudden_excursion`. Use `SEED`, `COUNT`,
