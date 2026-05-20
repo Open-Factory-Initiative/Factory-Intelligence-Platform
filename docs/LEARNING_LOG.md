@@ -2398,3 +2398,64 @@ npm run build
 
 Connect the governed recommendation review page to the selected detection while
 keeping approve, reject, and defer actions human-controlled and audited.
+
+## 2026-05-20 - Recommendation review panel
+
+### What changed
+
+Built the governed recommendation review panel for the Operations Workbench.
+The recommendation page can load the recommendation linked to the selected
+detection, show the recommended action, rationale, risk level, approval
+requirement, status, linked evidence IDs, reviewer and reason fields, and
+approve, reject, or defer controls. After a decision is recorded, the page shows
+the returned decision result and refreshed recommendation status.
+
+### Why it was built that way
+
+Issue #99 demonstrates the human approval loop without adding multi-user
+workflow, electronic signatures, production validation claims, or an audit-log
+browser. The UI clearly frames recommendations as advisory and human-reviewed,
+and it calls only the existing simulator-backed review API.
+
+### How it works
+
+Detection detail links to `/recommendations?detection_id={detection_id}`. The
+recommendation page loads recommendations from `GET /recommendations`, selects
+the one linked to the current detection, and passes it into a small client-side
+review panel. The panel posts to approve, reject, or defer endpoints with the
+reviewer and reason, then reloads the recommendation to show the updated status.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Open `/detections`, choose a detection, follow `Recommendation review`, enter a
+reviewer and reason, and submit approve, reject, or defer.
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Connect the RCA/CAPA draft preview to the selected detection and keep the draft
+clearly marked as human-reviewed advisory content.

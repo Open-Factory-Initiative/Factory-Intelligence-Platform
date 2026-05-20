@@ -674,6 +674,92 @@ h3 {
   padding: 16px;
 }
 
+.recommendation-review-panel {
+  gap: 20px;
+}
+
+.review-form {
+  display: grid;
+  gap: 14px;
+}
+
+.review-form div {
+  display: grid;
+  gap: 7px;
+}
+
+.review-form label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.review-form input,
+.review-form textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  line-height: 1.5;
+  padding: 11px 12px;
+}
+
+.review-form input:focus,
+.review-form textarea:focus {
+  border-color: var(--accent);
+  outline: 3px solid #dceee6;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.review-actions button {
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 760;
+  line-height: 1;
+  padding: 12px 14px;
+}
+
+.review-actions button:nth-child(2) {
+  border-color: #8a2b2b;
+  background: #8a2b2b;
+}
+
+.review-actions button:nth-child(3) {
+  border-color: #7a4f0f;
+  background: #8b5a10;
+}
+
+.review-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.review-actions button:focus-visible {
+  outline: 3px solid #dceee6;
+}
+
+.decision-result {
+  display: grid;
+  gap: 5px;
+  border-left: 4px solid var(--accent);
+  background: #edf6f1;
+  color: #244337;
+  line-height: 1.5;
+  padding: 16px;
+}
+
 .api-panel {
   border-left: 4px solid var(--accent);
   background: #edf6f1;
