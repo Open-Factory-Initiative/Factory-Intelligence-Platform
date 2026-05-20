@@ -7,6 +7,38 @@ export type HealthResponse = {
   sentinel_state_dir: string;
 };
 
+export type Site = {
+  site_id: string;
+  name: string;
+  timezone: string;
+  description: string;
+};
+
+export type Area = {
+  area_id: string;
+  site_id: string;
+  name: string;
+  description: string;
+};
+
+export type Equipment = {
+  equipment_id: string;
+  area_id: string;
+  name: string;
+  equipment_type: string;
+  criticality: "low" | "medium" | "high";
+};
+
+export type Batch = {
+  batch_id: string;
+  site_id: string;
+  area_id: string;
+  product_name: string;
+  status: "planned" | "running" | "completed" | "held" | "released";
+  started_at: string;
+  ended_at: string | null;
+};
+
 export type Detection = {
   detection_id: string;
   detection_type: "quality_drift" | "process_excursion";
@@ -95,6 +127,10 @@ export class ApiClientError extends Error {
 
 export const workbenchApi = {
   getHealth: () => requestJson<HealthResponse>("/health"),
+  listSites: () => requestJson<Site[]>("/sites"),
+  listAreas: () => requestJson<Area[]>("/areas"),
+  listEquipment: () => requestJson<Equipment[]>("/equipment"),
+  listBatches: () => requestJson<Batch[]>("/batches"),
   listDetections: () => requestJson<Detection[]>("/sentinel/detections"),
   getDetection: (detectionId: string) =>
     requestJson<Detection>(`/sentinel/detections/${encodeURIComponent(detectionId)}`),

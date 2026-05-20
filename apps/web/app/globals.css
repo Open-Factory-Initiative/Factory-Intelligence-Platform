@@ -120,6 +120,13 @@ a {
   padding: 32px;
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
 .demo-label {
   display: inline-flex;
   width: fit-content;
@@ -223,6 +230,122 @@ h3 {
   color: var(--accent);
   font-size: 0.9rem;
   font-weight: 760;
+}
+
+.primary-action,
+.secondary-action {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  font-size: 0.95rem;
+  font-weight: 760;
+  line-height: 1;
+  padding: 12px 14px;
+}
+
+.primary-action {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.primary-action:hover,
+.primary-action:focus-visible {
+  background: var(--accent-strong);
+  outline: none;
+}
+
+.secondary-action {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.secondary-action:hover,
+.secondary-action:focus-visible {
+  background: #edf6f1;
+  outline: none;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.overview-panel,
+.metric-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.overview-panel {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  padding: 24px;
+}
+
+.context-panel {
+  grid-row: span 2;
+}
+
+.detection-panel {
+  grid-column: span 2;
+}
+
+.overview-metrics {
+  display: grid;
+  gap: 18px;
+}
+
+.metric-card {
+  display: grid;
+  gap: 8px;
+  min-height: 150px;
+  align-content: start;
+  padding: 20px;
+}
+
+.metric-card strong {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.metric-card p,
+.detection-panel p {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.context-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.context-list div {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.context-list dt {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.context-list dd {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .content-panel {
@@ -396,6 +519,16 @@ code {
 
   .metric-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .context-panel,
+  .detection-panel {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 

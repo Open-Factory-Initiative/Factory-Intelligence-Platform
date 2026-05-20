@@ -2172,3 +2172,57 @@ npm run build
 
 Turn the read-only recommendation preview into a governed review panel that can
 approve, reject, or defer recommendations with reviewer and reason fields.
+
+## 2026-05-19 - Factory overview dashboard
+
+### What changed
+
+Updated the Operations Workbench overview page into the first manufacturer-facing
+demo dashboard. The page now shows simulator-backed site context, current line,
+asset, work order, product, active detection count, pending recommendation count,
+the most important detection summary, and an `Open detection` CTA.
+
+### Why it was built that way
+
+Issue #114 is the first demo screen, not a production KPI dashboard. The
+implementation stays read-only, uses existing local FastAPI endpoints, and avoids
+real-time updates, multi-site behavior, and advanced charts.
+
+### How it works
+
+The page loads health, site, area, equipment, batch, detection, and recommendation
+data through the Workbench API client. It filters active detections and pending
+recommendations, selects the most important detection by severity and confidence,
+and uses existing demo-domain data for the visible factory context.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Turn the Detections route into a focused detection list and detail workflow that
+preserves the same simulator-backed demo framing.
