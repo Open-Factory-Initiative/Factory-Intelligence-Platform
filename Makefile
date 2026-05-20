@@ -145,7 +145,7 @@ test-contract:
 	$(PYTHON) -m pytest packages/factory-events/tests
 
 test-e2e:
-	@echo "E2E tests are deferred until apps/web is implemented."
+	cd apps/web && npm run test:e2e
 
 lint:
 	$(PYTHON) -m ruff check packages services

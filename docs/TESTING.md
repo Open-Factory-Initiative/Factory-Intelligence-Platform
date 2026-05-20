@@ -73,8 +73,15 @@ make lint
 make typecheck
 ```
 
-`make test-e2e` is currently a documented placeholder because the web workbench
-has not been implemented yet.
+`make test-e2e` runs the local Operations Workbench Playwright smoke test. The
+test starts the FastAPI demo API and Next.js Workbench, prepares deterministic
+demo state with `make demo`, and walks the manufacturer demo path in a browser:
+overview, detections, detection detail, evidence timeline, recommendation
+review, approve/reject/defer decision feedback, and RCA/CAPA draft preview.
+
+The Playwright smoke test is local-only for now. CI integration is intentionally
+tracked separately in #165 so this issue can keep the first browser workflow
+reliable before hardening it for GitHub Actions.
 
 `make demo-api-smoke` is a backend-only smoke test for the deterministic demo
 path. Run it after:
@@ -128,8 +135,29 @@ npm run typecheck
 npx playwright test
 ```
 
-Frontend tests are deferred until `apps/web` contains the first Next.js
-workbench implementation.
+Before the first Playwright run on a new machine, install the browser runtime:
+
+```bash
+cd apps/web
+npx playwright install chromium
+```
+
+Then run either:
+
+```bash
+make test-e2e
+```
+
+or:
+
+```bash
+cd apps/web
+npm run test:e2e
+```
+
+If the demo state cannot be prepared, the smoke test fails with the captured
+`make demo` output so the missing simulator, ingestion, Sentinel, or API step is
+visible in the failure log.
 
 ## Simulator Testing
 

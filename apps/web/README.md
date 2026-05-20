@@ -144,3 +144,25 @@ npm run typecheck
 npm test
 npm run build
 ```
+
+## Demo Smoke Test
+
+The local Playwright smoke test starts the demo API and Workbench, prepares the
+deterministic simulator-backed demo state, and walks the Operations Workbench
+demo path in a browser:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+From the repository root, the same smoke test is available as:
+
+```bash
+make test-e2e
+```
+
+The smoke test covers overview, detections, detection detail, evidence timeline,
+governed recommendation review, approve/reject/defer decision feedback, and
+RCA/CAPA draft preview. It is currently a reliable local test; GitHub Actions
+integration is tracked in follow-up issue #165.

@@ -2714,3 +2714,59 @@ make demo
 Turn the manual troubleshooting cases into an automated demo smoke test that can
 exercise API-down, stale-state, and no-detection paths without requiring a live
 browser.
+
+## 2026-05-20 - Operations Workbench Playwright smoke test
+
+### What changed
+
+Added a local Playwright smoke test for the simulator-backed Operations
+Workbench demo path. The test opens the overview, navigates to detections and
+detection detail, inspects the evidence timeline, records approve/reject/defer
+recommendation decisions, and previews the RCA/CAPA draft.
+
+### Why it was built that way
+
+Issue #101 asks for a reliable browser smoke test without broad production CI
+hardening. The test uses the existing `make demo`, FastAPI API, and Next.js app
+commands so it exercises the same local path used during manufacturer demo
+preparation.
+
+### How it works
+
+Playwright starts the API against the deterministic demo event store and
+Sentinel state, starts the Workbench with `NEXT_PUBLIC_API_BASE_URL` pointed at
+the local API, and resets demo state with `make demo` before each decision path.
+If demo-state preparation fails, the test surfaces the captured `make demo`
+output to make the missing step clear.
+
+### How to run it
+
+```bash
+cd apps/web
+npx playwright install chromium
+npm run test:e2e
+```
+
+From the repository root:
+
+```bash
+make test-e2e
+```
+
+### How to test it
+
+```bash
+make test-e2e
+make test
+cd apps/web
+npm test
+npm run lint
+npm run typecheck
+npm run build
+```
+
+### What to learn next
+
+Move the Playwright smoke test into GitHub Actions under follow-up issue #165
+after the local browser path stays stable and CI runtime constraints are
+understood.
