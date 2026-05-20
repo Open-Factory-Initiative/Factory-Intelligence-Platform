@@ -2770,3 +2770,48 @@ npm run build
 Move the Playwright smoke test into GitHub Actions under follow-up issue #165
 after the local browser path stays stable and CI runtime constraints are
 understood.
+
+## 2026-05-20 - Pre-demo checklist
+
+### What changed
+
+Added `docs/demo/PRE_DEMO_CHECKLIST.md` and linked it from the manufacturer demo
+runbook. The checklist covers clean repo status, dependencies, deterministic
+demo setup, API and Workbench startup, smoke-test evidence, expected detection,
+recommendation review, RCA/CAPA draft visibility, and talk-track review.
+
+### Why it was built that way
+
+Issue #137 asks for a final call-prep checklist, not a new production readiness
+or security process. Keeping it under `docs/demo/` makes it easy to scan before
+a manufacturer call while preserving the simulator-backed MVP boundary.
+
+### How it works
+
+The checklist follows the demo path in order: confirm environment readiness,
+generate deterministic demo state with `make demo`, start the API and Workbench,
+verify the expected detection and governed recommendation, test a
+human-reviewed decision, and confirm the RCA/CAPA draft preview. It also repeats
+the simulator-backed and human-review caveats that should be stated during the
+opening script.
+
+### How to run it
+
+```bash
+make demo
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+.venv/bin/pytest services/simulator/tests/test_pre_demo_checklist_docs.py
+make docs
+```
+
+### What to learn next
+
+Use the checklist during the next local demo rehearsal and tighten any item that
+is too vague to complete quickly before a live manufacturer call.
