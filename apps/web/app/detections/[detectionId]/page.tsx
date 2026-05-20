@@ -101,7 +101,12 @@ export default async function DetectionDetailPage({ params }: DetectionDetailPag
                 Continue to the governed recommendation queue for human review,
                 approval, rejection, or deferral.
               </p>
-              <Link className="secondary-action" href="/recommendations">
+              <Link
+                className="secondary-action"
+                href={`/recommendations?detection_id=${encodeURIComponent(
+                  result.detection.detection_id,
+                )}`}
+              >
                 Recommendation review
               </Link>
             </article>

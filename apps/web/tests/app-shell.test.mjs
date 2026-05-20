@@ -70,9 +70,39 @@ test("detections pages contain list and detail content", () => {
   assert.match(styles, /evidence-quality-result/);
   assert.match(styles, /evidence-correlation-window/);
   assert.match(detail, /Recommendation review/);
+  assert.match(detail, /recommendations\?detection_id=/);
   assert.match(detail, /RCA\/CAPA draft/);
   assert.match(detail, /Simulator-backed demo data/);
   assert.match(detail, /Simulator-backed evidence/);
+});
+
+test("recommendation page contains governed review panel", () => {
+  const page = readFileSync(join(root, "app/recommendations/page.tsx"), "utf8");
+  const panel = readFileSync(
+    join(root, "app/recommendations/recommendation-review-panel.tsx"),
+    "utf8",
+  );
+  const styles = readFileSync(join(root, "app/globals.css"), "utf8");
+
+  assert.match(page, /searchParams/);
+  assert.match(page, /detection_id/);
+  assert.match(page, /selectRecommendation/);
+  assert.match(page, /RecommendationReviewPanel/);
+  assert.match(page, /Recommendations are advisory decision support/);
+  assert.match(panel, /Reviewer name/);
+  assert.match(panel, /Decision reason/);
+  assert.match(panel, /Approve/);
+  assert.match(panel, /Reject/);
+  assert.match(panel, /Defer/);
+  assert.match(panel, /approveRecommendation/);
+  assert.match(panel, /rejectRecommendation/);
+  assert.match(panel, /deferRecommendation/);
+  assert.match(panel, /Recorded decision/);
+  assert.match(panel, /Updated status/);
+  assert.match(panel, /Linked evidence IDs/);
+  assert.match(styles, /recommendation-review-panel/);
+  assert.match(styles, /review-actions/);
+  assert.match(styles, /decision-result/);
 });
 
 test("app shell documents configurable API base URL", () => {

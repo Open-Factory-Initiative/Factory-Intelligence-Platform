@@ -70,7 +70,10 @@ message instead of failing silently.
 - `/detections/{detection_id}` - Read-only Process Sentinel detection detail
   with a plain-English `Why this was flagged` explanation, API-backed evidence
   timeline, recommendation review link, and RCA/CAPA draft link
-- `/recommendations` - Governed recommendation review preview
+- `/recommendations` - Governed recommendation review panel with reviewer,
+  reason, approve/reject/defer controls, and decision feedback
+- `/recommendations?detection_id={detection_id}` - Recommendation review scoped
+  to the selected Process Sentinel detection
 - `/rca-capa-draft` - RCA/CAPA draft preview
 
 The shell labels all demo content as simulator-backed data. The pages include
