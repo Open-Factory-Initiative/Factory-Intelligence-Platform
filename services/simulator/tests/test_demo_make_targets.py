@@ -66,3 +66,44 @@ def test_demo_make_targets_reset_generate_ingest_and_run_sentinel(
         sentinel_output
     )
     assert "Next: make api" in sentinel_output
+
+
+def test_demo_make_target_prepares_state_and_prints_startup_instructions(
+    tmp_path: Path,
+) -> None:
+    demo_output = tmp_path / "events" / "fill_weight_drift_demo.jsonl"
+    demo_events_store = tmp_path / "storage" / "fill_weight_drift_demo_events.jsonl"
+    demo_dead_letter = tmp_path / "storage" / "fill_weight_drift_demo_dead_letter.jsonl"
+    demo_state_dir = tmp_path / "storage" / "fill_weight_drift_demo_sentinel"
+    variables = [
+        f"DEMO_OUTPUT={demo_output}",
+        f"DEMO_EVENTS_STORE={demo_events_store}",
+        f"DEMO_DEAD_LETTER={demo_dead_letter}",
+        f"DEMO_SENTINEL_STATE_DIR={demo_state_dir}",
+    ]
+
+    output = run_make("demo", variables)
+
+    assert demo_output.exists()
+    assert demo_events_store.exists()
+    assert demo_dead_letter.exists()
+    assert (demo_state_dir / "detections.json").exists()
+    assert "demo api smoke passed" in output
+    assert "Demo state is ready." in output
+    assert "Expected detection ID: det_fill_weight_gradual_drift" in output
+    assert "Expected recommendation ID: rec_fill_weight_gradual_drift" in output
+    assert (
+        f"make api EVENTS_STORE={demo_events_store} "
+        f"SENTINEL_STATE_DIR={demo_state_dir}"
+    ) in output
+    assert "cd apps/web && npm run dev" in output
+    assert "http://127.0.0.1:8000/sentinel/detections" in output
+    assert (
+        "http://127.0.0.1:8000/sentinel/detections/"
+        "det_fill_weight_gradual_drift"
+    ) in output
+    assert "http://127.0.0.1:3000" in output
+    assert (
+        "http://127.0.0.1:3000/rca-capa-draft?"
+        "detection_id=det_fill_weight_gradual_drift"
+    ) in output

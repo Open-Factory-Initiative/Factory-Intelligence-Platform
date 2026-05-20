@@ -198,14 +198,28 @@ make sentinel-run
 make api
 ```
 
-For the deterministic manufacturer demo path, use the demo-specific targets:
+For the deterministic manufacturer demo path, use the one-command demo runner:
 
 ```bash
-make demo-reset
-make demo-data
-make demo-ingest
-make demo-sentinel-run
+make demo
+```
+
+`make demo` clears generated demo files, generates deterministic demo events,
+ingests them, runs Process Sentinel, runs the backend smoke test, and prints the
+API and Operations Workbench startup commands. It also prints expected demo URLs
+and the expected detection ID, `det_fill_weight_gradual_drift`.
+
+After `make demo` completes, start the API in one terminal:
+
+```bash
 make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+```
+
+Start the Workbench in another terminal:
+
+```bash
+cd apps/web
+npm run dev
 ```
 
 The demo commands write only generated files under `.local/`, which is ignored

@@ -2581,3 +2581,47 @@ npm run build
 Add the Workbench smoke test that walks the full manufacturer demo path through
 detection, evidence, recommendation review, decision feedback, and RCA/CAPA
 preview.
+
+## 2026-05-20 - One-command demo runner
+
+### What changed
+
+Added `make demo` for the deterministic manufacturer demo path. The target
+resets generated demo state, generates demo data, ingests it, runs Process
+Sentinel, runs the backend demo smoke test, and prints the API and Operations
+Workbench startup commands with expected demo URLs.
+
+### Why it was built that way
+
+Issue #134 asks for repeatable demo orchestration without introducing a
+production process supervisor or deployment stack. The target reuses the
+existing demo Make targets and keeps long-running API and frontend servers as
+explicit follow-up commands so the output is safe and predictable.
+
+### How it works
+
+`make demo` chains `demo-reset`, `demo-data`, `demo-ingest`,
+`demo-sentinel-run`, and `demo-api-smoke`. After the smoke test passes, it
+prints the expected detection ID `det_fill_weight_gradual_drift`, the expected
+recommendation ID `rec_fill_weight_gradual_drift`, the API startup command, the
+Workbench startup command, and the main API/UI URLs to open during the demo.
+
+### How to run it
+
+```bash
+make demo
+```
+
+Then start the API and Workbench with the commands printed by the target.
+
+### How to test it
+
+```bash
+make test
+make demo
+```
+
+### What to learn next
+
+Add the browser-level Workbench smoke test so `make demo` can prepare state and
+the frontend test can verify the full visible demo workflow.
