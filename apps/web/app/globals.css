@@ -479,6 +479,63 @@ h3 {
   gap: 12px;
 }
 
+.rca-draft-card {
+  gap: 20px;
+}
+
+.draft-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.draft-copy {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.draft-copy button {
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 760;
+  line-height: 1;
+  padding: 12px 14px;
+}
+
+.draft-copy button:hover,
+.draft-copy button:focus-visible {
+  background: var(--accent-strong);
+  outline: none;
+}
+
+.draft-copy span {
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.draft-section {
+  display: grid;
+  gap: 8px;
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+  padding: 16px;
+}
+
+.draft-section p,
+.draft-section ul {
+  margin-bottom: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .workflow-links {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -846,6 +903,14 @@ code {
 
   .timeline-heading {
     display: grid;
+  }
+
+  .draft-heading {
+    display: grid;
+  }
+
+  .draft-copy {
+    justify-items: start;
   }
 
   .hero-copy,

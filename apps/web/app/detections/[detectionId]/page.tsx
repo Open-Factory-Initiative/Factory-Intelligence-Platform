@@ -117,7 +117,12 @@ export default async function DetectionDetailPage({ params }: DetectionDetailPag
                 Preview the human-reviewed RCA/CAPA draft language generated
                 from the selected simulator-backed detection.
               </p>
-              <Link className="secondary-action" href="/rca-capa-draft">
+              <Link
+                className="secondary-action"
+                href={`/rca-capa-draft?detection_id=${encodeURIComponent(
+                  result.detection.detection_id,
+                )}`}
+              >
                 RCA/CAPA draft
               </Link>
             </article>

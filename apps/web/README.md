@@ -78,7 +78,9 @@ message instead of failing silently.
   reason, approve/reject/defer controls, and decision feedback
 - `/recommendations?detection_id={detection_id}` - Recommendation review scoped
   to the selected Process Sentinel detection
-- `/rca-capa-draft` - RCA/CAPA draft preview
+- `/rca-capa-draft` - RCA/CAPA draft preview for the first available demo detection
+- `/rca-capa-draft?detection_id={detection_id}` - RCA/CAPA draft preview
+  scoped to the selected Process Sentinel detection
 
 The shell labels all demo content as simulator-backed data. The pages include
 loading states, empty states, and simple user-readable API error states.
@@ -95,6 +97,18 @@ The backend currently records local approval decisions and audit events, but it
 does not expose a read endpoint for recommendation audit history. Follow-up
 backend issue #159 tracks adding that API so the Workbench can later reload
 decision history from the server instead of relying only on the POST response.
+
+## RCA/CAPA Draft Preview
+
+The RCA/CAPA draft page loads draft investigation language from
+`GET /reports/rca-capa-drafts/{detection_id}`. Detection and recommendation
+pages link to it with the selected `detection_id`, and the page shows title,
+problem statement, evidence summary, recommended containment, and CAPA
+placeholder sections. The copy button copies a plain-text draft for demo review.
+
+The draft is marked as demo-generated decision support that requires human
+review. It does not create a CAPA, claim validation status, or submit records to
+QMS or MES.
 
 ## Manual API Check
 
