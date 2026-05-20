@@ -2625,3 +2625,47 @@ make demo
 
 Add the browser-level Workbench smoke test so `make demo` can prepare state and
 the frontend test can verify the full visible demo workflow.
+
+## 2026-05-20 - Manufacturer demo runbook
+
+### What changed
+
+Added `docs/demo/MANUFACTURER_DEMO_RUNBOOK.md` for the 8-10 minute
+manufacturer demo. The runbook includes prerequisites, exact setup commands,
+expected outputs, expected API and Workbench URLs, troubleshooting, talk track,
+demo boundaries, and post-demo feedback prompts.
+
+### Why it was built that way
+
+Issue #117 asks for a founder/contributor-facing pre-call checklist and script,
+not a new runtime feature. The new runbook builds on the existing technical demo
+runbook and keeps all claims simulator-backed, advisory, and human-reviewed.
+
+### How it works
+
+The runbook starts with `make demo`, which prepares deterministic demo state and
+verifies the backend path. It then starts the API and Workbench with the demo
+event store and Sentinel state so the presenter can show detection, evidence,
+recommendation review, decision feedback, and RCA/CAPA draft preview.
+
+### How to run it
+
+```bash
+make demo
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+make test
+make demo
+```
+
+### What to learn next
+
+Use a live manufacturer conversation to refine the talk track, especially which
+evidence, approvals, and validation-aware handoffs matter most for a first site
+pilot.
