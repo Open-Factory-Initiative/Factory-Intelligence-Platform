@@ -76,7 +76,12 @@ export default async function RecommendationsPage({
                 Preview draft investigation language after the governed
                 recommendation decision is recorded.
               </p>
-              <Link className="secondary-action" href="/rca-capa-draft">
+              <Link
+                className="secondary-action"
+                href={`/rca-capa-draft?detection_id=${encodeURIComponent(
+                  result.selected.detection_id,
+                )}`}
+              >
                 RCA/CAPA draft
               </Link>
             </article>

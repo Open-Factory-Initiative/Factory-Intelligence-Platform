@@ -2522,3 +2522,62 @@ npm run build
 
 Add a backend read endpoint for recommendation decision/audit history so the
 Workbench can reload demo audit feedback from persisted state.
+
+## 2026-05-20 - RCA/CAPA draft preview page
+
+### What changed
+
+Built the RCA/CAPA draft preview page for the Operations Workbench. The page now
+loads the draft for the selected `detection_id`, shows the title, problem
+statement, evidence summary, recommended containment, CAPA placeholder, human
+review status, and includes a copy button for plain-text draft review.
+
+### Why it was built that way
+
+Issue #116 only needs a demo-ready preview of the existing draft endpoint, not a
+formal export pipeline or QMS integration. The UI uses the existing
+`GET /reports/rca-capa-drafts/{detection_id}` endpoint and keeps the draft
+clearly labeled as simulator-backed, human-reviewed decision support.
+
+### How it works
+
+Detection detail and recommendation review link to
+`/rca-capa-draft?detection_id={detection_id}`. The draft page reads the query
+parameter, requests the draft from the API, and renders separate review sections
+for the problem statement, evidence, containment, and CAPA placeholder. Missing
+drafts show a readable error state.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Open `/detections`, choose a detection, and follow the RCA/CAPA draft link.
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Add the Workbench smoke test that walks the full manufacturer demo path through
+detection, evidence, recommendation review, decision feedback, and RCA/CAPA
+preview.

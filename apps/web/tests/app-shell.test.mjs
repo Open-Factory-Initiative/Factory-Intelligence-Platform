@@ -72,6 +72,7 @@ test("detections pages contain list and detail content", () => {
   assert.match(detail, /Recommendation review/);
   assert.match(detail, /recommendations\?detection_id=/);
   assert.match(detail, /RCA\/CAPA draft/);
+  assert.match(detail, /rca-capa-draft\?detection_id=/);
   assert.match(detail, /Simulator-backed demo data/);
   assert.match(detail, /Simulator-backed evidence/);
 });
@@ -89,6 +90,7 @@ test("recommendation page contains governed review panel", () => {
   assert.match(page, /selectRecommendation/);
   assert.match(page, /RecommendationReviewPanel/);
   assert.match(page, /Recommendations are advisory decision support/);
+  assert.match(page, /rca-capa-draft\?detection_id=/);
   assert.match(panel, /Reviewer name/);
   assert.match(panel, /Decision reason/);
   assert.match(panel, /Approve/);
@@ -108,6 +110,33 @@ test("recommendation page contains governed review panel", () => {
   assert.match(styles, /recommendation-review-panel/);
   assert.match(styles, /review-actions/);
   assert.match(styles, /decision-result/);
+});
+
+test("RCA CAPA page contains selected detection draft preview", () => {
+  const page = readFileSync(join(root, "app/rca-capa-draft/page.tsx"), "utf8");
+  const copyButton = readFileSync(
+    join(root, "app/rca-capa-draft/draft-copy-button.tsx"),
+    "utf8",
+  );
+  const styles = readFileSync(join(root, "app/globals.css"), "utf8");
+
+  assert.match(page, /searchParams/);
+  assert.match(page, /detection_id/);
+  assert.match(page, /getRcaCapaDraft/);
+  assert.match(page, /Draft not found/);
+  assert.match(page, /Problem statement/);
+  assert.match(page, /Evidence summary/);
+  assert.match(page, /Recommended containment/);
+  assert.match(page, /CAPA placeholder/);
+  assert.match(page, /human-review/);
+  assert.match(page, /not automatically submitted to QMS/);
+  assert.match(page, /DraftCopyButton/);
+  assert.match(page, /formatDraftForCopy/);
+  assert.match(copyButton, /navigator\.clipboard\.writeText/);
+  assert.match(copyButton, /Copy draft text/);
+  assert.match(styles, /rca-draft-card/);
+  assert.match(styles, /draft-section/);
+  assert.match(styles, /draft-copy/);
 });
 
 test("app shell documents configurable API base URL", () => {
