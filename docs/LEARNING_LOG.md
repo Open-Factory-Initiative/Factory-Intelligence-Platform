@@ -2338,3 +2338,63 @@ npm run build
 
 Replace the Evidence timeline section placeholder with API-backed timeline
 items while preserving the same human-reviewed advisory boundary.
+
+## 2026-05-20 - Evidence timeline component
+
+### What changed
+
+Added the API-backed evidence timeline to the Operations Workbench detection
+detail page. The timeline loads evidence for the selected detection, sorts it
+chronologically, labels evidence as simulator-backed demo data, shows evidence
+type, timestamp, title, description, score/relevance, source event IDs, and a
+plain-English `What this means` section.
+
+### Why it was built that way
+
+Issue #98 is about making the evidence behind a detection understandable, not
+adding charts or source-event drilldown. The implementation stays inside the
+existing detection detail workflow and uses the already documented evidence API
+contract.
+
+### How it works
+
+The detail route calls both `GET /sentinel/detections/{detection_id}` and
+`GET /sentinel/detections/{detection_id}/evidence` through the Workbench API
+client. Evidence is sorted by timestamp before rendering. Each evidence type
+gets a visually distinct badge, and empty evidence arrays render a readable
+empty state instead of an error.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Open `/detections`, choose a detection, and review the Evidence timeline
+section on the detail page.
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Connect the governed recommendation review page to the selected detection while
+keeping approve, reject, and defer actions human-controlled and audited.
