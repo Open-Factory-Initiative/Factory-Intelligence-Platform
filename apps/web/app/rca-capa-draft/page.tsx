@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ApiErrorPanel, EmptyState } from "../components/demo-state";
+import { ApiErrorPanel, EmptyState, StatusBadge } from "../components/demo-state";
 import {
   ApiClientError,
   type RcaCapaDraft,
@@ -75,15 +75,24 @@ export default async function RcaCapaDraftPage({
               </div>
               <div>
                 <dt>Human review</dt>
-                <dd>{result.draft.human_review_required ? "Required" : "Not required"}</dd>
+                <dd>
+                  <StatusBadge
+                    tone={result.draft.human_review_required ? "warning" : "success"}
+                    value={result.draft.human_review_required ? "Required" : "Not required"}
+                  />
+                </dd>
               </div>
               <div>
                 <dt>System submission</dt>
-                <dd>Not submitted to QMS</dd>
+                <dd>
+                  <StatusBadge tone="draft" value="Not submitted to QMS" />
+                </dd>
               </div>
               <div>
                 <dt>Source</dt>
-                <dd>Simulator-backed demo state</dd>
+                <dd>
+                  <StatusBadge tone="info" value="Simulator-backed demo state" />
+                </dd>
               </div>
             </dl>
             <section className="draft-section" aria-labelledby="problem-statement-heading">

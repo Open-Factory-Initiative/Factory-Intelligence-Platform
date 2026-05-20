@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ApiErrorPanel, EmptyState } from "../components/demo-state";
+import { ApiErrorPanel, EmptyState, StatusBadge } from "../components/demo-state";
 import {
   type Detection,
   formatApiError,
@@ -42,7 +42,12 @@ export default async function DetectionsPage() {
                 <dl className="detection-fields">
                   <div>
                     <dt>Severity</dt>
-                    <dd>{detection.severity}</dd>
+                    <dd>
+                      <StatusBadge
+                        tone={severityTone(detection.severity)}
+                        value={detection.severity}
+                      />
+                    </dd>
                   </div>
                   <div>
                     <dt>Confidence</dt>
@@ -50,7 +55,12 @@ export default async function DetectionsPage() {
                   </div>
                   <div>
                     <dt>Status</dt>
-                    <dd>{detection.status}</dd>
+                    <dd>
+                      <StatusBadge
+                        tone={detectionStatusTone(detection.status)}
+                        value={detection.status}
+                      />
+                    </dd>
                   </div>
                   <div>
                     <dt>Time window</dt>
@@ -102,4 +112,24 @@ function formatTimestamp(value: string): string {
 
 function formatAssets(assetIds: string[]): string {
   return assetIds.length > 0 ? assetIds.join(", ") : "No assets linked";
+}
+
+function severityTone(severity: Detection["severity"]) {
+  if (severity === "high") {
+    return "danger";
+  }
+  if (severity === "medium") {
+    return "warning";
+  }
+  return "success";
+}
+
+function detectionStatusTone(status: Detection["status"]) {
+  if (status === "closed" || status === "acknowledged") {
+    return "success";
+  }
+  if (status === "false_positive") {
+    return "draft";
+  }
+  return "info";
 }

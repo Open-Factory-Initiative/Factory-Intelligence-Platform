@@ -11,6 +11,18 @@ type LoadingStateProps = {
   title?: string;
 };
 
+type StatusBadgeProps = {
+  label?: string;
+  tone?:
+    | "neutral"
+    | "success"
+    | "warning"
+    | "danger"
+    | "info"
+    | "draft";
+  value: string;
+};
+
 export function ApiErrorPanel({ message }: ApiErrorPanelProps) {
   return (
     <div className="state-panel error-panel" role="alert">
@@ -39,4 +51,21 @@ export function LoadingState({ title = "Loading simulator-backed demo data" }: L
       </div>
     </section>
   );
+}
+
+export function StatusBadge({
+  label,
+  tone = "neutral",
+  value,
+}: StatusBadgeProps) {
+  return (
+    <span className={`status-badge status-badge-${tone}`}>
+      {label ? <span className="status-badge-label">{label}</span> : null}
+      <span>{formatBadgeValue(value)}</span>
+    </span>
+  );
+}
+
+function formatBadgeValue(value: string): string {
+  return value.replaceAll("_", " ");
 }

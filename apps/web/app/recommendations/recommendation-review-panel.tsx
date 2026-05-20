@@ -8,6 +8,7 @@ import {
   formatApiError,
   workbenchApi,
 } from "../../lib/api-client";
+import { StatusBadge } from "../components/demo-state";
 
 type RecommendationReviewPanelProps = {
   initialRecommendation: Recommendation;
@@ -70,11 +71,21 @@ export function RecommendationReviewPanel({
       <dl className="metric-grid">
         <div>
           <dt>Status</dt>
-          <dd>{formatEnum(recommendation.status)}</dd>
+          <dd>
+            <StatusBadge
+              tone={recommendationStatusTone(recommendation.status)}
+              value={recommendation.status}
+            />
+          </dd>
         </div>
         <div>
           <dt>Risk level</dt>
-          <dd>{formatEnum(recommendation.risk_level)}</dd>
+          <dd>
+            <StatusBadge
+              tone={riskTone(recommendation.risk_level)}
+              value={recommendation.risk_level}
+            />
+          </dd>
         </div>
         <div>
           <dt>Requires approval</dt>
@@ -150,7 +161,13 @@ export function RecommendationReviewPanel({
             {formatTimestamp(decisionResult.timestamp ?? decisionResult.created_at)}
           </span>
           <span>Reason: {decisionResult.reason}</span>
-          <span>Updated status: {formatEnum(recommendation.status)}</span>
+          <span className="inline-status">
+            Updated status:{" "}
+            <StatusBadge
+              tone={recommendationStatusTone(recommendation.status)}
+              value={recommendation.status}
+            />
+          </span>
           <span>
             This is a demo audit trail from the decision response, not a
             validated production audit record or electronic signature.
@@ -185,4 +202,30 @@ function formatEnum(value: string): string {
 
 function formatTimestamp(value: string): string {
   return value.replace("T", " ").replace("Z", " UTC");
+}
+
+function recommendationStatusTone(status: Recommendation["status"]) {
+  if (status === "approved") {
+    return "success";
+  }
+  if (status === "rejected") {
+    return "danger";
+  }
+  if (status === "deferred") {
+    return "warning";
+  }
+  if (status === "draft") {
+    return "draft";
+  }
+  return "info";
+}
+
+function riskTone(riskLevel: Recommendation["risk_level"]) {
+  if (riskLevel === "high") {
+    return "danger";
+  }
+  if (riskLevel === "medium") {
+    return "warning";
+  }
+  return "success";
 }

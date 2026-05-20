@@ -2815,3 +2815,50 @@ make docs
 
 Use the checklist during the next local demo rehearsal and tighten any item that
 is too vague to complete quickly before a live manufacturer call.
+
+## 2026-05-20 - Manufacturer demo UI polish
+
+### What changed
+
+Added shared Workbench status badges and applied them to detection severity,
+detection status, recommendation status, recommendation risk, API health, and
+RCA/CAPA draft metadata. The Workbench also has a laptop-width layout adjustment
+so metric panels stay readable during the manufacturer demo.
+
+### Why it was built that way
+
+Issue #133 asks for basic demo polish without a full design system. A small
+shared badge primitive keeps severity and status values scannable across the
+existing pages without changing backend contracts or introducing new UI
+architecture.
+
+### How it works
+
+Workbench pages still read actual API state from the local FastAPI demo backend.
+The UI formats enum values as readable badges and uses simple tone mappings for
+severity, status, and risk so the demo remains understandable on a laptop
+screen. No raw JSON panels were added.
+
+### How to run it
+
+```bash
+make demo
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+cd apps/web
+npm test
+npm run lint
+npm run typecheck
+npm run build
+```
+
+### What to learn next
+
+Run through the laptop demo path with a reviewer and note any label, spacing, or
+badge wording that slows down the 8-10 minute talk track.
