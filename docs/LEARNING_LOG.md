@@ -2862,3 +2862,49 @@ npm run build
 
 Run through the laptop demo path with a reviewer and note any label, spacing, or
 badge wording that slows down the 8-10 minute talk track.
+
+## 2026-05-20 - README demo workflow
+
+### What changed
+
+Added a `Run the Demo` section to `README.md` with the deterministic demo
+commands, expected smoke-test output, expected detection and recommendation IDs,
+Workbench startup path, runbook links, proof points, and post-demo boundaries.
+The README now describes `apps/web` and `make test-e2e` as active demo paths
+instead of placeholders.
+
+### Why it was built that way
+
+Issue #138 asks the repository README to communicate the demo path clearly
+without rewriting the whole README or adding production deployment docs. The new
+section keeps the first MVP direction centered on the simulator-backed Process
+Sentinel workflow.
+
+### How it works
+
+The README points contributors to `make demo` for deterministic local state,
+then to the API and Workbench commands used by the manufacturer demo. It states
+what the demo proves and separates post-demo work such as production readiness,
+validated GxP use, real plant integration, authentication/RBAC, and closed-loop
+writeback.
+
+### How to run it
+
+```bash
+make demo
+make api EVENTS_STORE=.local/storage/fill_weight_drift_demo_events.jsonl SENTINEL_STATE_DIR=.local/storage/fill_weight_drift_demo_sentinel
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+.venv/bin/python -m pytest services/simulator/tests/test_readme_demo_workflow_docs.py
+make demo
+```
+
+### What to learn next
+
+Have a new contributor follow only the README demo section and note any missing
+setup context before the next manufacturer-facing handoff.
