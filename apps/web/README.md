@@ -41,6 +41,10 @@ Override without code changes:
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8001 npm run dev
 ```
 
+The API allows the local Workbench origins needed for browser-side demo actions
+by default. Override the comma-separated `FACTORY_API_CORS_ORIGINS` value when
+running the API on different local web origins.
+
 The API client currently covers:
 
 - `GET /health`
@@ -78,6 +82,19 @@ message instead of failing silently.
 
 The shell labels all demo content as simulator-backed data. The pages include
 loading states, empty states, and simple user-readable API error states.
+
+## Governance Decision Feedback
+
+After a reviewer approves, rejects, or defers a recommendation, the Workbench
+shows the reviewer, decision, reason, timestamp, recommendation ID, and refreshed
+recommendation status without requiring a page refresh. This feedback is a demo
+audit trail from the decision POST response, not a validated production audit
+record, electronic signature, or external QMS/MES writeback.
+
+The backend currently records local approval decisions and audit events, but it
+does not expose a read endpoint for recommendation audit history. Follow-up
+backend issue #159 tracks adding that API so the Workbench can later reload
+decision history from the server instead of relying only on the POST response.
 
 ## Manual API Check
 
