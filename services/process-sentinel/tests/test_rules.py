@@ -10,6 +10,7 @@ def test_normal_scenario_does_not_create_detection() -> None:
 
     assert result.detections == []
     assert result.recommendations == []
+    assert all(detection.severity != "high" for detection in result.detections)
 
 
 def test_gradual_drift_creates_evidence_backed_recommendation() -> None:
@@ -19,12 +20,17 @@ def test_gradual_drift_creates_evidence_backed_recommendation() -> None:
     recommendation = next(
         item for item in result.recommendations if item.detection_id == detection.detection_id
     )
+    evidence = [
+        item for item in result.evidence_items if item.detection_id == detection.detection_id
+    ]
 
     assert detection.severity == "medium"
     assert detection.confidence > 0.7
+    assert evidence
+    assert all(item.source_event_ids for item in evidence)
     assert recommendation.status == "needs_review"
     assert recommendation.requires_approval is True
-    assert recommendation.evidence_ids
+    assert recommendation.evidence_ids == [item.evidence_id for item in evidence]
 
 
 def test_sudden_excursion_creates_high_severity_detection() -> None:
@@ -33,9 +39,18 @@ def test_sudden_excursion_creates_high_severity_detection() -> None:
     detection = next(
         item for item in result.detections if item.detection_type == "process_excursion"
     )
+    evidence = [
+        item for item in result.evidence_items if item.detection_id == detection.detection_id
+    ]
+    recommendation = next(
+        item for item in result.recommendations if item.detection_id == detection.detection_id
+    )
 
     assert detection.severity == "high"
     assert detection.confidence == 0.9
+    assert evidence
+    assert all(item.source_event_ids for item in evidence)
+    assert recommendation.evidence_ids == [item.evidence_id for item in evidence]
 
 
 def test_missing_data_does_not_create_false_positive() -> None:
