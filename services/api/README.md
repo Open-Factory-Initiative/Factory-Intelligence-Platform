@@ -10,6 +10,21 @@ The API currently exposes:
 - Process Sentinel detections, evidence, recommendations, and RCA/CAPA draft
   endpoints over local demo state.
 
+## Local Web CORS
+
+The API enables local Workbench browser calls from these default origins:
+
+```text
+http://127.0.0.1:3000
+http://localhost:3000
+http://127.0.0.1:3001
+http://localhost:3001
+```
+
+Override the comma-separated list with `FACTORY_API_CORS_ORIGINS` when testing a
+different local web origin. This is intended for the simulator-backed Workbench
+demo path so client-side recommendation decisions can call the API directly.
+
 Example:
 
 ```bash

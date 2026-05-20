@@ -5,11 +5,19 @@ from pathlib import Path
 
 from factory_ingestion.storage import JsonlEventStore
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from process_sentinel.storage import SentinelStateStore
 from pydantic import BaseModel, Field
 
 from factory_api.domain import DomainData, build_demo_domain_data
+
+DEFAULT_CORS_ORIGINS = (
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:3001",
+)
 
 
 class ApiNotFoundError(Exception):
@@ -42,6 +50,14 @@ def create_app(
         version="0.1.0",
         description="Simulator-backed Process Sentinel MVP API.",
     )
+    cors_origins = configured_cors_origins()
+    if cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_headers=["accept", "content-type"],
+            allow_methods=["GET", "POST", "OPTIONS"],
+            allow_origins=cors_origins,
+        )
 
     @app.exception_handler(ApiNotFoundError)
     def not_found_handler(_request: object, exc: ApiNotFoundError) -> JSONResponse:
@@ -295,6 +311,13 @@ def create_app(
 
 def raise_not_found(code: str, message: str) -> None:
     raise ApiNotFoundError(code, message)
+
+
+def configured_cors_origins() -> list[str]:
+    raw_origins = os.getenv("FACTORY_API_CORS_ORIGINS")
+    if raw_origins is None:
+        return list(DEFAULT_CORS_ORIGINS)
+    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 
 app = create_app()

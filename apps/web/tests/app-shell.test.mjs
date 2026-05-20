@@ -97,7 +97,12 @@ test("recommendation page contains governed review panel", () => {
   assert.match(panel, /approveRecommendation/);
   assert.match(panel, /rejectRecommendation/);
   assert.match(panel, /deferRecommendation/);
-  assert.match(panel, /Recorded decision/);
+  assert.match(panel, /Demo audit feedback/);
+  assert.match(panel, /Recommendation ID/);
+  assert.match(panel, /decisionResult\.recommendation_id/);
+  assert.match(panel, /Reviewer:/);
+  assert.match(panel, /Decision timestamp/);
+  assert.match(panel, /validated production audit record/);
   assert.match(panel, /Updated status/);
   assert.match(panel, /Linked evidence IDs/);
   assert.match(styles, /recommendation-review-panel/);

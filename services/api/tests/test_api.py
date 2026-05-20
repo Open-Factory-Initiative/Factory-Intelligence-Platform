@@ -285,6 +285,35 @@ def test_recommendation_review_actions_return_ui_confirmation_fields(
         assert updated["status"] == expected_decision
 
 
+def test_local_web_origin_can_post_recommendation_decisions(tmp_path: Path) -> None:
+    events_store_path, state_dir = seed_state(tmp_path)
+    client = TestClient(
+        create_app(events_store_path=events_store_path, sentinel_state_dir=state_dir)
+    )
+    recommendation = client.get("/recommendations").json()[0]
+    path = f"/recommendations/{recommendation['recommendation_id']}/approve"
+
+    preflight = client.options(
+        path,
+        headers={
+            "Access-Control-Request-Headers": "content-type",
+            "Access-Control-Request-Method": "POST",
+            "Origin": "http://127.0.0.1:3000",
+        },
+    )
+    response = client.post(
+        path,
+        headers={"Origin": "http://127.0.0.1:3000"},
+        json={"reviewer": "quality_engineer", "reason": "Browser review can post."},
+    )
+
+    assert preflight.status_code == 200
+    assert preflight.headers["access-control-allow-origin"] == "http://127.0.0.1:3000"
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:3000"
+    assert response.json()["recommendation_id"] == recommendation["recommendation_id"]
+
+
 def test_rca_capa_draft_uses_detection_evidence_and_recommendation(tmp_path: Path) -> None:
     events_store_path, state_dir = seed_state(tmp_path)
     client = TestClient(

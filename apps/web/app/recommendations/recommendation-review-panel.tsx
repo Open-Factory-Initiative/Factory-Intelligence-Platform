@@ -140,13 +140,21 @@ export function RecommendationReviewPanel({
       ) : null}
       {decisionResult !== null ? (
         <div className="decision-result" role="status">
-          <strong>Recorded decision: {formatEnum(decisionResult.decision)}</strong>
+          <strong>Demo audit feedback: {formatEnum(decisionResult.decision)}</strong>
+          <span>Recommendation ID: {decisionResult.recommendation_id}</span>
           <span>
-            {decisionResult.reviewer} recorded this decision at{" "}
-            {formatTimestamp(decisionResult.timestamp ?? decisionResult.created_at)}.
+            Reviewer: {decisionResult.reviewer}
+          </span>
+          <span>
+            Decision timestamp:{" "}
+            {formatTimestamp(decisionResult.timestamp ?? decisionResult.created_at)}
           </span>
           <span>Reason: {decisionResult.reason}</span>
           <span>Updated status: {formatEnum(recommendation.status)}</span>
+          <span>
+            This is a demo audit trail from the decision response, not a
+            validated production audit record or electronic signature.
+          </span>
         </div>
       ) : null}
     </article>

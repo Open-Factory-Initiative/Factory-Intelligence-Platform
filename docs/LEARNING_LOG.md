@@ -2459,3 +2459,66 @@ npm run build
 
 Connect the RCA/CAPA draft preview to the selected detection and keep the draft
 clearly marked as human-reviewed advisory content.
+
+## 2026-05-20 - Recommendation decision audit feedback
+
+### What changed
+
+Made the Workbench post-decision feedback explicit for governed recommendation
+reviews. After approve, reject, or defer, the panel now shows the reviewer,
+decision, reason, timestamp, recommendation ID, and refreshed recommendation
+status without a page refresh. The copy labels this as demo audit feedback, not
+a validated production audit record or electronic signature. The local API now
+allows configured Workbench origins so browser-side decision POST requests can
+reach the simulator-backed API during local demos.
+
+### Why it was built that way
+
+Issue #115 asks for visible governance feedback without expanding into a full
+audit log browser or compliance validation package. The current API returns the
+decision from the POST response, so the UI uses that response for the demo while
+documenting the missing audit-read endpoint as follow-up issue #159.
+
+### How it works
+
+The recommendation review panel posts the reviewer and reason to the selected
+approve, reject, or defer endpoint. The returned decision response populates the
+demo audit feedback block immediately, and the panel reloads the recommendation
+detail so the displayed status matches backend state. FastAPI CORS middleware
+allows the configured local Workbench origins to make those browser-side POST
+requests.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Open `/recommendations`, enter a reviewer and reason, and submit approve,
+reject, or defer to see the demo audit feedback.
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Add a backend read endpoint for recommendation decision/audit history so the
+Workbench can reload demo audit feedback from persisted state.
