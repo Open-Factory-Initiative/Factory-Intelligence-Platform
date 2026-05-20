@@ -68,6 +68,8 @@ message instead of failing silently.
 - `/detections` - Process Sentinel detection list with summary, severity,
   confidence, status, time window, work order, related assets, and detail links
 - `/detections/{detection_id}` - Read-only Process Sentinel detection detail
+  with a plain-English `Why this was flagged` explanation and links to evidence,
+  recommendation review, and RCA/CAPA draft workflow sections
 - `/recommendations` - Governed recommendation review preview
 - `/rca-capa-draft` - RCA/CAPA draft preview
 

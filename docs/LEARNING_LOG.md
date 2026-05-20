@@ -2281,3 +2281,60 @@ npm run build
 
 Add the evidence timeline to the detection detail workflow without making
 detections editable.
+
+## 2026-05-20 - Detection detail page
+
+### What changed
+
+Expanded the Operations Workbench detection detail route into a manufacturer
+demo screen. It now shows the explicit detection type, severity, confidence,
+status, time window, related work order, related assets, a plain-English `Why
+this was flagged` explanation, and links or sections for Evidence timeline,
+Recommendation review, and RCA/CAPA draft follow-up.
+
+### Why it was built that way
+
+Issue #97 is still read-only detail context. The page uses the existing
+simulator-backed detection endpoint and avoids editable fields, closing
+detections, advanced analytics, or production investigation workflow.
+
+### How it works
+
+The route reads the detection ID from `/detections/{detection_id}`, calls
+`GET /sentinel/detections/{detection_id}` through the Workbench API client, and
+formats the returned detection fields for the UI. Missing detections render a
+specific readable state instead of being treated like a generic API outage.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+Then open `/detections`, choose a detection, and verify the detail screen.
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Replace the Evidence timeline section placeholder with API-backed timeline
+items while preserving the same human-reviewed advisory boundary.

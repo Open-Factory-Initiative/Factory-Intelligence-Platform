@@ -54,6 +54,14 @@ test("detections pages contain list and detail content", () => {
   assert.match(list, /Open detection/);
   assert.match(detail, /Detection detail/);
   assert.match(detail, /getDetection/);
+  assert.match(detail, /Detection not found/);
+  assert.match(detail, /Detection type/);
+  assert.match(detail, /Why this was flagged/);
+  assert.match(detail, /buildFlagExplanation/);
+  assert.match(detail, /Evidence timeline/);
+  assert.match(detail, /Recommendation review/);
+  assert.match(detail, /RCA\/CAPA draft/);
+  assert.match(detail, /Simulator-backed demo data/);
 });
 
 test("app shell documents configurable API base URL", () => {
