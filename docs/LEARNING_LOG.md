@@ -2226,3 +2226,58 @@ npm run build
 
 Turn the Detections route into a focused detection list and detail workflow that
 preserves the same simulator-backed demo framing.
+
+## 2026-05-19 - Detection list page
+
+### What changed
+
+Updated the Operations Workbench Detections route to list every Process Sentinel
+detection returned by the local demo API. Each detection shows summary, severity,
+confidence, status, time window, related work order, related assets, and an
+`Open detection` link. Added a read-only detection detail route for click-through
+from the list.
+
+### Why it was built that way
+
+Issue #96 is the detection list and click-through slice. The implementation
+keeps scope to API-backed detection data and avoids filtering, pagination,
+search, editable fields, and evidence timeline work that belong to later issues.
+
+### How it works
+
+The list page calls `GET /sentinel/detections` through the Workbench API client.
+Each card links to `/detections/{detection_id}`, where the detail route calls
+`GET /sentinel/detections/{detection_id}` and renders the same read-only
+detection context.
+
+### How to run it
+
+```bash
+make demo-reset
+make demo-data
+make demo-ingest
+make demo-sentinel-run
+make api
+```
+
+In a second terminal:
+
+```bash
+cd apps/web
+npm run dev
+```
+
+### How to test it
+
+```bash
+cd apps/web
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+### What to learn next
+
+Add the evidence timeline to the detection detail workflow without making
+detections editable.

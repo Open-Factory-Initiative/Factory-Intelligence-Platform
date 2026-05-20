@@ -65,7 +65,9 @@ message instead of failing silently.
 
 - `/` - Factory overview dashboard with site, line, asset, work order, product,
   active detection count, pending recommendation count, and primary detection CTA
-- `/detections` - Process Sentinel detections and first evidence timeline preview
+- `/detections` - Process Sentinel detection list with summary, severity,
+  confidence, status, time window, work order, related assets, and detail links
+- `/detections/{detection_id}` - Read-only Process Sentinel detection detail
 - `/recommendations` - Governed recommendation review preview
 - `/rca-capa-draft` - RCA/CAPA draft preview
 
