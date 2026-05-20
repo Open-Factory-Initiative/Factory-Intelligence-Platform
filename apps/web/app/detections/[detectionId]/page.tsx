@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ApiErrorPanel } from "../../components/demo-state";
+import { ApiErrorPanel, StatusBadge } from "../../components/demo-state";
 import {
   ApiClientError,
   type Detection,
@@ -59,7 +59,12 @@ export default async function DetectionDetailPage({ params }: DetectionDetailPag
               </div>
               <div>
                 <dt>Severity</dt>
-                <dd>{formatEnum(result.detection.severity)}</dd>
+                <dd>
+                  <StatusBadge
+                    tone={severityTone(result.detection.severity)}
+                    value={result.detection.severity}
+                  />
+                </dd>
               </div>
               <div>
                 <dt>Confidence</dt>
@@ -67,7 +72,12 @@ export default async function DetectionDetailPage({ params }: DetectionDetailPag
               </div>
               <div>
                 <dt>Status</dt>
-                <dd>{formatEnum(result.detection.status)}</dd>
+                <dd>
+                  <StatusBadge
+                    tone={detectionStatusTone(result.detection.status)}
+                    value={result.detection.status}
+                  />
+                </dd>
               </div>
               <div>
                 <dt>Created</dt>
@@ -298,4 +308,24 @@ function formatEnum(value: string): string {
 
 function evidenceTypeClass(evidenceType: EvidenceItem["evidence_type"]): string {
   return `evidence-${evidenceType.replaceAll("_", "-")}`;
+}
+
+function severityTone(severity: Detection["severity"]) {
+  if (severity === "high") {
+    return "danger";
+  }
+  if (severity === "medium") {
+    return "warning";
+  }
+  return "success";
+}
+
+function detectionStatusTone(status: Detection["status"]) {
+  if (status === "closed" || status === "acknowledged") {
+    return "success";
+  }
+  if (status === "false_positive") {
+    return "draft";
+  }
+  return "info";
 }

@@ -42,6 +42,7 @@ test("overview page contains manufacturer demo dashboard content", () => {
 test("detections pages contain list and detail content", () => {
   const list = readFileSync(join(root, "app/detections/page.tsx"), "utf8");
   const detail = readFileSync(join(root, "app/detections/[detectionId]/page.tsx"), "utf8");
+  const demoState = readFileSync(join(root, "app/components/demo-state.tsx"), "utf8");
   const styles = readFileSync(join(root, "app/globals.css"), "utf8");
 
   assert.match(list, /Process Sentinel detections from the local demo run/);
@@ -49,6 +50,9 @@ test("detections pages contain list and detail content", () => {
   assert.match(list, /detection.severity/);
   assert.match(list, /detection.confidence/);
   assert.match(list, /detection.status/);
+  assert.match(list, /StatusBadge/);
+  assert.match(list, /severityTone/);
+  assert.match(list, /detectionStatusTone/);
   assert.match(list, /formatTimeWindow/);
   assert.match(list, /related_work_order_id/);
   assert.match(list, /related_asset_ids/);
@@ -75,6 +79,11 @@ test("detections pages contain list and detail content", () => {
   assert.match(detail, /rca-capa-draft\?detection_id=/);
   assert.match(detail, /Simulator-backed demo data/);
   assert.match(detail, /Simulator-backed evidence/);
+  assert.match(demoState, /function StatusBadge/);
+  assert.match(styles, /status-badge/);
+  assert.match(styles, /status-badge-danger/);
+  assert.match(styles, /status-badge-warning/);
+  assert.match(styles, /status-badge-info/);
 });
 
 test("recommendation page contains governed review panel", () => {
@@ -107,6 +116,9 @@ test("recommendation page contains governed review panel", () => {
   assert.match(panel, /validated production audit record/);
   assert.match(panel, /Updated status/);
   assert.match(panel, /Linked evidence IDs/);
+  assert.match(panel, /StatusBadge/);
+  assert.match(panel, /recommendationStatusTone/);
+  assert.match(panel, /riskTone/);
   assert.match(styles, /recommendation-review-panel/);
   assert.match(styles, /review-actions/);
   assert.match(styles, /decision-result/);
@@ -132,6 +144,7 @@ test("RCA CAPA page contains selected detection draft preview", () => {
   assert.match(page, /not automatically submitted to QMS/);
   assert.match(page, /DraftCopyButton/);
   assert.match(page, /formatDraftForCopy/);
+  assert.match(page, /StatusBadge/);
   assert.match(copyButton, /navigator\.clipboard\.writeText/);
   assert.match(copyButton, /Copy draft text/);
   assert.match(styles, /rca-draft-card/);
@@ -148,4 +161,27 @@ test("app shell documents configurable API base URL", () => {
   assert.match(client, /apiBaseUrl/);
   assert.match(config, /http:\/\/127\.0\.0\.1:8000/);
   assert.match(readme, /NEXT_PUBLIC_API_BASE_URL/);
+});
+
+test("demo polish keeps pages readable without raw JSON panels", () => {
+  const appFiles = [
+    "app/page.tsx",
+    "app/detections/page.tsx",
+    "app/detections/[detectionId]/page.tsx",
+    "app/recommendations/page.tsx",
+    "app/recommendations/recommendation-review-panel.tsx",
+    "app/rca-capa-draft/page.tsx",
+  ];
+  const styles = readFileSync(join(root, "app/globals.css"), "utf8");
+
+  for (const file of appFiles) {
+    const content = readFileSync(join(root, file), "utf8");
+    assert.doesNotMatch(content, /<pre\b/);
+    assert.doesNotMatch(content, /JSON\.stringify/);
+  }
+
+  assert.match(styles, /badge-row/);
+  assert.match(styles, /min-width: 881px/);
+  assert.match(styles, /max-width: 1240px/);
+  assert.match(styles, /metric-grid/);
 });

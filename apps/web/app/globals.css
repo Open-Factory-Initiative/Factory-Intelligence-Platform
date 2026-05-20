@@ -8,6 +8,9 @@
   --accent: #176b52;
   --accent-strong: #0f4d3b;
   --warning: #8b5a10;
+  --danger: #9f2d35;
+  --info: #315f9f;
+  --draft: #5d6470;
   --shadow: 0 18px 50px rgb(24 32 28 / 8%);
 }
 
@@ -96,7 +99,7 @@ a {
 .page-shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 34px 0 56px;
+  padding: 28px 0 48px;
 }
 
 .hero {
@@ -138,6 +141,66 @@ a {
   font-weight: 760;
   line-height: 1;
   padding: 7px 8px;
+}
+
+.status-badge {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: #35423a;
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.05;
+  padding: 6px 9px;
+  text-transform: capitalize;
+}
+
+.status-badge-label {
+  color: inherit;
+  opacity: 0.78;
+  text-transform: uppercase;
+}
+
+.status-badge-success {
+  border-color: #96c4ae;
+  background: #e8f5ee;
+  color: var(--accent-strong);
+}
+
+.status-badge-warning {
+  border-color: #d9c18c;
+  background: #fff8e7;
+  color: var(--warning);
+}
+
+.status-badge-danger {
+  border-color: #d9a1a7;
+  background: #fff0f1;
+  color: var(--danger);
+}
+
+.status-badge-info {
+  border-color: #a8bddc;
+  background: #eef4ff;
+  color: var(--info);
+}
+
+.status-badge-draft {
+  border-color: #c3c9d1;
+  background: #f2f4f7;
+  color: var(--draft);
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
 }
 
 h1,
@@ -698,6 +761,13 @@ h3 {
   font-weight: 720;
 }
 
+.inline-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
 .meta-line {
   color: var(--muted);
   font-size: 0.86rem;
@@ -885,6 +955,25 @@ code {
 
   .evidence-meta {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 881px) and (max-width: 1240px) {
+  .page-shell,
+  .header-inner {
+    width: min(1100px, calc(100% - 28px));
+  }
+
+  h1 {
+    font-size: clamp(2rem, 3vw, 3.2rem);
+  }
+
+  .hero-copy {
+    padding: 28px;
+  }
+
+  .metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

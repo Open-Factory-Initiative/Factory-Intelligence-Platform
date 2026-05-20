@@ -14,6 +14,8 @@ test("walks the simulator-backed Operations Workbench demo path", async ({ page 
   await expect(page.getByRole("heading", { name: "Greenville Demo Site" })).toBeVisible();
   await expect(page.getByText("Active detections")).toBeVisible();
   await expect(page.getByText("Pending recommendations")).toBeVisible();
+  await expect(page.getByText("Severity", { exact: true })).toBeVisible();
+  await expect(page.getByText("medium", { exact: true })).toBeVisible();
 
   await page.locator('a[href="/detections"]').first().click();
   await expect(page.getByRole("heading", { name: "Detections" })).toBeVisible();
@@ -21,6 +23,7 @@ test("walks the simulator-backed Operations Workbench demo path", async ({ page 
 
   await page.locator(`a[href="/detections/${detectionId}"]`).click();
   await expect(page.getByRole("heading", { name: "Detection detail" })).toBeVisible();
+  await expect(page.getByText("Status", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Why this was flagged" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Evidence timeline" })).toBeVisible();
   await expect(page.getByText("Recent fill weight average is higher than baseline")).toBeVisible();
@@ -29,6 +32,7 @@ test("walks the simulator-backed Operations Workbench demo path", async ({ page 
   await page.getByRole("link", { name: "Recommendation review" }).click();
   await expect(page.getByRole("heading", { name: "Recommendation review" })).toBeVisible();
   await expect(page.getByText("Recommendations are advisory decision support")).toBeVisible();
+  await expect(page.getByText("Risk level", { exact: true })).toBeVisible();
   await recordDecision(page, "Approve", "approved");
 
   resetDemoState();

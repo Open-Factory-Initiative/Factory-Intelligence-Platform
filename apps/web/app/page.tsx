@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ApiErrorPanel } from "./components/demo-state";
+import { ApiErrorPanel, StatusBadge } from "./components/demo-state";
 import {
   type Area,
   type Batch,
@@ -64,7 +64,10 @@ export default async function OverviewPage() {
           <div className="status-row">
             <span className="status-label">API health</span>
             <span className="status-value">
-              {overview.ok ? overview.health.status : "Unavailable"}
+              <StatusBadge
+                tone={overview.ok ? "success" : "danger"}
+                value={overview.ok ? overview.health.status : "Unavailable"}
+              />
             </span>
           </div>
         </aside>
@@ -116,10 +119,25 @@ export default async function OverviewPage() {
               {overview.importantDetection ? (
                 <>
                   <h2>{overview.importantDetection.summary}</h2>
-                  <p>
-                    Severity {overview.importantDetection.severity}; confidence{" "}
-                    {Math.round(overview.importantDetection.confidence * 100)}%.
-                  </p>
+                  <div className="badge-row" aria-label="Important detection status">
+                    <StatusBadge
+                      label="Severity"
+                      tone={severityTone(overview.importantDetection.severity)}
+                      value={overview.importantDetection.severity}
+                    />
+                    <StatusBadge
+                      label="Status"
+                      tone={detectionStatusTone(overview.importantDetection.status)}
+                      value={overview.importantDetection.status}
+                    />
+                    <StatusBadge
+                      label="Confidence"
+                      tone="info"
+                      value={`${Math.round(
+                        overview.importantDetection.confidence * 100,
+                      )}%`}
+                    />
+                  </div>
                 </>
               ) : (
                 <>
@@ -227,4 +245,24 @@ function buildOverviewContext({
     siteName: currentSite?.name ?? "Factory Intelligence Platform demo",
     workOrderId: importantDetection?.related_work_order_id ?? "Demo work order unavailable",
   };
+}
+
+function severityTone(severity: Detection["severity"]) {
+  if (severity === "high") {
+    return "danger";
+  }
+  if (severity === "medium") {
+    return "warning";
+  }
+  return "success";
+}
+
+function detectionStatusTone(status: Detection["status"]) {
+  if (status === "closed" || status === "acknowledged") {
+    return "success";
+  }
+  if (status === "false_positive") {
+    return "draft";
+  }
+  return "info";
 }
