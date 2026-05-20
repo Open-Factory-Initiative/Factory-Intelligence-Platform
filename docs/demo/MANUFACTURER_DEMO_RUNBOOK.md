@@ -35,7 +35,13 @@ writeback, product disposition, or compliance validation.
 
 ## Pre-Call Checklist
 
-Run this checklist 15-30 minutes before the call:
+Run the detailed pre-demo checklist 15-30 minutes before the call:
+
+```text
+docs/demo/PRE_DEMO_CHECKLIST.md
+```
+
+At minimum, confirm:
 
 1. Pull the latest demo branch or main branch you plan to show.
 2. Confirm the worktree has no unrelated local changes.
