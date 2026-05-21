@@ -29,11 +29,19 @@ chronologically by `timestamp`.
 | `evidence_id` | string | Stable key for list rendering and detail actions. |
 | `detection_id` | string | Confirms the evidence belongs to the selected detection. |
 | `evidence_type` | string | Badge/filter value such as `process_signal` or `quality_result`. |
+| `severity` | string | Evidence severity indicator: `low`, `medium`, or `high`. |
 | `timestamp` | ISO 8601 string | Timeline ordering and display time. |
 | `title` | string | Primary evidence row/card heading. |
 | `description` | string | Human-readable explanation for the evidence item. |
 | `source_event_ids` | string array | Links to source events when event drilldown is available. |
+| `related_asset_ids` | string array | Assets referenced by the source events. |
+| `related_batch_ids` | string array | Batches referenced by the source events. |
+| `related_work_order_ids` | string array | Work orders referenced by the source events. |
 | `score` | number from 0 to 1 | Relevance/confidence indicator when available. |
+
+The related context fields are derived from the linked source events. They make
+the timeline readable in the Workbench while preserving traceability back to
+the unified factory event records.
 
 ## Demo Example Response
 
@@ -43,6 +51,7 @@ chronologically by `timestamp`.
     "evidence_id": "evi_fill_weight_baseline_vs_recent",
     "detection_id": "det_fill_weight_gradual_drift",
     "evidence_type": "process_signal",
+    "severity": "medium",
     "timestamp": "2026-01-01T12:29:00Z",
     "title": "Recent fill weight average is higher than baseline",
     "description": "Baseline average was 500.07 g; recent average was 506.37 g, a 6.30 g increase.",
@@ -60,12 +69,16 @@ chronologically by `timestamp`.
       "evt_fill_weight_drift_demo_fill_0028",
       "evt_fill_weight_drift_demo_fill_0029"
     ],
+    "related_asset_ids": ["filler_f_201"],
+    "related_batch_ids": ["BATCH-DEMO-1007"],
+    "related_work_order_ids": ["WO-DEMO-1007"],
     "score": 0.95
   },
   {
     "evidence_id": "evi_quality_results_recent_window",
     "detection_id": "det_fill_weight_gradual_drift",
     "evidence_type": "quality_result",
+    "severity": "medium",
     "timestamp": "2026-01-01T12:29:20Z",
     "title": "Recent quality checks are near the upper spec limit",
     "description": "Recent final fill weight checks show the same upward direction as the process signal.",
@@ -73,6 +86,9 @@ chronologically by `timestamp`.
       "evt_fill_weight_drift_demo_quality_0026",
       "evt_fill_weight_drift_demo_quality_0029"
     ],
+    "related_asset_ids": ["checkweigher_cw_201"],
+    "related_batch_ids": ["BATCH-DEMO-1007"],
+    "related_work_order_ids": ["WO-DEMO-1007"],
     "score": 0.72
   }
 ]
@@ -115,5 +131,6 @@ Workbench behavior:
 ## Current Backend Status
 
 The current FastAPI backend returns all fields required by this contract for
-the deterministic demo evidence timeline. No backend follow-up issue is needed
-for the MVP evidence display contract.
+the deterministic demo evidence timeline. Each item is read-only, advisory,
+and tied to source event IDs plus batch, work order, and asset context. No
+backend follow-up issue is needed for the MVP evidence display contract.

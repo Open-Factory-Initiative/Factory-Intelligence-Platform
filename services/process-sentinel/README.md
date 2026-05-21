@@ -43,6 +43,8 @@ simulator-backed development, not production release decisions.
   when `filler_nozzle_pressure` exceeds the MVP control limit of `2.6`.
 - Findings include evidence items with `source_event_ids` so contributors can
   trace each finding back to simulator events.
+- Evidence items also carry severity, relevance score, and related asset,
+  batch, and work order IDs derived from their source events.
 - Process Sentinel recommendations remain advisory and require human review.
 - Process Sentinel does not perform autonomous action, equipment writeback,
   product disposition, or QMS/MES updates.
