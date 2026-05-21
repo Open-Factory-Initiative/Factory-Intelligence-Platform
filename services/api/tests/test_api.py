@@ -96,13 +96,25 @@ def test_demo_detection_evidence_endpoint_returns_demo_ready_timeline(
         "process_signal",
         "quality_result",
     ]
+    assert [item["severity"] for item in evidence] == ["medium", "medium"]
     assert all(item["title"] for item in evidence)
     assert all(item["description"] for item in evidence)
     assert all(item["source_event_ids"] for item in evidence)
+    assert all(item["related_work_order_ids"] == ["WO-DEMO-1007"] for item in evidence)
+    assert all(item["related_batch_ids"] == ["BATCH-DEMO-1007"] for item in evidence)
+    assert evidence[0]["related_asset_ids"] == ["filler_f_201"]
+    assert evidence[1]["related_asset_ids"] == ["checkweigher_cw_201"]
     assert all(0.0 <= item["score"] <= 1.0 for item in evidence)
     assert "Baseline average" in evidence[0]["description"]
     assert "recent average" in evidence[0]["description"]
     assert "process signal" in evidence[1]["description"]
+
+    linked_event_ids = [source_id for item in evidence for source_id in item["source_event_ids"]]
+    linked_events = [client.get(f"/events/{event_id}").json() for event_id in linked_event_ids]
+
+    assert all(event["event_id"] in linked_event_ids for event in linked_events)
+    assert {event["context"]["batch_id"] for event in linked_events} == {"BATCH-DEMO-1007"}
+    assert {event["context"]["work_order_id"] for event in linked_events} == {"WO-DEMO-1007"}
 
 
 def test_detection_evidence_endpoint_returns_empty_state_for_detection_without_evidence(

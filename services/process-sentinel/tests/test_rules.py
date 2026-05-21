@@ -14,7 +14,9 @@ def test_normal_scenario_does_not_create_detection() -> None:
 
 
 def test_gradual_drift_creates_evidence_backed_recommendation() -> None:
-    result = run_sentinel(generate_events("gradual_drift", seed=42, count=24))
+    events = generate_events("gradual_drift", seed=42, count=24)
+    event_ids = {event.event_id for event in events}
+    result = run_sentinel(events)
 
     detection = next(item for item in result.detections if item.detection_type == "quality_drift")
     recommendation = next(
@@ -27,7 +29,13 @@ def test_gradual_drift_creates_evidence_backed_recommendation() -> None:
     assert detection.severity == "medium"
     assert detection.confidence > 0.7
     assert evidence
+    assert {source_id for item in evidence for source_id in item.source_event_ids} <= event_ids
     assert all(item.source_event_ids for item in evidence)
+    assert all(item.severity == detection.severity for item in evidence)
+    assert all(item.related_asset_ids for item in evidence)
+    assert all(
+        item.related_work_order_ids == [detection.related_work_order_id] for item in evidence
+    )
     assert recommendation.status == "needs_review"
     assert recommendation.requires_approval is True
     assert recommendation.evidence_ids == [item.evidence_id for item in evidence]
@@ -50,6 +58,9 @@ def test_sudden_excursion_creates_high_severity_detection() -> None:
     assert detection.confidence == 0.9
     assert evidence
     assert all(item.source_event_ids for item in evidence)
+    assert [item.severity for item in evidence] == ["high"]
+    assert evidence[0].related_asset_ids == detection.related_asset_ids
+    assert evidence[0].related_work_order_ids == [detection.related_work_order_id]
     assert recommendation.evidence_ids == [item.evidence_id for item in evidence]
 
 
@@ -60,7 +71,9 @@ def test_missing_data_does_not_create_false_positive() -> None:
 
 
 def test_fill_weight_drift_demo_supports_detection_recommendation_and_rca_draft(tmp_path):
-    result = run_sentinel(generate_events("fill_weight_drift_demo", seed=120, count=30))
+    events = generate_events("fill_weight_drift_demo", seed=120, count=30)
+    events_by_id = {event.event_id: event for event in events}
+    result = run_sentinel(events)
 
     detection = next(item for item in result.detections if item.detection_type == "quality_drift")
     recommendation = next(
@@ -91,6 +104,27 @@ def test_fill_weight_drift_demo_supports_detection_recommendation_and_rca_draft(
     assert all(item.title for item in evidence)
     assert all(item.description for item in evidence)
     assert all(item.source_event_ids for item in evidence)
+    assert all(
+        source_id in events_by_id
+        for item in evidence
+        for source_id in item.source_event_ids
+    )
+    assert [item.severity for item in evidence] == ["medium", "medium"]
+    assert [item.related_work_order_ids for item in evidence] == [
+        ["WO-DEMO-1007"],
+        ["WO-DEMO-1007"],
+    ]
+    assert [item.related_batch_ids for item in evidence] == [
+        ["BATCH-DEMO-1007"],
+        ["BATCH-DEMO-1007"],
+    ]
+    assert evidence[0].related_asset_ids == ["filler_f_201"]
+    assert evidence[1].related_asset_ids == ["checkweigher_cw_201"]
+    assert {
+        events_by_id[source_id].context.batch_id
+        for item in evidence
+        for source_id in item.source_event_ids
+    } == {"BATCH-DEMO-1007"}
     assert all(0.0 <= item.score <= 1.0 for item in evidence)
     assert "Baseline average" in evidence[0].description
     assert "recent average" in evidence[0].description

@@ -79,6 +79,7 @@ def _detect_gradual_fill_weight_drift(
             evidence_id="evi_fill_weight_baseline_vs_recent",
             detection_id=detection_id,
             evidence_type="process_signal",
+            severity=detection.severity,
             timestamp=recent[-1].timestamp,
             title="Recent fill weight average is higher than baseline",
             description=(
@@ -86,6 +87,7 @@ def _detect_gradual_fill_weight_drift(
                 f"{recent_average:.2f} g, a {delta:.2f} g increase."
             ),
             source_event_ids=[event.event_id for event in [*baseline, *recent]],
+            **_evidence_context([*baseline, *recent]),
             score=min(0.95, 0.5 + delta / 10),
         )
     ]
@@ -102,6 +104,7 @@ def _detect_gradual_fill_weight_drift(
                 evidence_id="evi_quality_results_recent_window",
                 detection_id=detection_id,
                 evidence_type="quality_result",
+                severity=detection.severity,
                 timestamp=quality_events[-1].timestamp,
                 title="Recent quality checks are near the upper spec limit",
                 description=(
@@ -109,6 +112,7 @@ def _detect_gradual_fill_weight_drift(
                     "as the process signal."
                 ),
                 source_event_ids=[event.event_id for event in quality_events],
+                **_evidence_context(quality_events),
                 score=0.72,
             )
         )
@@ -152,6 +156,7 @@ def _detect_sudden_excursion(
             evidence_id="evi_process_signal_excursion",
             detection_id=detection_id,
             evidence_type="process_signal",
+            severity=detection.severity,
             timestamp=last.timestamp,
             title="Process signal exceeded control limit",
             description=(
@@ -159,6 +164,7 @@ def _detect_sudden_excursion(
                 "during the scenario window."
             ),
             source_event_ids=[event.event_id for event in excursion_events],
+            **_evidence_context(excursion_events),
             score=0.9,
         )
     ]
@@ -190,3 +196,17 @@ def _recommendation_for_detection(
         evidence_ids=[item.evidence_id for item in evidence_items],
         created_at=datetime.now(UTC),
     )
+
+
+def _evidence_context(events: Sequence[EventEnvelope]) -> dict[str, list[str]]:
+    return {
+        "related_asset_ids": sorted(
+            {event.context.asset_id for event in events if event.context.asset_id}
+        ),
+        "related_batch_ids": sorted(
+            {event.context.batch_id for event in events if event.context.batch_id}
+        ),
+        "related_work_order_ids": sorted(
+            {event.context.work_order_id for event in events if event.context.work_order_id}
+        ),
+    }

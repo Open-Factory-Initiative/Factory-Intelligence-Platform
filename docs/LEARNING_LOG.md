@@ -22,6 +22,57 @@ This file should be updated by Codex after each meaningful change.
 ### What to learn next
 ```
 
+## 2026-05-20 - Evidence timeline context indicators
+
+### What changed
+
+Added explicit severity and source-event context fields to Process Sentinel
+evidence items. Evidence timeline API responses now include related asset,
+batch, and work order IDs alongside the existing timestamps, readable titles,
+descriptions, source event IDs, and relevance scores.
+
+### Why it matters
+
+The evidence timeline should explain why a finding exists and what factory
+context it touches. Keeping context on each evidence item lets the Workbench
+show a readable timeline without breaking traceability back to unified factory
+events.
+
+### How it works
+
+Process Sentinel still builds detections from deterministic simulator events.
+When it creates each evidence item, it copies severity from the detection and
+derives related asset, batch, and work order IDs from the linked source events.
+The API returns those fields from the stored evidence timeline.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=fill_weight_drift_demo
+make ingest INPUT=.local/events/fill_weight_drift_demo.jsonl
+make sentinel-run
+make api
+```
+
+### How to test it
+
+```bash
+.venv/bin/python -m pytest services/process-sentinel/tests services/api/tests/test_api.py
+```
+
+### Key files
+
+- `services/process-sentinel/process_sentinel/models.py`
+- `services/process-sentinel/process_sentinel/rules.py`
+- `services/process-sentinel/tests/test_rules.py`
+- `services/api/tests/test_api.py`
+- `docs/EVIDENCE_TIMELINE_API_CONTRACT.md`
+
+### What to learn next
+
+Use the source event IDs to build UI drilldown from evidence timeline rows to
+the raw unified factory events behind each finding.
+
 ## 2026-05-19 - Simulator usage documentation
 
 ### What changed

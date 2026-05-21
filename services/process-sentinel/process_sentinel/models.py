@@ -35,10 +35,14 @@ class EvidenceItem(StrictModel):
     evidence_id: str
     detection_id: str
     evidence_type: Literal["process_signal", "quality_result", "correlation_window"]
+    severity: Literal["low", "medium", "high"] = "low"
     timestamp: datetime
     title: str
     description: str
     source_event_ids: list[str]
+    related_asset_ids: list[str] = Field(default_factory=list)
+    related_batch_ids: list[str] = Field(default_factory=list)
+    related_work_order_ids: list[str] = Field(default_factory=list)
     score: float = Field(ge=0.0, le=1.0)
 
 
