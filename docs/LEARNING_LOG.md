@@ -2908,3 +2908,49 @@ make demo
 
 Have a new contributor follow only the README demo section and note any missing
 setup context before the next manufacturer-facing handoff.
+
+## 2026-05-20 - Process Sentinel epic closure
+
+### What changed
+
+Tightened Process Sentinel tests so they explicitly cover the issue #11 epic
+criteria for normal, gradual drift, and sudden excursion scenarios. Added
+documentation for MVP detection assumptions, queryable outputs, evidence
+references, advisory recommendations, and current limitations.
+
+### Why it was built that way
+
+The drift workflow already existed, so the smallest useful change was to make
+the epic acceptance criteria explicit and durable instead of adding new rule
+architecture. The implementation remains rule-based, simulator-backed, and
+human-reviewed.
+
+### How it works
+
+Process Sentinel reads accepted factory events, applies deterministic rules for
+fill-weight drift and nozzle-pressure excursion, writes detections, evidence,
+and recommendations to local JSON state, and exposes that state through the
+API. Evidence items carry `source_event_ids` so findings can be traced back to
+simulator events.
+
+### How to run it
+
+```bash
+make simulate SCENARIO=gradual_drift
+make ingest INPUT=.local/events/gradual_drift.jsonl
+make sentinel-run
+make api
+```
+
+### How to test it
+
+```bash
+.venv/bin/python -m pytest services/process-sentinel/tests
+make test
+```
+
+### What to learn next
+
+Use the current deterministic rules as the baseline before adding any new
+process or quality drift modes, and require each new rule to document its
+threshold assumptions and evidence references.
